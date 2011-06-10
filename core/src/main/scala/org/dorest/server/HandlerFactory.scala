@@ -15,6 +15,9 @@
  */
 package org.dorest.server
 
+/**
+ * @author Michael Eichberg
+ */
 abstract class HandlerFactory[T <: Handler] {
 
     implicit def namedToPathSegment(name : String) : Named = new Named(name)

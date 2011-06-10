@@ -19,40 +19,108 @@ import java.net._
 import java.io._
 
 /**
- * The core trait.
+ * A Handler object is responsible for processing one request.
+ *
+ * This trait's core method is the [[#processRequest(InputStream):Response]] method. It will be called by the server component
+ * after the request's path and query was successfully matched.
+ *
+ * If a handler fails to process the request, it is the responsibility
+ * of the handler to create a [[org.dorest.server.Response]] object that appropriately describes the error. A server
+ * adapter must not try to guess the error condition. If the process request method fails with an exception, the server
+ * is expected to return a response that just states that an internal server error (response code 500) was encountered.
+ *
+ * @author Michael Eichberg
  */
 trait Handler {
 
     /**
      * The used protocol. E.g., HTTP/1.1
-     * <p>
-     * This field will be set by the server before {@link #process()} is called.
-     * </p>
+     *
+     * '''Control Flow''':
+     * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.
+     *
+     * '''Remark''':
+     * This field is only to be written by the server component.
      */
-    var protocol: String = null
+    var protocol: String = _
 
-    var method: HTTPMethod.Value = null
+    /**
+     * The HTTP method of this request.
+     *
+     * '''Control Flow''':
+     * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.
+     *
+     * '''Remark''':
+     * This field is only to be written by the server component.
+     */
+    var method: HTTPMethod = _
 
-    var requestURI: URI = null
+    /**
+     * The (complete) URI of the request.
+     *
+     * The URI is primarily provided for debugging and logging purposes. The relevant parts of an URI are
+     * expected to be extracted by path matchers (cf. [[org.dorest.server.HandlerFactory]]).
+     *
+     * '''Control Flow''':
+     * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.
+     *
+     * '''Remark''':
+     * This field is only to be written by the server component.
+     */
+    var requestURI: URI = _
 
-    var remoteAddress: String = null
+    /**
+     * The address of the client.
+     *
+     * '''Control Flow''':
+     * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.
+     *
+     * '''Remark''':
+     * This field is only to be written by the server component.
+     */
+    var remoteAddress: String = _
 
-    var localAddress: String = null
+    /**
+     * The local address.
+     *
+     * '''Control Flow''':
+     * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.
+     *
+     * '''Remark''':
+     * This field is only to be written by the server component.
+     */
+    var localAddress: String = _
 
-    // We don't care about the specific data type used to store the request headers.
-    // However, we need a way to extract specific headers.
+    /**
+     * The precise data type used to store the request headers is not relevant, but we need to be at least
+     * able to extract specific headers.
+     */
     type HTTPHeaders = {
         def getFirst(key: String): String
     }
 
-    var requestHeaders: HTTPHeaders = null
+    /**
+     * The request's headers.
+     *
+     * '''Control Flow''':
+     * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.
+     *
+     * '''Remark''':
+     * This field is only to be written by the server component.
+     */
+    var requestHeaders: HTTPHeaders = _
 
     /**
-     * The core method that is responsible for handling the request.
-     * <p>
+     * Processes a request.
+     *
+     * '''Overriding This Method''':
+     * When your handler overrides this method and reads from the stream, it is the responsibility of
+     * your handler to pass on a new InputStream to upstream Handlers which the latter ones can
+     * use to read the complete (e.g. decrypted, unpacked) request body.
+     *
+     * '''Design''':
      * The request body is a parameter of this method as it is subject
-     * to various transformations.
-     * </p>
+     * to various transformations and it may not be possible to read it multiple times.
      */
     def processRequest(requestBody: InputStream): Response
 

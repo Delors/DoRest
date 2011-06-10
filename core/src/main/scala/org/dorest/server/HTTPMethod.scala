@@ -15,6 +15,29 @@
  */
 package org.dorest.server
 
+sealed trait HTTPMethod
+
+object HTTPMethod {
+
+    def apply(methodName: String) = methodName match {
+        case "GET" => GET
+        case "POST" => POST
+        case "PUT" => PUT
+        case "DELETE" => DELETE
+    }
+
+
+}
+
+case object GET extends HTTPMethod
+
+case object POST extends HTTPMethod
+
+case object PUT extends HTTPMethod
+
+case object DELETE extends HTTPMethod
+
+/*
 object HTTPMethod extends Enumeration {
     val GET = Value("GET")
     val POST = Value("POST")
@@ -27,3 +50,4 @@ object HTTPMethod extends Enumeration {
     // val TRACE = Value("TRACE")
     // val CONNECT = Value("CONNECT")
 }
+*/

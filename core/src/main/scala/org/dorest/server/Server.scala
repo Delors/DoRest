@@ -15,20 +15,17 @@
  */
 package org.dorest.server
 
-//import auth._
-
 import com.sun.net.httpserver._
-import com.sun.net.httpserver.HttpServer._
 import java.net._
 
-// TODO implement something like a server adapter...
+
 class Server(val port: Int) {
 
     private var factories: List[HandlerFactory[_ <: Handler]] = Nil
 
     private val server = HttpServer.create(new InetSocketAddress(port), 0);
 
-    private class DefaultHandler extends HttpHandler {
+    private class DoRestHandler extends HttpHandler {
 
         def handle(t: HttpExchange) {
 
@@ -36,7 +33,7 @@ class Server(val port: Int) {
             val path = uri.getPath
             val query = uri.getQuery
 
-            println("Handling request at "+new java.util.Date+" :"+path)
+            println("Handling request at " + new java.util.Date + " :" + path)
 
             val it = t.getRequestHeaders().entrySet.iterator
             while (it.hasNext)
@@ -48,7 +45,7 @@ class Server(val port: Int) {
                     factories.head.matchURI(path, query) match {
                         case Some(handler) => {
                             handler.protocol = t.getProtocol()
-                            handler.method = HTTPMethod.withName(t.getRequestMethod())
+                            handler.method = HTTPMethod(t.getRequestMethod())
                             handler.requestURI = t.getRequestURI()
                             handler.remoteAddress = t.getRemoteAddress().toString // TODO check that the result is as expected...
                             handler.localAddress = t.getLocalAddress().toString // TODO check that the result is as expected...
@@ -56,7 +53,9 @@ class Server(val port: Int) {
                             val response = handler.processRequest(t.getRequestBody())
                             try {
                                 val length = response.body.length
-                                response.headers.foreach((header) => { val (key, value) = header; t.getResponseHeaders().set(key, value) })
+                                response.headers.foreach((header) => {
+                                    val (key, value) = header; t.getResponseHeaders().set(key, value)
+                                })
                                 t.sendResponseHeaders(response.code, length);
                                 if (length > 0) {
                                     response.body.write(t.getResponseBody())
@@ -68,10 +67,10 @@ class Server(val port: Int) {
                                 }
                             } finally {
                                 // we were able to handle the request..
-                                return ;
+                                return;
                             }
                         }
-                        case _ => ;
+                        case _ => ; // the current handler factory's path didn't match the path
                     }
                     factories = factories.tail
                 }
@@ -92,10 +91,10 @@ class Server(val port: Int) {
     }
 
     def start() {
-        server.createContext("/", new DefaultHandler());
+        server.createContext("/", new DoRestHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        println("Server started...: "+port)
+        println("Server started...: " + port)
     }
 
     def register(handlerFactory: HandlerFactory[_ <: Handler]) {

@@ -16,10 +16,22 @@
 package org.dorest.server
 package rest
 
-import java.net._
-import java.io._
-import java.nio.charset._
-
+/**
+ * If you want to return HTML documents when processing a request mix in this trait into your resource.
+ *
+ * IF you want to implement a Time resource that has an HTML representation your code could be:
+ * {{{
+ * class Time
+ *      extends RESTInterface
+ *      with HTMLSupport {
+ *
+ *   get requests HTML {
+ *      "<html><body>The current (server) time is: "+(new java.util.Date().toString)+"</body></html>"
+ *   }
+ * }
+ * }}}
+ * @author Michael Eichberg
+ */
 trait HTMLSupport {
 
     import Utils._

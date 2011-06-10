@@ -6,7 +6,6 @@ To this end, we try to provide an API that is easy and intuitive to use and that
 
 This framework is – and will always be – an open source framework. Use at your own risk.
 
-
 License
    Copyright 2011 Michael Eichberg et al
 
@@ -21,3 +20,8 @@ License
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+
+Documentation on using ScalaDoc:
+https://wiki.scala-lang.org/pages/viewpage.action?pageId=294986
