@@ -16,7 +16,6 @@
 package org.dorest.server
 package rest
 
-import org.json._
 import java.net._
 import java.io._
 import java.nio.charset._

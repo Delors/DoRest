@@ -31,7 +31,7 @@ import javax.servlet.http._
 import org.dorest.server.rest._
 import org.dorest.server._
 import auth.{SimpleAuthenticator, BasicAuthentication}
-import org.json.JSONObject
+//import org.json.JSONObject
 
 /**
  * After the start go to: "http://localhost:8080/date"
@@ -175,13 +175,13 @@ object MyApp {
 
         def create = new Time() with MonitoringHandler
     })
-
+/*
     register(new HandlerFactory[Echo] {
         path {"/echo" :: EmptyPath}
 
         def create = new Echo()
     })
-
+*/
 
 }
 
@@ -210,7 +210,7 @@ class Time
     }
 }
 
-
+/*
 class Echo extends RESTInterface with JSONSupport with BasicAuthentication
                    with SimpleAuthenticator {
 
@@ -232,3 +232,4 @@ class Echo extends RESTInterface with JSONSupport with BasicAuthentication
     }
 
 }
+*/
