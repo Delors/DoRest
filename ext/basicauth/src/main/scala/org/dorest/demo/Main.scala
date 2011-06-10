@@ -43,7 +43,8 @@ object Main extends Server(9000) with App {
 */
     start()
 }
-/*
+
+
 trait Authorization
         extends BasicAuthentication
         with SimpleAuthenticator
@@ -54,72 +55,11 @@ trait Authorization
     val authorizationPwd = "safe"
 }
 
-class Tags
-        extends RESTInterface
-        with MonitoringHandler
-        with JSONSupport
-        with Authorization {
-
-    get requests JSON {
-        val ja = new JSONArray()
-        var i = 0
-        while (i < 10) {
-            val jo = new JSONObject()
-            jo.put("t_id", i)
-            ja.put(jo)
-            i += 1
-        }
-        ja
-    }
-
-}
-
-class Tag
-        extends RESTInterface
-        with JSONSupport
-        with Authorization {
-
-    var tagId: Long = 0
-
-    get requests JSON {
-        val jo = new JSONObject()
-        jo.put("authenticatedUser", authenticatedUser)
-        jo.put("t_id", tagId)
-        jo
-    }
-
-}
-
-class Note extends RESTInterface with JSONSupport {
-
-    var tagId: Long = _
-
-    var noteId: Long = _
-
-    get requests JSON {
-        val jo = new JSONObject()
-        jo.put("t_id", tagId)
-        jo.put("n_id", noteId)
-        jo
-    }
-}
-
-class User() extends RESTInterface with JSONSupport {
-
-    var user: String = _
-
-    get requests JSON {
-        val jo = new JSONObject()
-        jo.put("user", user)
-        jo
-    }
-}
-*/
 
 class Time
         extends RESTInterface
+        with Authorization
         with MonitoringHandler
-      //  with JSONSupport
         with TEXTSupport
         with HTMLSupport
         with XMLSupport {
@@ -161,8 +101,8 @@ class MappedDirectory(val baseDirectory: String) extends Handler {
     var path: String = _
 
     def processRequest(requestBody: InputStream): Response = {
-        if (method != HTTPMethod.GET) {
-            return new SupportedMethodsResponse(HTTPMethod.GET)
+        if (method != GET) {
+            return new SupportedMethodsResponse(GET)
         }
 
         val file = new File(baseDirectory+"/"+path)

@@ -16,18 +16,10 @@
 package org.dorest.server
 package rest
 
-import java.net._
 import java.io._
 import java.nio.charset._
 
 trait RESTInterface extends Handler {
-
-    import HTTPMethod._
-
-    // TODO
-    //            val is = t.getRequestBody();
-    //            while (is.available > 0)
-    //                is.read(); // .. read the request body
 
     private val getHandlers = scala.collection.mutable.ListBuffer[ResponseBodyInitializer[_]]()
     private val postHandlers = scala.collection.mutable.ListBuffer[PostHandler]()
@@ -68,18 +60,18 @@ trait RESTInterface extends Handler {
                 return new DefaultResponse(responseCode, responseHeaders, responseBody)
             }
             case _ => {
-                var supportedMethods: List[HTTPMethod.Value] = Nil
+                var supportedMethods: List[HTTPMethod] = Nil
                 if (!getHandlers.isEmpty)
-                    supportedMethods = HTTPMethod.GET :: supportedMethods;
+                    supportedMethods = GET :: supportedMethods;
 
                 if (!putHandlers.isEmpty)
-                    supportedMethods = HTTPMethod.PUT :: supportedMethods;
+                    supportedMethods = PUT :: supportedMethods;
 
                 if (!postHandlers.isEmpty)
-                    supportedMethods = HTTPMethod.POST :: supportedMethods;
+                    supportedMethods = POST :: supportedMethods;
 
                 if (!deleteHandlers.isEmpty)
-                    supportedMethods = HTTPMethod.DELETE :: supportedMethods;
+                    supportedMethods = DELETE :: supportedMethods;
 
                 new SupportedMethodsResponse(supportedMethods)
             }
@@ -93,7 +85,7 @@ trait RESTInterface extends Handler {
                 responseHeaders.set("Content-Type", contentType)
             }
             case Some((mediaType, Some(charset))) => {
-                val contentType = mediaType.toString+"; charset="+charset.displayName
+                val contentType = mediaType.toString + "; charset=" + charset.displayName
                 responseHeaders.set("Content-Type", contentType)
             }
             case _ => /*OK*/
@@ -134,11 +126,12 @@ trait RESTInterface extends Handler {
         }
 
     }
+
 }
 
-class ResponseBodyInitializer[+M <: MediaType.Value](
-    val mediaType: M,
-    val initResponseBody: () => Unit)
+class ResponseBodyInitializer[+M <: MediaType.Value](val mediaType: M,
+                                                     val initResponseBody: () => Unit)
+
 object ResponseBodyInitializer {
 
     def apply[M <: MediaType.Value](mediaType: M)(initResponseBody: => Unit) =
@@ -147,9 +140,9 @@ object ResponseBodyInitializer {
 
 trait Representation[+M <: MediaType.Value] extends ResponseBody
 
-class RepresentationFactory[M <: MediaType.Value](
-    val mediaType: M,
-    val createRepresentation: () => Representation[M])
+class RepresentationFactory[M <: MediaType.Value](val mediaType: M,
+                                                  val createRepresentation: () => Representation[M])
+
 object RepresentationFactory {
 
     def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: => Representation[M]) =

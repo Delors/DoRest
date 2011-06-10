@@ -83,14 +83,14 @@ class DefaultResponse(
     val headers: ResponseHeaders,
     val body: ResponseBody) extends Response
 
-class SupportedMethodsResponse(allowedMethods: List[HTTPMethod.Value])
+class SupportedMethodsResponse(allowedMethods: List[HTTPMethod])
         extends DefaultResponse(
             405,
             new DefaultResponseHeaders(("Allow", allowedMethods.mkString(", "))),
             EmptyResponseBody
         ) {
 
-    def this(allowedMethod: HTTPMethod.Value) {
+    def this(allowedMethod: HTTPMethod) {
         this(allowedMethod :: Nil)
     }
 }
