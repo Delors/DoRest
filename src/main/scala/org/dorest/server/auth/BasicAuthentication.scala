@@ -19,23 +19,23 @@ package auth
 import java.io.InputStream
 
 /**
- * Implements  <a href="http://www.ietf.org/rfc/rfc1945.txt.pdf">HTTP basic access authentication</a>).
+ * Implements  <a href="http://www.ietf.org/rfc/rfc1945.txt.pdf">HTTP basic access authentication</a>.
  *
- * @see SimpleAuthenticator
+ * @see [[org.dorest.server.auth.SimpleAuthenticator]]
  */
 trait BasicAuthentication extends Authentication with Handler {
 
     /**
      * The required authentication realm, e.g. "My Website", that is sent back if
-     * the request does not contain the necessary authorization credentials.
+     * the request does not contain the necessary credentials.
      */
     def authenticationRealm : String
 
     override abstract def processRequest(requestBody : InputStream) : Response = {
         var authorizationInfo = requestHeaders.getFirst("Authorization")
         if (authorizationInfo == null) {
-            return new Unauthorized(
-                "Authorization required",
+            return Unauthorized(
+                "Authorization required.",
                 "Basic realm=\""+authenticationRealm+"\""
             )
         }
@@ -52,8 +52,8 @@ trait BasicAuthentication extends Authentication with Handler {
             return BadRequest
         }
         if (!authenticate(user_pwd(0), user_pwd(1))) {
-            return new Unauthorized(
-                "You are not authorized.",
+            return Unauthorized(
+                "Authorization failed.",
                 "Basic realm=\""+authenticationRealm+"\"")
         }
 

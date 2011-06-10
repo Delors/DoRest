@@ -17,12 +17,18 @@ package org.dorest.server
 package auth
 
 /**
+ * This response object can be used to send back the information that the request cannot be processed,
+ * because the user is not authenticated. It is possible to provide further information to the user. In all cases the
+ * mechanism how to authenticate needs to be specified.
  *
- *
- * @param text The information (Content-Type: text/plain; charset=UTF-8) send to the user; e.g., describing that a password is needed and how to log in.<br>
+ * @param text The information (Content-Type: text/plain; charset=UTF-8) send to the user; e.g.,
+ * describing that this site needs authentication and how to log in.<br>
  * <i>If you want to send other content than some plain text, e.g., an HTML page, this class cannot be used.</i>
- * @param www_authenticate the value of the "WWW-Authenticate" header. The precise value depends
- * on the chosen mechanism (e.g., Digest or Basic)
+ *
+ * @param www_authenticate <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.47">the value of the
+ * WWW-Authenticate header</href>. The precise value depends on the chosen mechanism (e.g., Digest or Basic)
+ *
+ * @author Michael Eichberg (mail at michael-eichberg.de)
  */
 class Unauthorized(text: String, www_authenticate: String) extends TextResponse(401, text) {
 
@@ -31,7 +37,8 @@ class Unauthorized(text: String, www_authenticate: String) extends TextResponse(
 
 object Unauthorized {
 
-    def apply(text: String, www_authenticate: String) = {
+
+    def apply(text: String = "Authorization required.", www_authenticate: String) = {
         new Unauthorized(text, www_authenticate)
     }
 

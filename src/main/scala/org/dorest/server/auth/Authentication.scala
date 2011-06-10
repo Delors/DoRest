@@ -22,7 +22,7 @@ trait Authentication {
      * fails, <code>false</code> has to be returned.<p>
      * If the user credentials, in particular the user name,
      * is later on required, it is possible to additionally use, e.g.,
-     * the trait {@link AuthenticatedUser}.
+     * the trait [[org.dorest.server.auth.AuthenticatedUser]].
      */
     def authenticate(user: String, pwd: String): Boolean
 }
