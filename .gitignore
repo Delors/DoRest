@@ -5,3 +5,5 @@ Icon?
 .project
 .scala_dependencies
 .settings
+*.iml
+*.ipr

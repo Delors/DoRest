@@ -1,11 +1,22 @@
+/*
+   Copyright 2011 Michael Eichberg et al
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package org.dorest.server
 package servlet
 
 import java.util.ArrayList;
-import java.util.List;
-
-import java.io.IOException;
-import java.util.Date;
 
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
@@ -16,15 +27,17 @@ import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
 
-import javax.servlet._
 import javax.servlet.http._
 import org.dorest.server.rest._
 import org.dorest.server._
+import auth.{SimpleAuthenticator, BasicAuthentication}
+import org.json.JSONObject
 
 /**
  * After the start go to: "http://localhost:8080/date"
  */
 class JettyServer
+
 object JettyServer extends App {
 
     // all Jetty objects required to start
@@ -41,7 +54,7 @@ object JettyServer extends App {
     // protocol bits
     var initAlreadyCalled = false;
 
-    /** Initializes the server */
+    /**Initializes the server */
     def init() {
         if (initAlreadyCalled) {
             throw new RuntimeException("init() already called");
@@ -62,7 +75,7 @@ object JettyServer extends App {
         initAlreadyCalled = true;
     }
 
-    /** Starts the server */
+    /**Starts the server */
     def start() {
         if (!initAlreadyCalled) {
             throw new RuntimeException("init() must be called before start()");
@@ -99,7 +112,7 @@ class DoRestServlet extends javax.servlet.http.HttpServlet {
         val path = req.getRequestURI
         val query = req.getQueryString
 
-        println("Handling request at "+new java.util.Date+" :"+path)
+        println("Handling request at " + new java.util.Date + " :" + path)
 
         var factories = MyApp.factories
         while (!factories.isEmpty) {
@@ -121,14 +134,15 @@ class DoRestServlet extends javax.servlet.http.HttpServlet {
                     val response = handler.processRequest(req.getInputStream())
                     try {
                         val length = response.body.length
-                         response.headers.foreach((header) => { 
-                             val (key, value) = header; 
-                             res.setHeader(key, value) }
-                         )
+                        response.headers.foreach((header) => {
+                            val (key, value) = header;
+                            res.setHeader(key, value)
+                        }
+                        )
                         res.setStatus(response.code);
                         if (length > 0) {
                             response.body.write(res.getOutputStream())
-                       }
+                        }
 
                     } catch {
                         case ex => {
@@ -136,10 +150,10 @@ class DoRestServlet extends javax.servlet.http.HttpServlet {
                         }
                     } finally {
                         // we were able to handle the request..
-                        return ;
+                        return;
                     }
                 }
-                case _ => ;
+                case _ =>;
             }
             factories = factories.tail
         }
@@ -157,19 +171,27 @@ object MyApp {
     }
 
     register(new HandlerFactory[Time] {
-        path { "/time" :: EmptyPath }
+        path {"/time" :: EmptyPath}
+
         def create = new Time() with MonitoringHandler
     })
+
+    register(new HandlerFactory[Echo] {
+        path {"/echo" :: EmptyPath}
+
+        def create = new Echo()
+    })
+
 
 }
 
 class Time
         extends RESTInterface
-        with MonitoringHandler
-        with JSONSupport
-        with TEXTSupport
-        with HTMLSupport
-        with XMLSupport {
+                with MonitoringHandler
+                //with JSONSupport
+                with TEXTSupport
+                with HTMLSupport
+                with XMLSupport {
 
     val dateString = new java.util.Date().toString
 
@@ -178,12 +200,35 @@ class Time
     }
 
     get requests HTML {
-        "<html><body>The current (server) time is: "+dateString+"</body></html>"
+        "<html><body>The current (server) time is: " + dateString + "</body></html>"
     }
 
     get requests XML {
-        <time>{ dateString }</time>
+        <time>
+            {dateString}
+        </time>
     }
 }
 
 
+class Echo extends RESTInterface with JSONSupport with BasicAuthentication
+                   with SimpleAuthenticator {
+
+    def authenticationRealm = "Demo App"
+
+    val authorizationUser = "user"
+    val authorizationPwd = "safe"
+
+
+    get requests JSON {
+        val jo = new JSONObject()
+        jo.put("message", "You have to post something to get something :-)")
+        jo
+    }
+
+    post receives JSON returns JSON {
+        // just mirror the request
+        JSONRequestBody
+    }
+
+}
