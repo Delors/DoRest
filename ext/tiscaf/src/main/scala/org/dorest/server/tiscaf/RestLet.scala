@@ -16,23 +16,74 @@
 package org.dorest.server
 package tiscaf
 
+import java.net.URI
+import java.io.ByteArrayInputStream
+
 import rest.RESTInterface
-import zgs.httpd.{HLet,HTalk,HReqType}
+import zgs.httpd._
 
 /**
- * 
+ *
  * This HLet allows to use the DoRest API in tiscaf.
- * 
+ *
  * @author Lucas Satabin
  *
  */
 trait RestLet extends RESTInterface with HLet {
-    
+
     private implicit def tiscaf2dorestMethod(tpe: HReqType.Value): HTTPMethod.Value =
         HTTPMethod.withName(tpe.toString.split("/")(0))
-    
+
+    private class HeaderWrapper(talk: HTalk) {
+        def getFirst(key: String) =
+            talk.req.header(key).getOrElse("")
+    }
+
     final override def act(talk: HTalk) {
         // initialize this handler
+        this.protocol = talk.req.protocol
+        this.method = talk.req.method
+        this.remoteAddress = talk.req.remoteIp
+        this.requestURI =
+            new URI("", "", talk.req.host.getOrElse(""),
+                talk.req.port.map(_.toInt).getOrElse(0),
+                talk.req.uriPath, talk.req.query, "")
+        this.requestHeaders = new HeaderWrapper(talk)
+
+        val stream = talk.req.octets match {
+            case Some(bytes) => new ByteArrayInputStream(bytes)
+            case _ => null
+        }
+        val response = this.processRequest(stream)
+        
+        talk.
+          setStatus(HStatus.fromInt(response.code)).
+          setContentLength(response.body.length)
+          
+        response.headers.foreach {
+            case (key, value) => talk.setHeader(key, value)
+        }
+//        talk.write(reponse.responseBody)
+        
+        talk.close
+        
+//        try {
+//            val length = response.body.length
+//            response.headers.foreach((header) => { val (key, value) = header; t.getResponseHeaders().set(key, value) })
+//            t.sendResponseHeaders(response.code, length);
+//            if (length > 0) {
+//                response.body.write(t.getResponseBody())
+//            }
+//            t.close();
+//        } catch {
+//            case ex => {
+//                ex.printStackTrace()
+//            }
+//        } finally {
+//            // we were able to handle the request..
+//            return ;
+//        }
+
     }
-    
+
 }
