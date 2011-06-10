@@ -15,7 +15,7 @@
  */
 package org.dorest.server
 
-import auth._
+//import auth._
 
 import com.sun.net.httpserver._
 import com.sun.net.httpserver.HttpServer._
@@ -24,7 +24,7 @@ import java.net._
 // TODO implement something like a server adapter...
 class Server(val port: Int) {
 
-    private var factories: List[HandlerFactory[_]] = Nil
+    private var factories: List[HandlerFactory[_ <: Handler]] = Nil
 
     private val server = HttpServer.create(new InetSocketAddress(port), 0);
 
@@ -46,8 +46,7 @@ class Server(val port: Int) {
                 var factories = Server.this.factories
                 while (!factories.isEmpty) {
                     factories.head.matchURI(path, query) match {
-                        case Some(_handler) => {
-                            val handler = _handler.asInstanceOf[Handler]
+                        case Some(handler) => {
                             handler.protocol = t.getProtocol()
                             handler.method = HTTPMethod.withName(t.getRequestMethod())
                             handler.requestURI = t.getRequestURI()
@@ -99,7 +98,7 @@ class Server(val port: Int) {
         println("Server started...: "+port)
     }
 
-    def register(handlerFactory: HandlerFactory[_]) {
+    def register(handlerFactory: HandlerFactory[_ <: Handler]) {
         factories = factories.:+(handlerFactory)
     }
 

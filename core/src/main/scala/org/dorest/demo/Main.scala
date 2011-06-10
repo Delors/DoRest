@@ -2,7 +2,7 @@ package org.dorest.demo
 
 import org.dorest.server._
 import org.dorest.server.rest._
-import org.dorest.server.auth._
+//import org.dorest.server.auth._
 //import org.json._
 
 // http://www.scala-lang.org/api/current/index.html#package
