@@ -36,9 +36,8 @@ class Server(val port: Int) {
                             handler.protocol = t.getProtocol()
                             handler.method = HTTPMethod.withName(t.getRequestMethod())
                             handler.requestURI = t.getRequestURI()
-                            handler.remoteAddress = t.getRemoteAddress()
-                            handler.localAddress = t.getLocalAddress()
-                            //                            handler.requestBody = t.getRequestBody()
+                            handler.remoteAddress = t.getRemoteAddress().toString // TODO check that the result is as expected...
+                            handler.localAddress = t.getLocalAddress().toString // TODO check that the result is as expected...
                             handler.requestHeaders = t.getRequestHeaders()
                             val response = handler.processRequest(t.getRequestBody())
                             try {
@@ -91,11 +90,4 @@ class Server(val port: Int) {
 
 }
 
-
-
-class WebApp {
-    
-    
-    
-}
 

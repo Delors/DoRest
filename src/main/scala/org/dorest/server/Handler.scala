@@ -20,9 +20,9 @@ trait Handler {
 
     var requestURI: URI = null
 
-    var remoteAddress: InetSocketAddress = null
+    var remoteAddress: String = null
 
-    var localAddress: InetSocketAddress = null
+    var localAddress: String = null
 
     // We don't care about the specific data type used to store the request headers.
     // However, we need a way to extract specific headers.

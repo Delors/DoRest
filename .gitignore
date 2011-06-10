@@ -1,3 +1,7 @@
 target
 .DS_Store
 Icon?
+.classpath
+.project
+.scala_dependencies
+.settings
