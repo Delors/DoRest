@@ -17,20 +17,23 @@ package org.dorest.server
 package auth
 
 /**
- * Trait that can be mixed in if the user name of an authenticated user is
- * required later on.
+ * If the name/id of an authenticated user is required later on you can mix in this trait.
+ *
+ * @author Michael Eichberg
  */
 trait AuthenticatedUser extends Authentication {
 
     /**
      * Stores the name of a successfully authenticated user.
      */
-    var authenticatedUser : String = null
+    private var _authenticatedUser : String = _
+
+    def authenticatedUser : String = _authenticatedUser
 
     abstract override def authenticate(user : String, pwd : String) : Boolean = {
         val authenticated = super.authenticate(user, pwd)
         if (authenticated) {
-            authenticatedUser = user
+            _authenticatedUser = user
         }
         authenticated
     }

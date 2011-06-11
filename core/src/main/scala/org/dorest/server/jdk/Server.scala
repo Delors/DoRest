@@ -14,14 +14,13 @@
    limitations under the License.
  */
 package org.dorest.server
+package jdk
 
 import com.sun.net.httpserver._
 import java.net._
 
 
-class Server(val port: Int) {
-
-    private var factories: List[HandlerFactory[_ <: Handler]] = Nil
+class Server(val port: Int) extends DoRestServer with DoRestApp {
 
     private val server = HttpServer.create(new InetSocketAddress(port), 0);
 
@@ -33,7 +32,7 @@ class Server(val port: Int) {
             val path = uri.getPath
             val query = uri.getQuery
 
-            println("Handling request at " + new java.util.Date + " :" + path)
+            println("Handling request " + t.getRemoteAddress() + " " + new java.util.Date + " :" + path)
 
             val it = t.getRequestHeaders().entrySet.iterator
             while (it.hasNext)
@@ -52,13 +51,26 @@ class Server(val port: Int) {
                             handler.requestHeaders = t.getRequestHeaders()
                             val response = handler.processRequest(t.getRequestBody())
                             try {
-                                val length = response.body.length
-                                response.headers.foreach((header) => {
-                                    val (key, value) = header; t.getResponseHeaders().set(key, value)
-                                })
-                                t.sendResponseHeaders(response.code, length);
-                                if (length > 0) {
-                                    response.body.write(t.getResponseBody())
+                                response.body match {
+                                    case Some(body) => {
+                                        setContentTypeResponseHeader(response.headers, body)
+                                        val length = body.length
+                                        response.headers.foreach((header) => {
+                                            val (key, value) = header;
+                                            t.getResponseHeaders().set(key, value)
+                                        })
+                                        t.sendResponseHeaders(response.code, length);
+                                        if (length > 0) {
+                                            body.write(t.getResponseBody())
+                                        }
+                                    }
+                                    case None => {
+                                        response.headers.foreach((header) => {
+                                            val (key, value) = header;
+                                            t.getResponseHeaders().set(key, value)
+                                        })
+                                        t.sendResponseHeaders(response.code, -1);
+                                    }
                                 }
                                 t.close();
                             } catch {
@@ -70,7 +82,7 @@ class Server(val port: Int) {
                                 return;
                             }
                         }
-                        case _ => ; // the current handler factory's path didn't match the path
+                        case _ =>; // the current handler factory's path didn't match the path
                     }
                     factories = factories.tail
                 }
@@ -78,13 +90,13 @@ class Server(val port: Int) {
                 // something went really wrong...
                 case ex => {
                     ex.printStackTrace();
-                    t.sendResponseHeaders(500, 0);
+                    t.sendResponseHeaders(500, -1);
                     t.close();
                 }
             }
 
             // does not match..
-            t.sendResponseHeaders(404, 0);
+            t.sendResponseHeaders(404, -1);
             t.close();
         }
 
@@ -95,10 +107,6 @@ class Server(val port: Int) {
         server.setExecutor(null); // creates a default executor
         server.start();
         println("Server started...: " + port)
-    }
-
-    def register(handlerFactory: HandlerFactory[_ <: Handler]) {
-        factories = factories.:+(handlerFactory)
     }
 
 }

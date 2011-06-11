@@ -15,6 +15,9 @@
  */
 package org.dorest.server
 
+/**
+ * List of all media types.
+ */
 object MediaType extends Enumeration {
     val any = Value("*/*")
     val XML = Value("application/xml")

@@ -30,16 +30,16 @@ package auth
  *
  * @author Michael Eichberg (mail at michael-eichberg.de)
  */
-class Unauthorized(text: String, www_authenticate: String) extends TextResponse(401, text) {
+class Unauthorized(text: String, www_authenticate: String) extends ErrorResponse(401, text) {
 
     headers.set("WWW-Authenticate", www_authenticate)
+
 }
 
 object Unauthorized {
 
-
-    def apply(text: String = "Authorization required.", www_authenticate: String) = {
+    def apply(text: String = "Authorization required.", www_authenticate: String) =
         new Unauthorized(text, www_authenticate)
-    }
+
 
 }

@@ -17,18 +17,17 @@ package org.dorest.server
 package rest
 
 import java.io._
+import io.Codec
 
 trait XMLSupport {
 
-    import Utils._
-
     def XML(makeXML: => scala.xml.Node) =
         RepresentationFactory(MediaType.XML) {
-            new Representation[MediaType.XML.type] {
+            Some(new Representation[MediaType.XML.type] {
 
-                val response = toUTF8(makeXML.buildString(false))
+                val response = Codec.toUTF8(makeXML.buildString(false))
 
-                def contentType = Some((MediaType.XML, Some(UTF8)))
+                def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
 
                 def length = response.length
 
@@ -36,6 +35,6 @@ trait XMLSupport {
                     out.write(response)
                 }
 
-            }
+            } )
         }
 }

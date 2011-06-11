@@ -16,8 +16,10 @@
 package org.dorest.server
 package rest
 
+import io.Codec
+
 /**
- * If you want to return HTML documents when processing a request mix in this trait into your resource.
+ * If you want to return HTML representations of your resources you can mix in this trait into your resource.
  *
  * IF you want to implement a Time resource that has an HTML representation your code could be:
  * {{{
@@ -34,10 +36,8 @@ package rest
  */
 trait HTMLSupport {
 
-    import Utils._
-
     def HTML(getHTML: => String) =
         RepresentationFactory(MediaType.HTML) {
-            new UTF8BasedRepresentation(MediaType.HTML, toUTF8(getHTML))
+            Some(new UTF8BasedRepresentation(MediaType.HTML, Codec.toUTF8(getHTML)))
         }
 }

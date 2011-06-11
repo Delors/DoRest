@@ -15,6 +15,10 @@
  */
 package org.dorest.server
 
+/**
+ *
+ * @author Michael Eichberg
+ */
 sealed trait HTTPMethod
 
 object HTTPMethod {

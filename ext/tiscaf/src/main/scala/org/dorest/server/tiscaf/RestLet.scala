@@ -31,8 +31,8 @@ import zgs.httpd._
  */
 trait RestLet extends RESTInterface with HLet {
 
-    private implicit def tiscaf2dorestMethod(tpe: HReqType.Value): HTTPMethod.Value =
-        HTTPMethod.withName(tpe.toString.split("/")(0))
+    private implicit def tiscaf2dorestMethod(tpe: HReqType.Value): HTTPMethod =
+        HTTPMethod(tpe.toString.split("/")(0))
 
     private class HeaderWrapper(talk: HTalk) {
         def getFirst(key: String) =
@@ -45,9 +45,9 @@ trait RestLet extends RESTInterface with HLet {
         this.method = talk.req.method
         this.remoteAddress = talk.req.remoteIp
         this.requestURI =
-            new URI("", "", talk.req.host.getOrElse(""),
-                talk.req.port.map(_.toInt).getOrElse(0),
-                talk.req.uriPath, talk.req.query, "")
+                new URI("", "", talk.req.host.getOrElse(""),
+                    talk.req.port.map(_.toInt).getOrElse(0),
+                    talk.req.uriPath, talk.req.query, "")
         this.requestHeaders = new HeaderWrapper(talk)
 
         val stream = talk.req.octets match {
@@ -55,35 +55,42 @@ trait RestLet extends RESTInterface with HLet {
             case _ => null
         }
         val response = this.processRequest(stream)
-        
-        talk.
-          setStatus(HStatus.fromInt(response.code)).
-          setContentLength(response.body.length)
-          
+
+
+        talk.setStatus(HStatus.fromInt(response.code)).
+                setContentLength(response.body match {
+            case Some(body) =>
+                body.length
+            case None =>
+                0
+        })
+
+
+
         response.headers.foreach {
-            case (key, value) => talk.setHeader(key, value)
+        case (key, value) => talk.setHeader (key, value)
         }
-//        talk.write(reponse.responseBody)
-        
+            //        talk.write(reponse.responseBody)
+
         talk.close
-        
-//        try {
-//            val length = response.body.length
-//            response.headers.foreach((header) => { val (key, value) = header; t.getResponseHeaders().set(key, value) })
-//            t.sendResponseHeaders(response.code, length);
-//            if (length > 0) {
-//                response.body.write(t.getResponseBody())
-//            }
-//            t.close();
-//        } catch {
-//            case ex => {
-//                ex.printStackTrace()
-//            }
-//        } finally {
-//            // we were able to handle the request..
-//            return ;
-//        }
+
+            //        try {
+            //            val length = response.body.length
+            //            response.headers.foreach((header) => { val (key, value) = header; t.getResponseHeaders().set(key, value) })
+            //            t.sendResponseHeaders(response.code, length);
+            //            if (length > 0) {
+            //                response.body.write(t.getResponseBody())
+            //            }
+            //            t.close();
+            //        } catch {
+            //            case ex => {
+            //                ex.printStackTrace()
+            //            }
+            //        } finally {
+            //            // we were able to handle the request..
+            //            return ;
+            //        }
+
+        }
 
     }
-
-}

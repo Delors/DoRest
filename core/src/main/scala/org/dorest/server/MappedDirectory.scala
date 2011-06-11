@@ -15,6 +15,9 @@
  */
 package org.dorest.server
 
+import io.Source
+
+
 /**
  * Makes the content of a directory accessible.
  */
@@ -29,7 +32,7 @@ class MappedDirectory(val baseDirectory: String) extends Handler {
             return new SupportedMethodsResponse(GET)
         }
 
-        val file = new File(baseDirectory+"/"+path)
+        val file = new File(baseDirectory + "/" + path)
         if (!file.exists) {
             return NotFoundResponse
         }
@@ -38,31 +41,43 @@ class MappedDirectory(val baseDirectory: String) extends Handler {
             return new Forbidden("Browsing directories is forbidden.")
         }
 
-        new OkResponse {
-            // we ignore the accept header for now
-            // TODO encoding... etc.
-            val headers = new DefaultResponseHeaders
-            val body = new ResponseBody {
-
-                lazy val contentType = {
-                    val fileName = file.getName()
-                    Some((fileName.substring(fileName.lastIndexOf('.')) match {
-                        case "css"  => MediaType.CSS
-                        case "js"   => MediaType.JAVASCRIPT
+        val fileType = {
+            val fileName = file.getName()
+            val fileSuffix = fileName.substring(fileName.lastIndexOf('.')+1)
+            Some((
+                    fileSuffix match {
+                        case "css" => MediaType.CSS
+                        case "javascript" => MediaType.JAVASCRIPT
+                        case "js" => MediaType.JAVASCRIPT
+                        case "htm" => MediaType.HTML
                         case "html" => MediaType.HTML
-                        case "xml"  => MediaType.XML
-                        case "txt"  => MediaType.TEXT
-                        case _      => throw new Error("Media type detection based on file suffix failed: "+fileName)
+                        case "xml" => MediaType.XML
+                        case "txt" => MediaType.TEXT
+                        case "jpg" => MediaType.JPEG
+                        case "pdf" => MediaType.PDF
+                        case "png" => MediaType.PNG
+                        case _ => throw new Error("Media type detection based on file suffix ("+fileSuffix+") failed: " + fileName)
                     },
-                        // We are not able to determine the used charset..
-                        None))
-                }
+                    // We are not able to reliably determine the used charset..
+                    None
+                    ))
+        }
+
+        // TODO Check that the accept header supports the file's media type.
+
+        new OkResponse {
+
+            val headers = new DefaultResponseHeaders
+
+            val body = Some(new ResponseBody {
+
+                def contentType = fileType
 
                 def length = file.length.asInstanceOf[Int]
 
                 def write(responseBody: OutputStream) {
-
-                    // TODO use apache.commons.io...
+                    // TODO Read blocks and not just single bytes.
+                    // TODO Think about caching files.
                     val in = new FileInputStream(file)
                     try {
                         while (in.available > 0)
@@ -72,7 +87,7 @@ class MappedDirectory(val baseDirectory: String) extends Handler {
                             in.close
                     }
                 }
-            }
+            })
         }
     }
 }

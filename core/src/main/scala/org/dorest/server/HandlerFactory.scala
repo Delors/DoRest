@@ -20,13 +20,15 @@ package org.dorest.server
  */
 abstract class HandlerFactory[T <: Handler] {
 
-    implicit def namedToPathSegment(name : String) : Named = new Named(name)
+    implicit def namedToPathSegment(name: String): Named = new Named(name)
 
     /**
      * A function that does nothing.
      */
     // Used to avoid that we have to deal with Option objects or have to deal with null values.
-    def DoNothing(t : T) : Unit = { /*do nothing*/ }
+    def DoNothing(t: T): Unit = {
+        /*do nothing*/
+    }
 
     // TODO merge path and pathelement; i.e., make pathelement itself a list
     /**
@@ -38,22 +40,22 @@ abstract class HandlerFactory[T <: Handler] {
         /**
          * Prepends the given path element to this path and returns a new path object.
          */
-        def ::(p : PathElement) : PathMatcher
+        def ::(p: PathElement): PathMatcher
 
         /**
          * Tries to match the path. If the path matches, a list of functions is returned
          * will be called to complete, e.g., the initialization of the resource's parameters.
          */
-        def matchSegment(path : String) : Option[List[(T) => Unit]]
+        def matchSegment(path: String): Option[List[(T) => Unit]]
     }
 
-    class ComplexPath(val pe : PathElement, val tail : PathMatcher) extends PathMatcher {
+    class ComplexPath(val pe: PathElement, val tail: PathMatcher) extends PathMatcher {
 
-        def ::(pe : PathElement) : PathMatcher = {
+        def ::(pe: PathElement): PathMatcher = {
             new ComplexPath(pe, this)
         }
 
-        def matchSegment(path : String) : Option[List[(T) => Unit]] = {
+        def matchSegment(path: String): Option[List[(T) => Unit]] = {
             pe.matchSegment(path) match {
                 case Some((pathRest, f)) => {
                     // this segment matched, but what about the rest of the path?
@@ -69,9 +71,9 @@ abstract class HandlerFactory[T <: Handler] {
 
     object EmptyPath extends PathMatcher {
 
-        def ::(p : PathElement) : PathMatcher = new ComplexPath(p, this)
+        def ::(p: PathElement): PathMatcher = new ComplexPath(p, this)
 
-        def matchSegment(path : String) : Option[List[(T) => Unit]] =
+        def matchSegment(path: String): Option[List[(T) => Unit]] =
             if (path.size == 0) Some(Nil) else None
     }
 
@@ -80,7 +82,7 @@ abstract class HandlerFactory[T <: Handler] {
         /**
          * Constructs a new path that consists of the given path element and this element.
          */
-        def ::(ps : PathElement) : PathMatcher = {
+        def ::(ps: PathElement): PathMatcher = {
             new ComplexPath(ps, new ComplexPath(this, EmptyPath))
         }
 
@@ -91,7 +93,7 @@ abstract class HandlerFactory[T <: Handler] {
          * The primary purpose of the function is to enable the initialization of a resource's variable
          * path parameters.
          */
-        def matchSegment(path : String) : Option[(String, (T) => Unit)]
+        def matchSegment(path: String): Option[(String, (T) => Unit)]
 
     }
 
@@ -105,22 +107,25 @@ abstract class HandlerFactory[T <: Handler] {
      * <code>"/user"::{"/"userid}::"/tag"</code> is not possible.
      * </p>
      */
-    class Optional(val p : PathMatcher, val failOnMatchError : Boolean) extends PathElement {
+    class Optional(val p: PathMatcher, val failOnMatchError: Boolean) extends PathElement {
 
-        def matchSegment(path : String) : Option[(String, (T) => Unit)] = {
+        def matchSegment(path: String): Option[(String, (T) => Unit)] = {
             if (path.size == 0) {
                 return Some(("", DoNothing))
             }
 
             p.matchSegment(path) match {
-                case Some(fs) => Some(("", (t : T) => { fs.foreach(_(t)) }))
+                case Some(fs) => Some(("", (t: T) => {
+                    fs.foreach(_(t))
+                }))
                 case _ => if (failOnMatchError) None else Some(("", DoNothing))
             }
         }
 
     }
+
     object Optional {
-        def apply(pe : PathElement, failOnMatchError : Boolean = true) = {
+        def apply(pe: PathElement, failOnMatchError: Boolean = true) = {
             new Optional(new ComplexPath(pe, EmptyPath), failOnMatchError)
         }
     }
@@ -128,9 +133,9 @@ abstract class HandlerFactory[T <: Handler] {
     /**
      * Matches a segment that defines a long value.
      */
-    class LongValue(val set : (Long) => (T) => Unit) extends PathElement {
+    class LongValue(val set: (Long) => (T) => Unit) extends PathElement {
 
-        def matchSegment(path : String) : Option[(String, (T) => Unit)] = {
+        def matchSegment(path: String): Option[(String, (T) => Unit)] = {
             LongValue.matcher.findFirstIn(path) match {
                 case Some(s) => {
                     Some((path.substring(s.length), set(s.toLong)))
@@ -139,20 +144,21 @@ abstract class HandlerFactory[T <: Handler] {
             }
         }
     }
+
     object LongValue {
 
         private val matcher = """^-?\d+""".r
 
-        def apply(set : (Long) => (T) => Unit) = new LongValue(set)
+        def apply(set: (Long) => (T) => Unit) = new LongValue(set)
 
     }
 
     /**
      * Matches a string segment that contains a word character or "@".
      */
-    class StringValue(set : (String) => (T) => Unit) extends PathElement {
+    class StringValue(set: (String) => (T) => Unit) extends PathElement {
 
-        def matchSegment(path : String) : Option[(String, (T) => Unit)] = {
+        def matchSegment(path: String): Option[(String, (T) => Unit)] = {
             StringValue.matcher.findFirstIn(path) match {
                 case Some(s) => {
                     Some((path.substring(s.length), set(s)))
@@ -161,26 +167,28 @@ abstract class HandlerFactory[T <: Handler] {
             }
         }
     }
+
     object StringValue {
 
         private val matcher = """^(\w|@|-|\.)+""".r
 
-        def apply(set : (String) => (T) => Unit) = new StringValue(set)
+        def apply(set: (String) => (T) => Unit) = new StringValue(set)
 
     }
 
-    class AnyPath(set : (String) => (T) => Unit) extends PathElement {
-        def matchSegment(path : String) : Option[(String, (T) => Unit)] = {
+    class AnyPath(set: (String) => (T) => Unit) extends PathElement {
+        def matchSegment(path: String): Option[(String, (T) => Unit)] = {
             Some("", set(path))
         }
     }
+
     object AnyPath {
-        def apply(set : (String) => (T) => Unit) = new AnyPath(set)
+        def apply(set: (String) => (T) => Unit) = new AnyPath(set)
     }
 
-    class Named(val name : String) extends PathElement {
+    class Named(val name: String) extends PathElement {
 
-        def matchSegment(path : String) : Option[(String, (T) => Unit)] = {
+        def matchSegment(path: String): Option[(String, (T) => Unit)] = {
             if (path.startsWith(name)) {
                 val pathRest = path.substring(name.length)
                 Some((pathRest, DoNothing))
@@ -190,7 +198,7 @@ abstract class HandlerFactory[T <: Handler] {
         }
     }
 
-    def matchURI(path : String, query : String) : Option[T] = {
+    def matchURI(path: String, query: String): Option[T] = {
         this.pathMatcher.matchSegment(path) match {
             case Some(fs) => {
                 Some(create(fs))
@@ -199,7 +207,7 @@ abstract class HandlerFactory[T <: Handler] {
         }
     }
 
-    private def create(fs : List[(T) => Unit]) : T = {
+    private def create(fs: List[(T) => Unit]): T = {
         val t = create()
         fs.foreach(_(t))
         t
@@ -209,17 +217,27 @@ abstract class HandlerFactory[T <: Handler] {
 
     object NoQuery extends QueryMatcher
 
-    private var pathMatcher : PathMatcher = EmptyPath
+    private var pathMatcher: PathMatcher = EmptyPath
 
-    def path(f : => PathMatcher) {
+    def path(f: => PathMatcher) {
         pathMatcher = f
     }
 
-    private var queryMatcher : QueryMatcher = NoQuery
+    def path(staticPath: String) {
+        path {
+            staticPath :: EmptyPath
+        }
+    }
 
-    def query(f : => QueryMatcher) {
+
+    private var queryMatcher: QueryMatcher = NoQuery
+
+    def query(f: => QueryMatcher) {
         queryMatcher = f
     }
 
-    def create() : T
+    /**
+     * Creates a new handler object that will be further initialized based on the path matchers.
+     */
+    def create(): T
 }

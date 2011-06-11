@@ -27,11 +27,10 @@ import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
 
-import javax.servlet.http._
 import org.dorest.server.rest._
 import org.dorest.server._
 import auth.{SimpleAuthenticator, BasicAuthentication}
-//import org.json.JSONObject
+
 
 /**
  * After the start go to: "http://localhost:8080/date"
@@ -105,62 +104,6 @@ object JettyServer extends App {
 
 }
 
-class DoRestServlet extends javax.servlet.http.HttpServlet {
-
-    override def service(req: HttpServletRequest, res: HttpServletResponse) {
-
-        val path = req.getRequestURI
-        val query = req.getQueryString
-
-        println("Handling request at " + new java.util.Date + " :" + path)
-
-        var factories = MyApp.factories
-        while (!factories.isEmpty) {
-            factories.head.matchURI(path, query) match {
-                case Some(_handler) => {
-                    val handler = _handler.asInstanceOf[Handler]
-                    handler.protocol = req.getProtocol()
-                    handler.method = HTTPMethod.withName(req.getMethod())
-                    handler.requestURI = new java.net.URI(req.getRequestURI())
-                    handler.remoteAddress = req.getRemoteAddr()
-                    handler.localAddress = req.getLocalAddr()
-                    handler.requestHeaders = new Object {
-                        def getFirst(key: String): String = {
-                            req.getHeader(key)
-                        }
-                    }
-
-                    req.getInputStream
-                    val response = handler.processRequest(req.getInputStream())
-                    try {
-                        val length = response.body.length
-                        response.headers.foreach((header) => {
-                            val (key, value) = header;
-                            res.setHeader(key, value)
-                        }
-                        )
-                        res.setStatus(response.code);
-                        if (length > 0) {
-                            response.body.write(res.getOutputStream())
-                        }
-
-                    } catch {
-                        case ex => {
-                            ex.printStackTrace()
-                        }
-                    } finally {
-                        // we were able to handle the request..
-                        return;
-                    }
-                }
-                case _ =>;
-            }
-            factories = factories.tail
-        }
-        res.sendError(404)
-    }
-
-}
 
 object MyApp {
 
@@ -171,27 +114,22 @@ object MyApp {
     }
 
     register(new HandlerFactory[Time] {
-        path {"/time" :: EmptyPath}
+        path {
+            "/time"
+        }
 
-        def create = new Time() with MonitoringHandler
+        def create = new Time() with PerformanceMonitor
     })
-/*
-    register(new HandlerFactory[Echo] {
-        path {"/echo" :: EmptyPath}
 
-        def create = new Echo()
-    })
-*/
 
 }
 
 class Time
         extends RESTInterface
-                with MonitoringHandler
-                //with JSONSupport
-                with TEXTSupport
-                with HTMLSupport
-                with XMLSupport {
+        with PerformanceMonitor
+        with TEXTSupport
+        with HTMLSupport
+        with XMLSupport {
 
     val dateString = new java.util.Date().toString
 
@@ -210,26 +148,3 @@ class Time
     }
 }
 
-/*
-class Echo extends RESTInterface with JSONSupport with BasicAuthentication
-                   with SimpleAuthenticator {
-
-    def authenticationRealm = "Demo App"
-
-    val authorizationUser = "user"
-    val authorizationPwd = "safe"
-
-
-    get requests JSON {
-        val jo = new JSONObject()
-        jo.put("message", "You have to post something to get something :-)")
-        jo
-    }
-
-    post receives JSON returns JSON {
-        // just mirror the request
-        JSONRequestBody
-    }
-
-}
-*/

@@ -13,15 +13,45 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
 package org.dorest.server
 package rest
 
-import io.Codec
+import java.io._
+import scala.io.Codec
 
-trait TEXTSupport {
 
-    def TEXT(getText: => String) =
-        RepresentationFactory(MediaType.TEXT) {
-            Some(new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(getText)))
-        }
+/**
+ *
+ *
+ * @author Michael Eichberg
+ */
+class UTF8BasedRepresentation[M <: MediaType.Value](val mediaType: M, val utf8String: Array[Byte]) extends Representation[M] {
+
+    def contentType = Some((mediaType, Some(Codec.UTF8)))
+
+    def length = utf8String.length
+
+    def write(responseBodyOutputStream: OutputStream) {
+        responseBodyOutputStream.write(utf8String)
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

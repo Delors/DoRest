@@ -14,20 +14,28 @@
    limitations under the License.
  */
 package org.dorest.server
-package auth
-
 
 /**
- * Authenticates the given user credentials against the specified user.
+ * Base trait of all DoRest applications. It enables the registration of [[org.dorest.server.HandlerFactory]] objects
+ * and provides the functionality to select matching handlers.
  *
  * @author Michael Eichberg
  */
-trait SimpleAuthenticator extends Authentication {
-    
-    val authorizationUser: String
-    val authorizationPwd: String
+trait DoRestApp {
 
-    def authenticate(user: String, pwd: String): Boolean = {
-        (user == authorizationUser) && (pwd == authorizationPwd)
+    // TODO Should we use another data structure that enables efficient appending of handler factories, if we have more than one? How many handlers do we usually have?
+    private var _factories: List[HandlerFactory[_ <: Handler]] = Nil
+
+    def factories = _factories
+
+    def register(handlerFactory: HandlerFactory[_ <: Handler]) {
+        // we need to append...
+        _factories = _factories.:+(handlerFactory)
     }
+
+
 }
+
+
+
+

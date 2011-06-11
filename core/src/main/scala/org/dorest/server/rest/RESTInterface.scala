@@ -19,6 +19,12 @@ package rest
 import java.io._
 import java.nio.charset._
 
+
+/**
+ * Main trait of all Resources.
+ *
+ * @author Michael Eichberg
+ */
 trait RESTInterface extends Handler {
 
     private val getHandlers = scala.collection.mutable.ListBuffer[ResponseBodyInitializer[_]]()
@@ -27,26 +33,39 @@ trait RESTInterface extends Handler {
     private val putHandlers = scala.collection.mutable.ListBuffer[(MediaType.Value, () => Unit)]()
     private val deleteHandlers = scala.collection.mutable.ListBuffer[(MediaType.Value, () => Unit)]() // a delete response can have a body
 
-    protected val responseHeaders = new DefaultResponseHeaders() // TODO make uninitialized...
+    /**
+     * The response code (sometimes also called status code) send to the client.
+     */
+    protected var responseCode = 200 // OK
 
-    protected var responseCode = 200 // OK // TODO make uninitialized... (it is set by the subsequent code in most cases anyway..)
+    /**
+     * This response's http headers.
+     *
+     * The Content-type and Content-length headers are automatically set based on the response body.
+     */
+    protected val responseHeaders = new DefaultResponseHeaders()
 
-    protected var responseBody: ResponseBody = EmptyResponseBody // TODO make uninitialized...
+    /**
+     * The content send to the client (if any).
+     */
+    protected var responseBody: Option[ResponseBody] = None
 
+    /**
+     * Analyzes the HTTP Request and dispatches to the correct (get,put,post,...) handler object.
+     */
     def processRequest(requestBody: InputStream): Response = {
         method match {
             case GET if !getHandlers.isEmpty => {
                 val mediaType = requestHeaders.getFirst("accept")
                 if ((mediaType eq null) || (mediaType == "*/*")) {
                     getHandlers.head.initResponseBody()
-                    return new DefaultResponse(responseCode, responseHeaders, responseBody)
+                    return Response(responseCode, responseHeaders, responseBody)
                 }
                 // TODO improve the search for a matching handler
                 getHandlers.find(_.mediaType.toString == mediaType) match {
                     case Some(rbi) => {
                         rbi.initResponseBody()
-                        setContentTypeResponseHeader(responseBody)
-                        return new DefaultResponse(responseCode, responseHeaders, responseBody)
+                        return Response(responseCode, responseHeaders, responseBody)
                     }
                     case _ =>
                         return UnsupportedMediaTypeResponse
@@ -57,7 +76,7 @@ trait RESTInterface extends Handler {
                 val postHandler = postHandlers.head
                 postHandler.requestBodyHandler._2(None, requestBody)
                 postHandler.responseBodyInitializer.initResponseBody()
-                return new DefaultResponse(responseCode, responseHeaders, responseBody)
+                return Response(responseCode, responseHeaders, responseBody)
             }
             case _ => {
                 var supportedMethods: List[HTTPMethod] = Nil
@@ -78,27 +97,14 @@ trait RESTInterface extends Handler {
         }
     }
 
-    private def setContentTypeResponseHeader(responseBody: ResponseBody) {
-        responseBody.contentType match {
-            case Some((mediaType, None)) => {
-                val contentType = mediaType.toString
-                responseHeaders.set("Content-Type", contentType)
-            }
-            case Some((mediaType, Some(charset))) => {
-                val contentType = mediaType.toString + "; charset=" + charset.displayName
-                responseHeaders.set("Content-Type", contentType)
-            }
-            case _ => /*OK*/
-        }
-    }
 
     /**
-     * This object enables us to write code in a more declarative meaning:<br>
-     * <code>
+     *
+     * '''Design''':
+     * This object enables client to write the code in a more declarative meaning, e.g.:
+     * {{{
      * get accepts …
-     * </code>
-     * accepts is a method that has the same signature as the {@link #get} method and
-     * just forwards the call.
+     * }}}
      */
     final object get {
         def requests(t: RepresentationFactory[MediaType.Value]) {
@@ -141,26 +147,15 @@ object ResponseBodyInitializer {
 trait Representation[+M <: MediaType.Value] extends ResponseBody
 
 class RepresentationFactory[M <: MediaType.Value](val mediaType: M,
-                                                  val createRepresentation: () => Representation[M])
+                                                  val createRepresentation: () => Option[Representation[M]])
 
 object RepresentationFactory {
 
-    def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: => Representation[M]) =
+    def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: => Option[Representation[M]]) =
         new RepresentationFactory(mediaType, () => createRepresentation)
 }
 
-class UTF8BasedRepresentation[M <: MediaType.Value](val mediaType: M, val utf8String: Array[Byte]) extends Representation[M] {
 
-    import Utils._
-
-    def contentType = Some((mediaType, Some(UTF8)))
-
-    def length = utf8String.length
-
-    def write(responseBodyOutputStream: OutputStream) {
-        responseBodyOutputStream.write(utf8String)
-    }
-}
 
 
 

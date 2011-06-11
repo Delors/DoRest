@@ -38,7 +38,9 @@
 		<module>core</module>
 		<module>ext</module> 
 	</modules>
-    
+
+    <!-- TODO enable building the overall scaladoc -->
+
     <dependencies>
 		<dependency>
 			<groupId>org.scala-lang</groupId>

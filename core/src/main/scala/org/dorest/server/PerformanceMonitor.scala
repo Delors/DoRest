@@ -17,7 +17,7 @@ package org.dorest.server
 
 import java.io._
 
-trait MonitoringHandler extends Handler {
+trait PerformanceMonitor extends Handler {
 
     override abstract def processRequest(requestBody: InputStream): Response = {
         val startTime = System.nanoTime

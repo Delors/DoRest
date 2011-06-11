@@ -22,8 +22,8 @@ abstract class RestApp extends HApp {
 
     private var factories: List[HandlerFactory[_ <: RestLet]] = Nil
 
-    private implicit def tiscaf2dorestMethod(tpe: HReqType.Value): HTTPMethod.Value =
-        HTTPMethod.withName(tpe.toString.split("/")(0))
+    private implicit def tiscaf2dorestMethod(tpe: HReqType.Value): HTTPMethod =
+        HTTPMethod(tpe.toString.split("/")(0))
 
     private class HeaderWrapper(req: HReqHeaderData) {
         def getFirst(key: String) =

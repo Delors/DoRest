@@ -15,6 +15,11 @@
  */
 package org.dorest.server.auth
 
+/**
+ * Enables the authentication of a specific user.
+ *
+ * @author Michael Eichberg
+ */
 trait Authentication {
 
     /**

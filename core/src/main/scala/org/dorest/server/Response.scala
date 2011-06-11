@@ -18,22 +18,64 @@ package org.dorest.server
 import java.nio.charset.Charset
 import java.io._
 
+/**
+ * A response object encapsulates a specific representation that will be send back to the client.
+ */
 trait Response extends {
 
+    /**
+     * The status code of the response.
+     *
+     * Go to: <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10">HTTP Status Codes</a> for further
+     * details.
+     */
     def code: Int
+
+    /**
+     * A response's headers. The response headers for the Content-type and Content-length are automatically set based
+     * on the response body.
+     *
+     * '''Remark''': ResponseHeaders must not be null and mutable.
+     */
     def headers: ResponseHeaders
-    def body: ResponseBody
+
+    /**
+     * The body that is send back to the client.
+     */
+    def body: Option[ResponseBody]
 }
 
+
+object Response {
+
+    def apply(responseCode: Int, responseHeaders: ResponseHeaders, responseBody: Option[ResponseBody]) =
+        new Response {
+            val code: Int = responseCode
+            val headers: ResponseHeaders = responseHeaders
+            val body: Option[ResponseBody] = responseBody
+        }
+
+}
+
+
+/**
+ * A response's headers.
+ */
 trait ResponseHeaders {
+
+    /**
+     * Sets the value of the specified response header.
+     *
+     * Cf. <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14">HTTP Header Fields</a>.
+     */
     def set(key: String, value: String): Unit
+
+    /**
+     * Enables you to iterate over all response headers.
+     */
     def foreach(f: ((String, String)) => Unit): Unit
 }
 
-object EmptyResponseHeaders extends ResponseHeaders {
-    def set(key: String, value: String): Unit = throw new Error()
-    def foreach(f: ((String, String)) => Unit): Unit = {}
-}
 
 /**
  * Map based implementation of the ResponseHeaders trait.
@@ -42,11 +84,11 @@ class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
         extends ResponseHeaders {
 
     def this(header: Tuple2[String, String]) {
-        this(Map() + header)
+        this (Map() + header)
     }
 
     def this(headers: List[Tuple2[String, String]]) {
-        this(Map() ++ headers)
+        this (Map() ++ headers)
     }
 
     def set(key: String, value: String): Unit = {
@@ -59,10 +101,19 @@ class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
 
 }
 
+/**
+ * Encapsulates a response's body.
+ */
 trait ResponseBody {
 
+    /**
+     * The body's content type (and charset).
+     */
     def contentType: Option[(MediaType.Value, Option[Charset])]
 
+    /**
+     * The number of bytes that will be send back.
+     */
     def length: Int
 
     /**
@@ -72,65 +123,91 @@ trait ResponseBody {
     def write(responseBody: OutputStream): Unit
 }
 
-object EmptyResponseBody extends ResponseBody {
-    def contentType = None
-    def length = 0
-    def write(responseBody: OutputStream): Unit = { /*NOTHING TO DO*/ }
+
+trait OkResponse extends Response {
+
+    final def code = 200 //OK
 }
 
-class DefaultResponse(
-    val code: Int,
-    val headers: ResponseHeaders,
-    val body: ResponseBody) extends Response
+object OkResponse {
 
-class SupportedMethodsResponse(allowedMethods: List[HTTPMethod])
-        extends DefaultResponse(
-            405,
-            new DefaultResponseHeaders(("Allow", allowedMethods.mkString(", "))),
-            EmptyResponseBody
-        ) {
+    def apply(responseHeaders: ResponseHeaders, responseBody: Option[ResponseBody]) =
+        new OkResponse {
+
+            def headers: ResponseHeaders = responseHeaders
+
+            def body: Option[ResponseBody] = responseBody
+
+        }
+
+}
+
+
+class SupportedMethodsResponse(val allowedMethods: List[HTTPMethod]) extends Response {
 
     def this(allowedMethod: HTTPMethod) {
-        this(allowedMethod :: Nil)
+        this (allowedMethod :: Nil)
     }
+
+    final def code = 405
+
+    val headers = new DefaultResponseHeaders(("Allow", allowedMethods.mkString(", ")))
+
+    def body = None
+
 }
 
-abstract class OkResponse extends Response {
+object SupportedMethodsResponse {
 
-    def code = 200 //OK
+    def apply(allowedMethods: List[HTTPMethod]) = new SupportedMethodsResponse(allowedMethods)
+
 }
 
-class TextResponse(val code: Int, val text: String) extends Response {
 
-    import Utils._
+/**
+ * Use an error response only to signal severe errors. The text will be send using the charset US-ASCII.
+ *
+ * @author Michael Eichberg
+ */
+class ErrorResponse(val code: Int, val text: String) extends Response {
 
     val headers = new DefaultResponseHeaders()
 
-    lazy val body = new ResponseBody {
-        private val response: Array[Byte] = toUTF8(text)
+    val body = Some(new ResponseBody {
 
-        def contentType = Some((MediaType.TEXT, Some(UTF8)))
+        private val response: Array[Byte] = Charset.forName("US-ASCII").encode(text).array()
+
+        def contentType = Some((MediaType.TEXT, Some(Charset.forName("US-ASCII"))))
 
         def length: Int = response.length
 
         def write(responseBody: OutputStream) {
             responseBody.write(response)
         }
-    }
+    })
 }
 
-abstract class EmptyResponse(code: Int)
-    extends DefaultResponse(
-        code,
-        EmptyResponseHeaders,
-        EmptyResponseBody)
+object ErrorResponse {
+    def apply(code: Int, text: String) = new ErrorResponse(code, text)
+}
 
-object BadRequest extends EmptyResponse(400)
+class Forbidden(text: String) extends ErrorResponse(403, text)
 
-class Forbidden(text: String) extends TextResponse(403, text)
+object Forbidden {
 
-object NotFoundResponse
-    extends EmptyResponse(404)
+    def apply(text: String) = new Forbidden(text)
+}
 
-object UnsupportedMediaTypeResponse
-    extends EmptyResponse(415)
+
+abstract class PlainResponse(val code: Int) extends Response {
+
+    def headers = new DefaultResponseHeaders()
+
+    def body = None
+}
+
+object BadRequest extends PlainResponse(400)
+
+object NotFoundResponse extends PlainResponse(404)
+
+object UnsupportedMediaTypeResponse extends PlainResponse(415)
