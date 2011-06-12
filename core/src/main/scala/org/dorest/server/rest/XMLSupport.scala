@@ -18,23 +18,52 @@ package rest
 
 import java.io._
 import io.Codec
+import scala.xml._
+import java.nio.charset.Charset
 
 trait XMLSupport {
 
-    def XML(makeXML: => scala.xml.Node) =
+    protected implicit def xmlNodeToSomeXmlNode(node: Node) = Some(node)
+
+    def XML(makeXML: => Option[Node]) =
         RepresentationFactory(MediaType.XML) {
-            Some(new Representation[MediaType.XML.type] {
+            makeXML match {
+                case Some(xml) => {
+                    Some(new Representation[MediaType.XML.type] {
 
-                val response = Codec.toUTF8(makeXML.buildString(false))
+                        val response = Codec.toUTF8(xml.get.buildString(false))
 
-                def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
+                        def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
 
-                def length = response.length
+                        def length = response.length
 
-                def write(out: OutputStream) {
-                    out.write(response)
+                        def write(out: OutputStream) {
+                            out.write(response)
+                        }
+
+                    })
                 }
-
-            } )
+                case None => None
+            }
         }
+
+    private[this] var body: Elem = _
+
+    def XML: RequestBodyHandler = new RequestBodyHandler(
+        MediaType.XML,
+        (charset: Option[Charset], in: InputStream) => {
+            charset match {
+                case Some(definedCharset) =>
+                    body = scala.xml.XML.loadString(scala.io.Source.fromInputStream(in)(scala.io.Codec(definedCharset)).mkString)
+                case _ =>
+                    body = scala.xml.XML.load(Source.fromInputStream(in))
+            }
+        }
+    )
+
+    def XMLRequestBody: Elem =
+        if (body == null)
+            throw new Error("The request body's media type is not application/xml.")
+        else
+            body
 }

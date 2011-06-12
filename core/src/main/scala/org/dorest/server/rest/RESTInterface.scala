@@ -27,11 +27,10 @@ import java.nio.charset._
  */
 trait RESTInterface extends Handler {
 
-    private val getHandlers = scala.collection.mutable.ListBuffer[ResponseBodyInitializer[_]]()
+    private val getHandlers = scala.collection.mutable.ListBuffer[RepresentationFactory[_]]()
     private val postHandlers = scala.collection.mutable.ListBuffer[PostHandler]()
-
-    private val putHandlers = scala.collection.mutable.ListBuffer[(MediaType.Value, () => Unit)]()
-    private val deleteHandlers = scala.collection.mutable.ListBuffer[(MediaType.Value, () => Unit)]() // a delete response can have a body
+    private val putHandlers = scala.collection.mutable.ListBuffer[PutHandler]()
+    private var deleteHandler: Option[() => Boolean] = None
 
     /**
      * The response code (sometimes also called status code) send to the client.
@@ -58,13 +57,13 @@ trait RESTInterface extends Handler {
             case GET if !getHandlers.isEmpty => {
                 val mediaType = requestHeaders.getFirst("accept")
                 if ((mediaType eq null) || (mediaType == "*/*")) {
-                    getHandlers.head.initResponseBody()
+                    responseBody = getHandlers.head.createRepresentation()
                     return Response(responseCode, responseHeaders, responseBody)
                 }
                 // TODO improve the search for a matching handler
                 getHandlers.find(_.mediaType.toString == mediaType) match {
                     case Some(rbi) => {
-                        rbi.initResponseBody()
+                        responseBody = rbi.createRepresentation()
                         return Response(responseCode, responseHeaders, responseBody)
                     }
                     case _ =>
@@ -74,9 +73,16 @@ trait RESTInterface extends Handler {
             case POST if !postHandlers.isEmpty => {
                 // TODO nearly everything... matching...
                 val postHandler = postHandlers.head
-                postHandler.requestBodyHandler._2(None, requestBody)
-                postHandler.responseBodyInitializer.initResponseBody()
+                postHandler.requestBodyHandler.handle(None, requestBody)
+                responseBody = postHandler.representationFactory.createRepresentation()
                 return Response(responseCode, responseHeaders, responseBody)
+            }
+            case DELETE if deleteHandler.isDefined => {
+                if(!(deleteHandler.get)()){
+                    return NotFoundResponse
+                }
+
+                return NoContent
             }
             case _ => {
                 var supportedMethods: List[HTTPMethod] = Nil
@@ -89,7 +95,7 @@ trait RESTInterface extends Handler {
                 if (!postHandlers.isEmpty)
                     supportedMethods = POST :: supportedMethods;
 
-                if (!deleteHandlers.isEmpty)
+                if (!deleteHandler.isEmpty)
                     supportedMethods = DELETE :: supportedMethods;
 
                 new SupportedMethodsResponse(supportedMethods)
@@ -108,43 +114,67 @@ trait RESTInterface extends Handler {
      */
     final object get {
         def requests(t: RepresentationFactory[MediaType.Value]) {
-            getHandlers += ResponseBodyInitializer(t.mediaType) {
-                RESTInterface.this.responseBody = t.createRepresentation()
-            }
+            getHandlers += t
         }
     }
 
-    class PostHandler(val requestBodyHandler: (MediaType.Value, (Option[Charset], InputStream) => Unit)) {
+    abstract class RequestResponseHandlers(val requestBodyHandler: RequestBodyHandler) {
 
-        var responseBodyInitializer: ResponseBodyInitializer[MediaType.Value] = _
+        var representationFactory: RepresentationFactory[MediaType.Value] = _
 
-        def returns[M <: MediaType.Value](t: RepresentationFactory[M]) {
-            responseBodyInitializer = ResponseBodyInitializer(t.mediaType) {
-                RESTInterface.this.responseBody = t.createRepresentation()
-            }
+        def returns(t: RepresentationFactory[MediaType.Value]) {
+            representationFactory = t
+            registerThisHandler
+        }
+
+        def registerThisHandler: Unit
+    }
+
+
+    final class PostHandler(requestBodyHandler: RequestBodyHandler)
+            extends RequestResponseHandlers(requestBodyHandler) {
+
+        def registerThisHandler {
             postHandlers += this
         }
+
     }
 
     final object post {
-        def receives(requestBodyHandler: (MediaType.Value, (Option[Charset], InputStream) => Unit)) = {
-            new PostHandler(requestBodyHandler)
+        def receives(requestBodyHandler: RequestBodyHandler) = new PostHandler(requestBodyHandler)
+    }
+
+    final class PutHandler(requestBodyHandler: RequestBodyHandler)
+            extends RequestResponseHandlers(requestBodyHandler) {
+
+        def registerThisHandler {
+            putHandlers += this
         }
 
     }
 
+    final object put {
+        def receives(requestBodyHandler: RequestBodyHandler) = new PostHandler(requestBodyHandler)
+    }
+
+    /**
+     * It is possible to register exactly one delete handler.
+     *
+     * ===HTTP 1.1 Specification===
+     * A successful response SHOULD be 200 (OK) if the response includes an entity describing the status, 202 (Accepted)
+     * if the action has not yet been enacted, or 204 (No Content) if the action has been enacted but the response does
+     * not include an entity.
+     *
+     * @return {{{true}}} if the specified resource was deleted.
+     */
+    final def delete(f: => Boolean) {
+        deleteHandler = Some(() => f)
+    }
 }
 
-class ResponseBodyInitializer[+M <: MediaType.Value](val mediaType: M,
-                                                     val initResponseBody: () => Unit)
-
-object ResponseBodyInitializer {
-
-    def apply[M <: MediaType.Value](mediaType: M)(initResponseBody: => Unit) =
-        new ResponseBodyInitializer[M](mediaType, () => initResponseBody)
-}
 
 trait Representation[+M <: MediaType.Value] extends ResponseBody
+
 
 class RepresentationFactory[M <: MediaType.Value](val mediaType: M,
                                                   val createRepresentation: () => Option[Representation[M]])
@@ -155,10 +185,8 @@ object RepresentationFactory {
         new RepresentationFactory(mediaType, () => createRepresentation)
 }
 
-
-
-
-
+class RequestBodyHandler(val mediaType: MediaType.Value,
+                         val handle: (Option[Charset], InputStream) => Unit)
 
 
 

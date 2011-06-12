@@ -18,6 +18,7 @@ package jdk
 
 import org.dorest.server.rest._
 
+
 class Time
         extends RESTInterface
         with PerformanceMonitor
@@ -37,38 +38,9 @@ class Time
     }
 
     get requests XML {
-        <time>
-            {dateString}
-        </time>
-    }
-}
-
-class Tags extends RESTInterface with PerformanceMonitor with TEXTSupport {
-
-    get requests TEXT {
-        "tagIds = a,b,c"
-    }
-
-}
-
-class Tag extends RESTInterface with TEXTSupport {
-
-    var tagId: Long = _
-
-    get requests TEXT {
-        "tagId = " + tagId
-    }
-
-}
-
-class Note extends RESTInterface with TEXTSupport {
-
-    var tagId: Long = _
-
-    var noteId: Long = _
-
-    get requests TEXT {
-        "tagId = " + tagId + " noteId = " + noteId
+        <time>{
+            dateString
+        }</time>
     }
 }
 
@@ -83,6 +55,73 @@ class User extends RESTInterface with TEXTSupport {
 }
 
 
+object KVStore {
+
+    private val ds = new scala.collection.mutable.HashMap[Long, String]()
+    private var id = 0l
+
+    private def nextId: Long = {
+        id += 1l; id
+    }
+
+    def +(value: String): Long = synchronized{
+        val id: Long = nextId
+        ds += ((id, value))
+        id
+    }
+
+    def apply(id : Long) = synchronized{ds(id)}
+
+    def size : Int = synchronized{ds.size}
+
+    def keySet = synchronized{ds.keySet}
+
+    def contains(id : Long) = synchronized{ds.contains(id)}
+
+    def remove(id : Long) = synchronized{ds.remove(id)}
+}
+
+class Keys extends RESTInterface with XMLSupport {
+
+    get requests XML {
+        KVStore.synchronized {
+            <keys count={"" + KVStore.size}>{
+                for (k <- KVStore.keySet) yield <key>{k}</key>
+            }</keys>
+        }
+    }
+
+    post receives XML returns XML {
+        val value = XMLRequestBody.text
+        val id = KVStore + value
+        <value id={"" + id}>{value}</value>
+    }
+
+}
+
+class Key extends RESTInterface with XMLSupport {
+
+    var id: Long = _
+
+    get requests XML {
+        KVStore.synchronized {
+            if (!KVStore.contains(id)) {
+                responseCode = 404 // NOT FOUND
+                None
+            } else {
+                val value = KVStore(id)
+                <value id={"" + id}>{value}</value>
+            }
+        }
+    }
+
+    delete {
+       KVStore.remove(id).isDefined
+    }
+
+}
+
+
 class MonitoredMappedDirectory(baseDirectory: String)
         extends MappedDirectory(baseDirectory)
         with PerformanceMonitor
@@ -92,6 +131,21 @@ class Demo
 
 object Demo extends Server(9000) with App {
 
+    this register new HandlerFactory[Keys] {
+        path {
+            "/keys"
+        }
+
+        def create = new Keys
+    }
+
+    this register new HandlerFactory[Key] {
+        path {
+            "/keys/" :: LongValue((v) => _.id = v)
+        }
+
+        def create = new Key
+    }
 
     this register new HandlerFactory[User] {
         path {
@@ -111,30 +165,6 @@ object Demo extends Server(9000) with App {
 
         // ("timezone",StringValue(v => _.timeZone = v))
         def create = new Time() with PerformanceMonitor
-    })
-
-    register(new HandlerFactory[Note] {
-        path {
-            "/tags/" :: LongValue((v) => _.tagId = v) :: "/notes/" :: LongValue((v) => _.noteId = v)
-        }
-
-        def create = new Note
-    })
-
-    register(new HandlerFactory[Tags] {
-        path {
-            "/tags" :: Optional("/")
-        }
-
-        def create = new Tags
-    })
-
-    register(new HandlerFactory[Tag] {
-        path {
-            "/tags/" :: LongValue((v) => (r) => r.tagId = v)
-        }
-
-        def create = new Tag
     })
 
     register(new HandlerFactory[MappedDirectory] {

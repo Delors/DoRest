@@ -43,20 +43,18 @@ trait ORGJSONSupport {
 
     private[this] var body: JSONObject = _
 
-    def JSON: (MediaType.Value, (Option[Charset], InputStream) => Unit) = (
-            MediaType.JSON,
-            (charset: Option[Charset], in: InputStream) => {
-                charset match {
-                    case Some(charset) =>
-
-                        //body = new JSONObject(org.apache.commons.io.IOUtils.toString(in, charset.displayName))
-                        body = new JSONObject(Source.fromInputStream(in)(Codec(charset)).mkString)
-                    case _ =>
-                        // TODO Do we want to have this case? If yes, should we use ISO LATIN 1 (need to look at the HTTP spec.)
-                        body = new JSONObject(org.apache.commons.io.IOUtils.toString(in))
-                }
+    def JSON: RequestBodyHandler = new RequestBodyHandler(
+        MediaType.JSON,
+        (charset: Option[Charset], in: InputStream) => {
+            charset match {
+                case Some(charset) =>
+                    body = new JSONObject(Source.fromInputStream(in)(Codec(charset)).mkString)
+                case _ =>
+                    // TODO Do we want to have this case? If yes, should we use ISO LATIN 1 (need to look at the HTTP spec.)
+                    body = new JSONObject(org.apache.commons.io.IOUtils.toString(in))
             }
-            )
+        }
+    )
 
     def JSONRequestBody: JSONObject =
         if (body == null)

@@ -206,6 +206,8 @@ abstract class PlainResponse(val code: Int) extends Response {
     def body = None
 }
 
+object NoContent extends PlainResponse(204)
+
 object BadRequest extends PlainResponse(400)
 
 object NotFoundResponse extends PlainResponse(404)
