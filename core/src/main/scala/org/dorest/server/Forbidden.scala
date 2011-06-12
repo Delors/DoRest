@@ -14,21 +14,50 @@
    limitations under the License.
  */
 package org.dorest.server
-package rest
 
-import io.Codec
 
 /**
- * Provides support for handling TEXT (based) representations.
- *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+class Forbidden(text: String) extends ErrorResponse(403, text)
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
+
+object Forbidden {
+
+    def apply(text: String) = new Forbidden(text)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

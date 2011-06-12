@@ -14,21 +14,44 @@
    limitations under the License.
  */
 package org.dorest.server
-package rest
 
-import io.Codec
 
 /**
- * Provides support for handling TEXT (based) representations.
+ * Map based default implementation of the ResponseHeaders trait.
  *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
+        extends ResponseHeaders {
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
+    def this(header: Tuple2[String, String]) {
+        this (Map() + header)
+    }
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
+    def this(headers: List[Tuple2[String, String]]) {
+        this (Map() ++ headers)
+    }
+
+    def set(key: String, value: String): Unit = {
+        headers = headers.updated(key, value)
+    }
+
+    def foreach(f: ((String, String)) => Unit) {
+        headers.foreach(f)
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

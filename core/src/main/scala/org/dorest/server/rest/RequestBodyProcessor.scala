@@ -16,19 +16,28 @@
 package org.dorest.server
 package rest
 
-import io.Codec
+import java.io._
+import java.nio.charset._
+
 
 /**
- * Provides support for handling TEXT (based) representations.
+ * Given the request body's input stream and the used charset (if specified and relevant)
+ * the body is read and made available to the resource handler in a meaningful way.
  *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+class RequestBodyProcessor(val mediaType: MediaType.Value,
+                         val process: (Option[Charset], InputStream) => Unit)
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
-}
+
+
+
+
+
+
+
+
+
+
+

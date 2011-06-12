@@ -14,21 +14,41 @@
    limitations under the License.
  */
 package org.dorest.server
-package rest
 
-import io.Codec
 
 /**
- * Provides support for handling TEXT (based) representations.
- *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+abstract class PlainResponse(val code: Int) extends Response {
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
+    def headers = new DefaultResponseHeaders()
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
+    def body = None
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

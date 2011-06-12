@@ -29,15 +29,19 @@ import io.Codec
  *
  *   get requests HTML {
  *      "<html><body>The current (server) time is: "+(new java.util.Date().toString)+"</body></html>"
- *   }
+ * }
  * }
  * }}}
  * @author Michael Eichberg
  */
 trait HTMLSupport {
 
-    def HTML(getHTML: => String) =
+    protected implicit def charSequenceToSomeHtml(html: CharSequence): Option[CharSequence] = Some(html)
+
+    def HTML(getHTML: => Option[CharSequence]) =
         RepresentationFactory(MediaType.HTML) {
-            Some(new UTF8BasedRepresentation(MediaType.HTML, Codec.toUTF8(getHTML)))
+            getHTML map ((html: CharSequence) => {
+                new UTF8BasedRepresentation(MediaType.HTML, Codec.toUTF8(html))
+            })
         }
 }

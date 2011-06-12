@@ -21,6 +21,11 @@ import io.Codec
 import scala.xml._
 import java.nio.charset.Charset
 
+/**
+ * Provides support for handling XML representations.
+ *
+ * @author Michael Eichberg
+ */
 trait XMLSupport {
 
     protected implicit def xmlNodeToSomeXmlNode(node: Node) = Some(node)
@@ -49,14 +54,14 @@ trait XMLSupport {
 
     private[this] var body: Elem = _
 
-    def XML: RequestBodyHandler = new RequestBodyHandler(
+    def XML: RequestBodyProcessor = new RequestBodyProcessor(
         MediaType.XML,
         (charset: Option[Charset], in: InputStream) => {
             charset match {
                 case Some(definedCharset) =>
                     body = scala.xml.XML.loadString(scala.io.Source.fromInputStream(in)(scala.io.Codec(definedCharset)).mkString)
                 case _ =>
-                    body = scala.xml.XML.load(Source.fromInputStream(in))
+                    body = scala.xml.XML.loadString(scala.io.Source.fromInputStream(in)(Codec(Charset.forName("ISO-8859-1"))).mkString)
             }
         }
     )

@@ -16,19 +16,33 @@
 package org.dorest.server
 package rest
 
-import io.Codec
+
+import org.dorest.server.MediaType
+
 
 /**
- * Provides support for handling TEXT (based) representations.
+ * Main trait of all Resources.
  *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+class RepresentationFactory[M <: MediaType.Value](val mediaType: M,
+                                                  val createRepresentation: () => Option[Representation[M]])
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
+object RepresentationFactory {
+
+    def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: => Option[Representation[M]]) =
+        new RepresentationFactory(mediaType, () => createRepresentation)
 }
+
+
+
+
+
+
+
+
+
+
+
+

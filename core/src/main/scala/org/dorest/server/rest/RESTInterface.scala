@@ -73,7 +73,7 @@ trait RESTInterface extends Handler {
             case POST if !postHandlers.isEmpty => {
                 // TODO nearly everything... matching...
                 val postHandler = postHandlers.head
-                postHandler.requestBodyHandler.handle(None, requestBody)
+                postHandler.requestBodyHandler.process(None, requestBody)
                 responseBody = postHandler.representationFactory.createRepresentation()
                 return Response(responseCode, responseHeaders, responseBody)
             }
@@ -82,7 +82,7 @@ trait RESTInterface extends Handler {
                     return NotFoundResponse
                 }
 
-                return NoContent
+                return NoContent // delete was successful
             }
             case _ => {
                 var supportedMethods: List[HTTPMethod] = Nil
@@ -118,7 +118,7 @@ trait RESTInterface extends Handler {
         }
     }
 
-    abstract class RequestResponseHandlers(val requestBodyHandler: RequestBodyHandler) {
+    abstract class RequestResponseHandlers(val requestBodyHandler: RequestBodyProcessor) {
 
         var representationFactory: RepresentationFactory[MediaType.Value] = _
 
@@ -131,7 +131,7 @@ trait RESTInterface extends Handler {
     }
 
 
-    final class PostHandler(requestBodyHandler: RequestBodyHandler)
+    final class PostHandler(requestBodyHandler: RequestBodyProcessor)
             extends RequestResponseHandlers(requestBodyHandler) {
 
         def registerThisHandler {
@@ -141,10 +141,10 @@ trait RESTInterface extends Handler {
     }
 
     final object post {
-        def receives(requestBodyHandler: RequestBodyHandler) = new PostHandler(requestBodyHandler)
+        def receives(requestBodyHandler: RequestBodyProcessor) = new PostHandler(requestBodyHandler)
     }
 
-    final class PutHandler(requestBodyHandler: RequestBodyHandler)
+    final class PutHandler(requestBodyHandler: RequestBodyProcessor)
             extends RequestResponseHandlers(requestBodyHandler) {
 
         def registerThisHandler {
@@ -154,7 +154,7 @@ trait RESTInterface extends Handler {
     }
 
     final object put {
-        def receives(requestBodyHandler: RequestBodyHandler) = new PostHandler(requestBodyHandler)
+        def receives(requestBodyHandler: RequestBodyProcessor) = new PostHandler(requestBodyHandler)
     }
 
     /**
@@ -173,20 +173,13 @@ trait RESTInterface extends Handler {
 }
 
 
-trait Representation[+M <: MediaType.Value] extends ResponseBody
 
 
-class RepresentationFactory[M <: MediaType.Value](val mediaType: M,
-                                                  val createRepresentation: () => Option[Representation[M]])
 
-object RepresentationFactory {
 
-    def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: => Option[Representation[M]]) =
-        new RepresentationFactory(mediaType, () => createRepresentation)
-}
 
-class RequestBodyHandler(val mediaType: MediaType.Value,
-                         val handle: (Option[Charset], InputStream) => Unit)
+
+
 
 
 

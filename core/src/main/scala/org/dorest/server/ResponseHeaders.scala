@@ -14,21 +14,52 @@
    limitations under the License.
  */
 package org.dorest.server
-package rest
-
-import io.Codec
 
 /**
- * Provides support for handling TEXT (based) representations.
+ * A response's headers.
  *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+trait ResponseHeaders {
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
+    /**
+     * Sets the value of the specified response header.
+     *
+     * Cf. <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14">HTTP Header Fields</a>.
+     */
+    def set(key: String, value: String): Unit
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
+    /**
+     * Enables you to iterate over all response headers.
+     */
+    def foreach(f: ((String, String)) => Unit): Unit
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -23,6 +23,7 @@ import java.io._
 import java.nio.charset._
 import io.Codec
 import io.Source
+import io.Codec._
 
 /**
  * Adds support for parsing and generating JSON representations using the <a href="http://www.json.org/java/">org.json
@@ -33,25 +34,27 @@ import io.Source
  */
 trait ORGJSONSupport {
 
+    protected implicit def jsonObjectToSomeJSONObject (json : JSONObject) : Option[JSONObject] = Some(json)
+
     /**
      * Generates a JSON representation for the JSONObject.
      */
-    def JSON(getJSONObject: => JSONObject) =
+    def JSON(getJSONObject: => Option[JSONObject]) =
         RepresentationFactory(MediaType.JSON) {
-            Some(new UTF8BasedRepresentation(MediaType.JSON, Codec.toUTF8(getJSONObject.toString)))
+            getJSONObject map ((json) => new UTF8BasedRepresentation(MediaType.JSON, Codec.toUTF8(json.toString)))
         }
 
     private[this] var body: JSONObject = _
 
-    def JSON: RequestBodyHandler = new RequestBodyHandler(
+    def JSON: RequestBodyProcessor = new RequestBodyProcessor(
         MediaType.JSON,
         (charset: Option[Charset], in: InputStream) => {
             charset match {
                 case Some(charset) =>
                     body = new JSONObject(Source.fromInputStream(in)(Codec(charset)).mkString)
                 case _ =>
-                    // TODO Do we want to have this case? If yes, should we use ISO LATIN 1 (need to look at the HTTP spec.)
-                    body = new JSONObject(org.apache.commons.io.IOUtils.toString(in))
+                    // HTTP 1.1 says that the default charset is ISO-8859-1
+                    body = new JSONObject(Source.fromInputStream(in)(Codec(Charset.forName("ISO-8859-1"))).mkString)
             }
         }
     )

@@ -14,21 +14,60 @@
    limitations under the License.
  */
 package org.dorest.server
-package rest
 
-import io.Codec
+import java.nio.charset.Charset
+import java.io.OutputStream
+
 
 /**
- * Provides support for handling TEXT (based) representations.
+ * Encapsulates a response's body.
  *
  * @author Michael Eichberg
  */
-trait TEXTSupport {
+trait ResponseBody {
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
+    /**
+     * The body's content type (and charset).
+     */
+    def contentType: Option[(MediaType.Value, Option[Charset])]
 
-    def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
-        }
+    /**
+     * The number of bytes that will be send back.
+     */
+    def length: Int
+
+    /**
+     * Called by the framework – after sending the HTTP header – to write
+     * out the specific representation as the response's body.
+     */
+    def write(responseBody: OutputStream): Unit
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
