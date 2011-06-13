@@ -17,6 +17,10 @@ package org.dorest.server
 
 
 /**
+ * '''<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">HTTP 1.1 Specification Bad Request</a>''': The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat
+ * the request without modifications.
+ *
+ *
  * @author Michael Eichberg
  */
 object BadRequest extends PlainResponse(400)

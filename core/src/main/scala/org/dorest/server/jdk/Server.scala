@@ -18,9 +18,9 @@ package jdk
 
 import com.sun.net.httpserver._
 import java.net._
+import log.{SEVERE, INFO, Log}
 
-
-class Server(val port: Int) extends DoRestServer with DoRestApp {
+class Server(val port: Int) extends DoRestServer with DoRestApp with Log {
 
     private val server = HttpServer.create(new InetSocketAddress(port), 0);
 
@@ -32,11 +32,14 @@ class Server(val port: Int) extends DoRestServer with DoRestApp {
             val path = uri.getPath
             val query = uri.getQuery
 
-            println("Handling request " + t.getRemoteAddress() + " " + new java.util.Date + " :" + path)
-
-            val it = t.getRequestHeaders().entrySet.iterator
-            while (it.hasNext)
-                println(it.next)
+            log[Server](INFO) {
+                var message = ""+t.getRemoteAddress() + " " + new java.util.Date
+                val it = t.getRequestHeaders().entrySet.iterator
+                while (it.hasNext) {
+                    message += "; "+it.next
+                }
+                message
+            }
 
             try {
                 var factories = Server.this.factories
@@ -89,9 +92,9 @@ class Server(val port: Int) extends DoRestServer with DoRestApp {
             } catch {
                 // something went really wrong...
                 case ex => {
-                    ex.printStackTrace();
-                    sendResponseHeaders(t, 500, -1);
-                    t.close();
+                    log[Server](SEVERE,ex)
+                    sendResponseHeaders(t, 500, -1)
+                    t.close()
                 }
             }
 
@@ -115,7 +118,7 @@ class Server(val port: Int) extends DoRestServer with DoRestApp {
         server.createContext("/", new DoRestHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        println("Server started...: " + port)
+        log(INFO){"Server started...: " + port}
     }
 
 }

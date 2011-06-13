@@ -17,6 +17,10 @@ package org.dorest.server
 
 
 /**
+ * '''<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.6">HTTP 1.1 Specification Method Not Allowed (405)</a>''': The
+ * method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response
+ * MUST include an Allow header containing a list of valid methods for the requested resource.
+ *
  * @author Michael Eichberg
  */
 class SupportedMethodsResponse(val allowedMethods: List[HTTPMethod]) extends Response {

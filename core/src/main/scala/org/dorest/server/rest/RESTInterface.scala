@@ -17,7 +17,6 @@ package org.dorest.server
 package rest
 
 import java.io._
-import java.nio.charset._
 
 
 /**
@@ -161,7 +160,7 @@ trait RESTInterface extends Handler {
     }
 
     final object put {
-        def receives(requestBodyHandler: RequestBodyProcessor) = new PostHandler(requestBodyHandler)
+        def receives(requestBodyHandler: RequestBodyProcessor) = new PutHandler(requestBodyHandler)
     }
 
     /**

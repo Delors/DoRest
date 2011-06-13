@@ -17,6 +17,7 @@ package org.dorest.server
 package jdk
 
 import org.dorest.server.rest._
+import java.lang.Long
 
 
 class Time
@@ -79,6 +80,8 @@ object KVStore {
 
     def keySet = synchronized{ds.keySet}
 
+    def updated(id :Long,v : String) = synchronized{ds.update(id,v)}
+
     def contains(id : Long) = synchronized{ds.contains(id)}
 
     def remove(id : Long) = synchronized{ds.remove(id)}
@@ -114,6 +117,18 @@ class Key extends RESTInterface with XMLSupport {
             } else {
                 val value = KVStore(id)
                 <value id={"" + id}>{value}</value>
+            }
+        }
+    }
+
+    put receives XML returns XML  {
+        KVStore.synchronized{
+            if (!KVStore.contains(id)) {
+                responseCode = 404 // NOT FOUND
+                None
+            } else {
+                KVStore.updated(id,XMLRequestBody.text)
+                <value id={"" + id}>{XMLRequestBody.text}</value>
             }
         }
     }
