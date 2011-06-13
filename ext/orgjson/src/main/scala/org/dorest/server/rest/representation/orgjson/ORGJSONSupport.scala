@@ -34,15 +34,17 @@ import io.Codec._
  */
 trait ORGJSONSupport {
 
-    protected implicit def jsonObjectToSomeJSONObject (json : JSONObject) : Option[JSONObject] = Some(json)
+    protected implicit def jsonObjectToSomeJSONObject(json: Object): Option[Object] = Some(json)
+
 
     /**
-     * Generates a JSON representation for the JSONObject.
+     * Generates a JSON representation for the JSONObject/JSONArray
      */
-    def JSON(getJSONObject: => Option[JSONObject]) =
+    def JSON(getJSONObject: => Option[Object]) =
         RepresentationFactory(MediaType.JSON) {
             getJSONObject map ((json) => new UTF8BasedRepresentation(MediaType.JSON, Codec.toUTF8(json.toString)))
         }
+
 
     private[this] var body: JSONObject = _
 

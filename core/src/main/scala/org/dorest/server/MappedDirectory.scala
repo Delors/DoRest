@@ -16,12 +16,13 @@
 package org.dorest.server
 
 import io.Source
+import java.lang.Boolean
 
 
 /**
  * Makes the content of a directory accessible.
  */
-class MappedDirectory(val baseDirectory: String) extends Handler {
+class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
 
     import java.io._
 
@@ -32,18 +33,26 @@ class MappedDirectory(val baseDirectory: String) extends Handler {
             return new SupportedMethodsResponse(GET)
         }
 
-        val file = new File(baseDirectory + "/" + path)
+        var file = new File(baseDirectory + "/" + path)
         if (!file.exists) {
             return NotFoundResponse
         }
 
         if (file.isDirectory) {
-            return new Forbidden("Browsing directories is forbidden.")
+            if (!enableIndexHTMLDeliveryOnDirectoryAccess) {
+                return new Forbidden("Browsing directories is forbidden.")
+            }
+            else {
+                file = new File(baseDirectory + "/" + path + "/index.html")
+                if (!file.exists) {
+                    return NotFoundResponse
+                }
+            }
         }
 
+        val fileName = file.getName
         val fileType = {
-            val fileName = file.getName()
-            val fileSuffix = fileName.substring(fileName.lastIndexOf('.')+1)
+            val fileSuffix = fileName.substring(fileName.lastIndexOf('.') + 1)
             Some((
                     fileSuffix match {
                         case "css" => MediaType.CSS
@@ -56,7 +65,8 @@ class MappedDirectory(val baseDirectory: String) extends Handler {
                         case "jpg" => MediaType.JPEG
                         case "pdf" => MediaType.PDF
                         case "png" => MediaType.PNG
-                        case _ => throw new Error("Media type detection based on file suffix ("+fileSuffix+") failed: " + fileName)
+                        case "ico" => MediaType.ICO
+                        case _ => throw new Error("Media type detection based on file suffix (" + fileSuffix + ") failed: " + fileName)
                     },
                     // We are not able to reliably determine the used charset..
                     None

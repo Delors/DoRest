@@ -33,4 +33,5 @@ object MediaType extends Enumeration {
     val TIFF = Value("image/tiff") //  Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
     val ATOM = Value("application/atom+xml") // Atom feeds
     val PDF = Value("application/pdf")
+    val ICO = Value("image/x-icon")
 }

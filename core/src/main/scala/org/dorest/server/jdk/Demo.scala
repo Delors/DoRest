@@ -55,6 +55,9 @@ class User extends RESTInterface with TEXTSupport {
 }
 
 
+/**
+ * Implementation of a very primitive, thread-safe key-value store.
+ */
 object KVStore {
 
     private val ds = new scala.collection.mutable.HashMap[Long, String]()

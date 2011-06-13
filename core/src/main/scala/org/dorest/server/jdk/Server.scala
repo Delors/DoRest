@@ -59,7 +59,7 @@ class Server(val port: Int) extends DoRestServer with DoRestApp {
                                             val (key, value) = header;
                                             t.getResponseHeaders().set(key, value)
                                         })
-                                        t.sendResponseHeaders(response.code, length);
+                                        sendResponseHeaders(t, response.code, length);
                                         if (length > 0) {
                                             body.write(t.getResponseBody())
                                         }
@@ -69,7 +69,7 @@ class Server(val port: Int) extends DoRestServer with DoRestApp {
                                             val (key, value) = header;
                                             t.getResponseHeaders().set(key, value)
                                         })
-                                        t.sendResponseHeaders(response.code, -1);
+                                        sendResponseHeaders(t, response.code, -1);
                                     }
                                 }
                                 t.close();
@@ -90,16 +90,25 @@ class Server(val port: Int) extends DoRestServer with DoRestApp {
                 // something went really wrong...
                 case ex => {
                     ex.printStackTrace();
-                    t.sendResponseHeaders(500, -1);
+                    sendResponseHeaders(t, 500, -1);
                     t.close();
                 }
             }
 
             // does not match..
-            t.sendResponseHeaders(404, -1);
+            sendResponseHeaders(t, 404, -1);
             t.close();
         }
 
+    }
+
+    def sendResponseHeaders(httpExchange: HttpExchange, code: Int, length: Int) {
+        val it = httpExchange.getResponseHeaders.entrySet().iterator()
+        while (it.hasNext) {
+            val header = it.next()
+            System.err.println(header.getKey + "=" + header.getValue)
+        }
+        httpExchange.sendResponseHeaders(code, length)
     }
 
     def start() {

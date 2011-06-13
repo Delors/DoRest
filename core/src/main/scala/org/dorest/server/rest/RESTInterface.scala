@@ -66,13 +66,20 @@ trait RESTInterface extends Handler {
                         responseBody = rbi.createRepresentation()
                         return Response(responseCode, responseHeaders, responseBody)
                     }
-                    case _ =>
+                    case None =>
                         return UnsupportedMediaTypeResponse
                 }
             }
             case POST if !postHandlers.isEmpty => {
                 // TODO nearly everything... matching...
                 val postHandler = postHandlers.head
+                postHandler.requestBodyHandler.process(None, requestBody)
+                responseBody = postHandler.representationFactory.createRepresentation()
+                return Response(responseCode, responseHeaders, responseBody)
+            }
+            case PUT if !putHandlers.isEmpty => {
+                // TODO nearly everything... matching...
+                val postHandler = putHandlers.head
                 postHandler.requestBodyHandler.process(None, requestBody)
                 responseBody = postHandler.representationFactory.createRepresentation()
                 return Response(responseCode, responseHeaders, responseBody)
@@ -158,8 +165,6 @@ trait RESTInterface extends Handler {
     }
 
     /**
-     * It is possible to register exactly one delete handler.
-     *
      * ===HTTP 1.1 Specification===
      * A successful response SHOULD be 200 (OK) if the response includes an entity describing the status, 202 (Accepted)
      * if the action has not yet been enacted, or 204 (No Content) if the action has been enacted but the response does

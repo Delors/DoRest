@@ -39,6 +39,10 @@ trait Authorization
 }
 
 
+/**
+ * Before a request will be handled by this time resource, the performance monitor and the authorization traits
+ * are both triggered.
+ */
 class Time
         extends RESTInterface
         with Authorization
