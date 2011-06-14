@@ -119,7 +119,12 @@ trait RESTInterface extends Handler {
      * }}}
      */
     final object get {
-        def requests(t: RepresentationFactory[MediaType.Value]) {
+
+        def accepts(t : RepresentationFactory[MediaType.Value]){
+            returns(t)
+        }
+
+        def returns(t: RepresentationFactory[MediaType.Value]) {
             getHandlers += t
         }
     }
@@ -147,7 +152,13 @@ trait RESTInterface extends Handler {
     }
 
     final object post {
-        def receives(requestBodyHandler: RequestBodyProcessor) = new PostHandler(requestBodyHandler)
+
+        /**
+         * @see [[#of(RequestBodyProcessor)]]
+         */
+        def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
+
+        def of(requestBodyHandler: RequestBodyProcessor) = new PostHandler(requestBodyHandler)
     }
 
     final class PutHandler(requestBodyHandler: RequestBodyProcessor)
@@ -160,7 +171,13 @@ trait RESTInterface extends Handler {
     }
 
     final object put {
-        def receives(requestBodyHandler: RequestBodyProcessor) = new PutHandler(requestBodyHandler)
+
+        /**
+         * @see [[#of(RequestBodyProcessor)]]
+         */
+        def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
+
+        def of(requestBodyHandler: RequestBodyProcessor) = new PutHandler(requestBodyHandler)
     }
 
     /**

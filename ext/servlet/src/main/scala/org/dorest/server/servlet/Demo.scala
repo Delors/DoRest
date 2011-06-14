@@ -133,15 +133,15 @@ class Time
 
     val dateString = new java.util.Date().toString
 
-    get requests TEXT {
+    get returns TEXT {
         dateString
     }
 
-    get requests HTML {
+    get returns HTML {
         "<html><body>The current (server) time is: " + dateString + "</body></html>"
     }
 
-    get requests XML {
+    get returns XML {
         <time>
             {dateString}
         </time>

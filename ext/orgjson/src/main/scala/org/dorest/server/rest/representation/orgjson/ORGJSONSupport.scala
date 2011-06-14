@@ -29,13 +29,15 @@ import io.Codec._
  * Adds support for parsing and generating JSON representations using the <a href="http://www.json.org/java/">org.json
  * </a> library.
  *
- * '''Remark:''' As of Scala 2.9.0 the JSON library included with Scala is not really maintained and only handles a
+ * '''Remark''': The org.json library does not define a common supertype for representing JSON objects and JSON arrays.
+ * This required that we had to resort to use java.lang.Object as the common supertype which may cause conflicts with
+ * other libraries.
+ * '''Remark''': As of Scala 2.9.0 the JSON library included with Scala is not really maintained and only handles a
  * subset of full JSON.
  */
 trait ORGJSONSupport {
 
     protected implicit def jsonObjectToSomeJSONObject(json: Object): Option[Object] = Some(json)
-
 
     /**
      * Generates a JSON representation for the JSONObject/JSONArray

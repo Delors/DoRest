@@ -46,7 +46,8 @@ trait BasicAuthentication extends Authentication with Handler {
         }
 
         authorizationInfo = authorizationInfo.substring("Basic ".length)
-        authorizationInfo = new String(org.apache.commons.codec.binary.Base64.decodeBase64(authorizationInfo))
+        authorizationInfo = new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(authorizationInfo))
+        //authorizationInfo = new String(org.apache.commons.codec.binary.Base64.decodeBase64(authorizationInfo))
 
         val user_pwd = authorizationInfo.split(":")
         if (user_pwd.length != 2) {

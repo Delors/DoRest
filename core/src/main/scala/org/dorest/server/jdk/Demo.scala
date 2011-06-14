@@ -30,15 +30,15 @@ class Time
 
     val dateString = new java.util.Date().toString
 
-    get requests TEXT {
+    get returns TEXT {
         dateString
     }
 
-    get requests HTML {
+    get returns HTML {
         "<html><body>The current (server) time is: " + dateString + "</body></html>"
     }
 
-    get requests XML {
+    get returns XML {
         <time>{
             dateString
         }</time>
@@ -50,7 +50,7 @@ class User extends RESTInterface with TEXTSupport {
 
     var user: String = _
 
-    get requests TEXT {
+    get returns TEXT {
         "Welcome " + user
     }
 }
@@ -89,7 +89,7 @@ object KVStore {
 
 class Keys extends RESTInterface with XMLSupport {
 
-    get requests XML {
+    get returns XML {
         KVStore.synchronized {
             <keys count={"" + KVStore.size}>{
                 for (k <- KVStore.keySet) yield <key>{k}</key>
@@ -97,7 +97,7 @@ class Keys extends RESTInterface with XMLSupport {
         }
     }
 
-    post receives XML returns XML {
+    post of XML returns XML {
         val value = XMLRequestBody.text
         val id = KVStore + value
         <value id={"" + id}>{value}</value>
@@ -109,7 +109,7 @@ class Key extends RESTInterface with XMLSupport {
 
     var id: Long = _
 
-    get requests XML {
+    get returns XML {
         KVStore.synchronized {
             if (!KVStore.contains(id)) {
                 responseCode = 404 // NOT FOUND
@@ -121,7 +121,7 @@ class Key extends RESTInterface with XMLSupport {
         }
     }
 
-    put receives XML returns XML  {
+    put of XML returns XML  {
         KVStore.synchronized{
             if (!KVStore.contains(id)) {
                 responseCode = 404 // NOT FOUND

@@ -21,20 +21,20 @@ import org.dorest.server.rest._
 import org.json._
 
 /**
- * A simple service that just echos the received JSON object.
+ * A simple service that basically just echos the received JSON object.
  */
 class Echo
         extends RESTInterface
         with ORGJSONSupport {
 
-    get requests JSON {
+    get returns JSON {
         val jo = new JSONObject()
         jo.put("received", "")
         jo
     }
 
     // JSONRequestBody is an org.JSONObject
-    post receives JSON returns JSON {
+    post of JSON returns JSON {
         // JSONRequestBody // if we just want return what we have received
 
         val jo = new JSONObject()
@@ -54,13 +54,13 @@ class Time
 
     val dateString = new java.util.Date().toString
 
-    get requests JSON {
+    get returns JSON {
         val jo = new JSONObject()
         jo.put("time", dateString)
         jo
     }
 
-    get requests TEXT {
+    get returns TEXT {
         dateString
     }
 
@@ -98,19 +98,18 @@ class Demo
 object Demo extends Server(9000) with App {
 
     register(new HandlerFactory[Echo] {
-        path {
-            "/echo"
-        }
+        path { "/echo" }
 
         def create = new Echo()
+
     })
 
     register(new HandlerFactory[Time] {
-        path {
-            "/time"
-        }
+
+        path {"/time" }
 
         def create = new Time() with PerformanceMonitor
+
     })
 
     start()

@@ -27,7 +27,7 @@ import io.Codec
  *      extends RESTInterface
  *      with HTMLSupport {
  *
- *   get requests HTML {
+ *   get returns HTML {
  *      "<html><body>The current (server) time is: "+(new java.util.Date().toString)+"</body></html>"
  * }
  * }

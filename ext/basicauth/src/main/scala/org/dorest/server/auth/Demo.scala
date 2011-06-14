@@ -22,9 +22,9 @@ import org.dorest.server.rest._
 
 
 /**
- * Demonstrates how to get http basic authentication.
+ * Demonstrates how to set up a resource that requires http basic authentication.
  *
- * If you require the authentication of the user against, e.g., a database just mix in an appropriate trait instead
+ * If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait instead
  * of the {{{SimpleAuthenticator}}} trait.
  */
 trait Authorization
@@ -34,14 +34,28 @@ trait Authorization
 
     def authenticationRealm = "Demo App"
 
+    // the SimpleAuthenticator relies on the following two variables to authenticate a user.
     val authorizationUser = "user"
     val authorizationPwd = "safe"
 }
 
 
 /**
- * Before a request will be handled by this time resource, the performance monitor and the authorization traits
- * are both triggered.
+ * Before a request will be handled by this Time resource, the performance monitor and the authorization traits
+ * are both triggered. I.e., the performance is measured even if the authorization fails. If you change the order
+ * in which you mix in the traits, e.g., as in the following example:
+ * {{{
+ *   class Time
+ *      extends RESTInterface
+ *      with PerformanceMonitor
+ *      with Authorization
+ *      with TEXTSupport
+ *      with HTMLSupport
+ *      with XMLSupport {
+ * }}}
+ * The performance is only measured if the user is successfully authorized. The order and position of the
+ * {{{Support}}} traits is not further relevant because they do not override/extend the process handling. They
+ * basically just complement the possibilities offered by the Time resource.
  */
 class Time
         extends RESTInterface
@@ -51,21 +65,18 @@ class Time
         with HTMLSupport
         with XMLSupport {
 
-
     val dateString = new java.util.Date().toString
 
-    get requests TEXT {
+    get returns TEXT {
         dateString
     }
 
-    get requests HTML {
+    get returns HTML {
         "<html><body>The current (server) time is: " + dateString + "</body></html>"
     }
 
-    get requests XML {
-        <time>
-            {dateString}
-        </time>
+    get returns XML {
+        <time>{dateString}</time>
     }
 }
 
@@ -73,6 +84,7 @@ class Demo
 
 object Demo extends Server(9000) with App {
 
+    val userHomeDir = System.getProperty("user.home")
 
     register(new HandlerFactory[Time] {
         path {
@@ -85,12 +97,10 @@ object Demo extends Server(9000) with App {
 
     register(new HandlerFactory[MappedDirectory] {
         path {
-            "/static" :: AnyPath(v => _.path = {
-                if (v startsWith "/") v else "/" + v
-            })
+            "/static" :: AnyPath(v => _.path = if (v startsWith "/") v else "/" + v)
         }
 
-        def create = new MappedDirectory(System.getProperty("user.home")) with Authorization
+        def create = new MappedDirectory(userHomeDir) with Authorization
     })
 
     start()
