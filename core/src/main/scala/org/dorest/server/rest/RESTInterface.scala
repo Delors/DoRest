@@ -66,10 +66,11 @@ trait RESTInterface extends Handler {
                         return Response(responseCode, responseHeaders, responseBody)
                     }
                     case None =>
-                        return UnsupportedMediaTypeResponse
+                        return NotAcceptableResponse
                 }
             }
             case POST if !postHandlers.isEmpty => {
+                // if we cannot handle the request body, we have to return a UnsupportedMediaTypeResponse
                 // TODO nearly everything... matching...
                 val postHandler = postHandlers.head
                 postHandler.requestBodyHandler.process(None, requestBody)
