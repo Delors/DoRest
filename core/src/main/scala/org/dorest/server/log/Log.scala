@@ -53,7 +53,8 @@ trait Log /* TODO implement a LogProvider */ {
      *  }
      * }
      * }}}
-     * @type T if specified, the log message will include the (compile-time) type of specified class.
+     * @type T if specified, the runtime log message will include the (compile-time) name of the specified type. I.e.,
+     * we use the generic type parameter as an optional parameter.
      */
     // TODO (How) Can we bind T to the current class in which the call is made?
     def log[T](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[T]) {

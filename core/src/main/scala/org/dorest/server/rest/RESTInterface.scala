@@ -49,7 +49,7 @@ trait RESTInterface extends Handler {
     protected var responseBody: Option[ResponseBody] = None
 
     /**
-     * Analyzes the HTTP Request and dispatches to the correct (get,put,post,...) handler object.
+     * Analyzes the HTTP Request and dispatches to the correct (get,put,post,delete) handler object.
      */
     def processRequest(requestBody: InputStream): Response = {
         method match {

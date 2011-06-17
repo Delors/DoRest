@@ -21,7 +21,7 @@ import org.dorest.server.MediaType
 
 
 /**
- * Main trait of all Resources.
+ * A representation factory creates a representation of a resource that has the specified MediaType.
  *
  * @author Michael Eichberg
  */

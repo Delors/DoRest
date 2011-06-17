@@ -25,10 +25,3 @@ License
 
 Documentation on using ScalaDoc:
 https://wiki.scala-lang.org/pages/viewpage.action?pageId=294986
-
-TODOS:
-    - Support Query Parameter Matching
-    - Make the accept header (charset information) available to the RepresentationFactories to enable them to create Representations that use the "accepted" charset
-    - Improve the content negotiation code (will be easy if we make the accept header explicit)
-    - Write some good documentation
-    - Decide in which way we want to support logging (with a trait that we want to mix in?)
