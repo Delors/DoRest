@@ -128,9 +128,7 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 val value = KVStore(id)
-                <value id={"" + id}>
-                    {value}
-                </value>
+                <value id={"" + id}>{value}</value>
             }
         }
     }
@@ -142,9 +140,9 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 KVStore.updated(id, XMLRequestBody.text)
-                <value id={"" + id}>
-                    {XMLRequestBody.text}
-                </value>
+                <value id={"" + id}>{
+                    XMLRequestBody.text
+                }</value>
             }
         }
     }
@@ -157,7 +155,7 @@ class Key extends RESTInterface with XMLSupport {
 
 object Key {
 
-    def setId(key: Key,id: Long) {
+    def setId(key: Key, id: Long) {
         key.id = id
     }
 }
