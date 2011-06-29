@@ -21,6 +21,7 @@ import java.lang.Boolean
 
 /**
  * Makes the content of a directory accessible.
+ * @author Michael Eichberg (mail at michael-eichberg.de)
  */
 class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
 

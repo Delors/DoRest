@@ -100,14 +100,14 @@ abstract class HandlerFactory[T <: Handler] {
     }
 
     /**
-     * Can be used to match a path (segment) that is optional and extends until the end of a given
-     * concrete path. <br>
-     * If the given path is not empty and does not match the match is considered to be a failure
-     * unless {link #failOnMatchError} is set to false;
-     * <p>
+     * Can be used to match a path (segment) that is optional and which extends until the end of a given
+     * concrete path.
+     *
+     * If the given path is not empty and does not match the match is considered to have failed
+     * unless {link #failOnMatchError} is set to false.
+     *
      * Cannot be used to match an optional sub-part of a path. E.g., matching something like
-     * <code>"/user"::{"/"userid}::"/tag"</code> is not possible.
-     * </p>
+     * [[["/user"::{"/"userid}::"/tag"]]] where [[[{"/userid"}]]] is optional is not possible.
      */
     class Optional(val p: PathMatcher, val failOnMatchError: Boolean) extends PathElement {
 
