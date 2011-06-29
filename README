@@ -1,10 +1,15 @@
 DoRest is a small, lightweight framework to develop RESTful WebService in Scala.
 
-DoRest's primary goal is to make the server-side development of RESTful WebServices fun.
+DoRest's primary goal is to make the server-side development of RESTful 
+WebServices fun.
 
-To this end, we try to provide an API that is easy and intuitive to use and that makes applications developed using the framework easy do comprehend and debug.
+To this end, we try to provide an API that is easy and intuitive to use and that
+makes applications developed using the framework easy do comprehend and debug.
+To achieve this property we try to avoid using constructs that do things in 
+behind or implicitly. 
 
-This framework is – and will always be – an open source framework. Use at your own risk.
+This framework is – and will always be – an open source framework. Use at your 
+own risk.
 
 License
    Copyright 2011 Michael Eichberg et al
@@ -20,7 +25,6 @@ License
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
 
 
 Documentation on using ScalaDoc:

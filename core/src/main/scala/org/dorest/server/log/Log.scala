@@ -19,7 +19,7 @@ package log
 sealed trait LogLevel
 
 /**
- * Message to indicate that something is really wrong.
+ * Message to indicate that something is really wrong and that the application as a whole will/did fail.
  */
 case object SEVERE extends LogLevel
 
@@ -35,7 +35,7 @@ case object WARN extends LogLevel
 case object INFO extends LogLevel
 
 /**
- * Stuff that are only relevant during development time.
+ * Messages that are only relevant during development time.
  */
 case object DEBUG extends LogLevel
 
@@ -48,7 +48,7 @@ trait Log /* TODO implement a LogProvider */ {
      * {{{
      * class MyServer {
      *  def handleRequest() {
-     *      log(INFO){"Available memory: "+...} // the result will only be constructed if INFO message should be logged.
+     *      log(INFO){"Available memory: "+...} // the result will only be constructed if INFO messages should be logged.
      *      log[MyServer](INFO){"Handling request"}
      *  }
      * }

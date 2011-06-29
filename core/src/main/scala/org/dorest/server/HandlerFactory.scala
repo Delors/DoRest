@@ -15,6 +15,8 @@
  */
 package org.dorest.server
 
+import java.lang.Long
+
 /**
  * @author Michael Eichberg
  */
@@ -136,12 +138,10 @@ abstract class HandlerFactory[T <: Handler] {
     class LongValue(val set: (Long) => (T) => Unit) extends PathElement {
 
         def matchSegment(path: String): Option[(String, (T) => Unit)] = {
-            LongValue.matcher.findFirstIn(path) match {
-                case Some(s) => {
-                    Some((path.substring(s.length), set(s.toLong)))
+            LongValue.matcher.findFirstIn(path).map(s => {
+                    (path.substring(s.length), set(s.toLong))
                 }
-                case _ => None
-            }
+            )
         }
     }
 
@@ -151,6 +151,14 @@ abstract class HandlerFactory[T <: Handler] {
 
         def apply(set: (Long) => (T) => Unit) = new LongValue(set)
 
+        def apply(set: (T,Long) => Unit) = new PathElement {
+            def matchSegment(path: String): Option[(String, (T) => Unit)] = {
+                LongValue.matcher.findFirstIn(path).map((s) => {
+                        (path.substring(s.length), (t : T) => {set(t,s.toLong)})
+                    }
+                )
+            }
+        }
     }
 
     /**

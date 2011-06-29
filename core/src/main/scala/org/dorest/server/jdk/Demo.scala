@@ -22,10 +22,10 @@ import java.lang.Long
 
 class Time
         extends RESTInterface
-        with PerformanceMonitor
-        with TEXTSupport
-        with HTMLSupport
-        with XMLSupport {
+                with PerformanceMonitor
+                with TEXTSupport
+                with HTMLSupport
+                with XMLSupport {
 
 
     val dateString = new java.util.Date().toString
@@ -34,14 +34,13 @@ class Time
         dateString
     }
 
+
     get returns HTML {
         "<html><body>The current (server) time is: " + dateString + "</body></html>"
     }
 
     get returns XML {
-        <time>{
-            dateString
-        }</time>
+        <time>{dateString}</time>
     }
 }
 
@@ -65,26 +64,39 @@ object KVStore {
     private var id = 0l
 
     private def nextId: Long = {
-        id += 1l; id
+        id += 1l;
+        id
     }
 
-    def +(value: String): Long = synchronized{
+    def +(value: String): Long = synchronized {
         val id: Long = nextId
         ds += ((id, value))
         id
     }
 
-    def apply(id : Long) = synchronized{ds(id)}
+    def apply(id: Long) = synchronized {
+        ds(id)
+    }
 
-    def size : Int = synchronized{ds.size}
+    def size: Int = synchronized {
+        ds.size
+    }
 
-    def keySet = synchronized{ds.keySet}
+    def keySet = synchronized {
+        ds.keySet
+    }
 
-    def updated(id :Long,v : String) = synchronized{ds.update(id,v)}
+    def updated(id: Long, v: String) = synchronized {
+        ds.update(id, v)
+    }
 
-    def contains(id : Long) = synchronized{ds.contains(id)}
+    def contains(id: Long) = synchronized {
+        ds.contains(id)
+    }
 
-    def remove(id : Long) = synchronized{ds.remove(id)}
+    def remove(id: Long) = synchronized {
+        ds.remove(id)
+    }
 }
 
 class Keys extends RESTInterface with XMLSupport {
@@ -116,33 +128,44 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 val value = KVStore(id)
-                <value id={"" + id}>{value}</value>
+                <value id={"" + id}>
+                    {value}
+                </value>
             }
         }
     }
 
-    put of XML returns XML  {
-        KVStore.synchronized{
+    put of XML returns XML {
+        KVStore.synchronized {
             if (!KVStore.contains(id)) {
                 responseCode = 404 // NOT FOUND
                 None
             } else {
-                KVStore.updated(id,XMLRequestBody.text)
-                <value id={"" + id}>{XMLRequestBody.text}</value>
+                KVStore.updated(id, XMLRequestBody.text)
+                <value id={"" + id}>
+                    {XMLRequestBody.text}
+                </value>
             }
         }
     }
 
     delete {
-       KVStore.remove(id).isDefined
+        KVStore.remove(id).isDefined
     }
 
+}
+
+object Key {
+
+    def setId(key: Key,id: Long) {
+        key.id = id
+    }
 }
 
 
 class MonitoredMappedDirectory(baseDirectory: String)
         extends MappedDirectory(baseDirectory)
-        with PerformanceMonitor
+                with PerformanceMonitor
 
 
 class Demo
@@ -154,12 +177,21 @@ object Demo extends Server(9000) with App {
             "/keys"
         }
 
-        def create = new Keys
+        /**
+         * Reusing one instance of a Resource to handle all requests requires that the resource is thread safe.
+         * If you are unsure, just create a new instance for each request!
+         * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
+         * and instead just create a new instance. (i.e., you don't write "lazy val" but write "def" in following.)
+         */
+        lazy val create = new Keys
     }
 
     this register new HandlerFactory[Key] {
         path {
-            "/keys/" :: LongValue((v) => _.id = v)
+            // "/keys/" :: LongValue(v => _.id = v)
+            //"/keys/" :: LongValue(Key.setId _)
+            //"/keys/" :: LongValue((k,l) => k.id = l)
+            "/keys/" :: LongValue(_.id = _)
         }
 
         def create = new Key
@@ -167,33 +199,36 @@ object Demo extends Server(9000) with App {
 
     this register new HandlerFactory[User] {
         path {
-            "/user/" :: StringValue((v) => _.user = v)
+            "/user/" :: StringValue(v => _.user = v)
         }
 
         def create = new User with PerformanceMonitor
     }
 
-    register(new HandlerFactory[Time] {
-        path {
-            "/time" :: EmptyPath
-        }
-        query {
-            NoQuery
-        }
+    register(
+        new HandlerFactory[Time] {
+            path {
+                "/time" :: EmptyPath
+            }
+            query {
+                NoQuery
+            }
 
-        // ("timezone",StringValue(v => _.timeZone = v))
-        def create = new Time() with PerformanceMonitor
-    })
+            // ("timezone",StringValue(v => _.timeZone = v))
+            def create = new Time() with PerformanceMonitor
+        })
 
-    register(new HandlerFactory[MappedDirectory] {
-        path {
-            "/static" :: AnyPath(v => _.path = {
-                if (v startsWith "/") v else "/" + v
-            })
-        }
+    register(
+        new HandlerFactory[MappedDirectory] {
+            path {
+                "/static" :: AnyPath(
+                    v => _.path = {
+                        if (v startsWith "/") v else "/" + v
+                    })
+            }
 
-        def create = new MonitoredMappedDirectory(System.getProperty("user.home"))
-    })
+            def create = new MonitoredMappedDirectory(System.getProperty("user.home"))
+        })
 
 
     start()

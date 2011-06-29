@@ -20,7 +20,7 @@ package org.dorest.server
  *
  * @author Michael Eichberg
  */
-trait ResponseHeaders {
+trait ResponseHeaders extends collection.Traversable[Tuple2[String,String]] {
 
     /**
      * Sets the value of the specified response header.
@@ -32,7 +32,7 @@ trait ResponseHeaders {
     /**
      * Enables you to iterate over all response headers.
      */
-    def foreach(f: ((String, String)) => Unit): Unit
+    def foreach[U](f: ((String, String)) => U): Unit
 }
 
 

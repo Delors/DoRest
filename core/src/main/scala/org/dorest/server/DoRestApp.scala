@@ -15,6 +15,8 @@
  */
 package org.dorest.server
 
+import collection.mutable.Buffer
+
 /**
  * Base trait of all DoRest applications. It enables the registration of [[org.dorest.server.HandlerFactory]] objects
  * and provides the functionality to select matching handlers.
@@ -23,14 +25,12 @@ package org.dorest.server
  */
 trait DoRestApp {
 
-    // TODO Should we use another data structure that enables efficient appending of handler factories, if we have more than one? How many handlers do we usually have?
-    private var _factories: List[HandlerFactory[_ <: Handler]] = Nil
+    private var _factories: Buffer[HandlerFactory[_ <: Handler]] = Buffer()
 
     def factories = _factories
 
     def register(handlerFactory: HandlerFactory[_ <: Handler]) {
-        // we need to append...
-        _factories = _factories.:+(handlerFactory)
+        _factories += handlerFactory
     }
 
 

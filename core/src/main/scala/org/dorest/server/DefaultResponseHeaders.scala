@@ -17,7 +17,7 @@ package org.dorest.server
 
 
 /**
- * Map based default implementation of the ResponseHeaders trait.
+ * Map based implementation of the ResponseHeaders trait.
  *
  * @author Michael Eichberg
  */
@@ -36,7 +36,7 @@ class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
         headers = headers.updated(key, value)
     }
 
-    def foreach(f: ((String, String)) => Unit) {
+    def foreach[U](f: ((String, String)) => U) {
         headers.foreach(f)
     }
 
