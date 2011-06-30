@@ -103,7 +103,7 @@ class Keys extends RESTInterface with XMLSupport {
 
     get returns XML {
         KVStore.synchronized {
-            <keys count={"" + KVStore.size}>{
+            <keys count={KVStore.size.toString}>{
                 for (k <- KVStore.keySet) yield <key>{k}</key>
             }</keys>
         }
@@ -112,7 +112,7 @@ class Keys extends RESTInterface with XMLSupport {
     post of XML returns XML {
         val value = XMLRequestBody.text
         val id = KVStore + value
-        <value id={"" + id}>{value}</value>
+        <value id={id.toString}>{value}</value>
     }
 
 }
@@ -128,7 +128,7 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 val value = KVStore(id)
-                <value id={"" + id}>{value}</value>
+                <value id={id.toString}>{value}</value>
             }
         }
     }
@@ -140,7 +140,7 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 KVStore.updated(id, XMLRequestBody.text)
-                <value id={"" + id}>{
+                <value id={id.toString}>{
                     XMLRequestBody.text
                 }</value>
             }
@@ -197,7 +197,7 @@ object Demo extends Server(9000) with App {
 
     this register new HandlerFactory[User] {
         path {
-            "/user/" :: StringValue(v => _.user = v)
+            "/user/" :: StringValue(_.user = _)
         }
 
         def create = new User with PerformanceMonitor

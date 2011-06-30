@@ -53,7 +53,7 @@ trait Log /* TODO implement a LogProvider */ {
      *  }
      * }
      * }}}
-     * @type T if specified, the runtime log message will include the (compile-time) name of the specified type. I.e.,
+     * @tparam T if specified, the runtime log message will include the (compile-time) name of the specified type. I.e.,
      * we use the generic type parameter as an optional parameter.
      */
     // TODO (How) Can we bind T to the current class in which the call is made?
