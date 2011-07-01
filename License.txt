@@ -15,5 +15,5 @@ The code developed by this project is developed under the following license.
    limitations under the License.
 
 
-External libraries that are used by some extension modules may use other license. Do take a look the license files of
-the corresponding modules for further details.
+External libraries that are used by some extension modules may use other license. Do
+take a look at the license files of the corresponding modules for further details.
