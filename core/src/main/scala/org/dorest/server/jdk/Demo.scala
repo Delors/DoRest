@@ -187,6 +187,7 @@ object Demo extends Server(9000) with App {
     this register new HandlerFactory[Key] {
         path {
             // "/keys/" :: LongValue(v => _.id = v)
+          
             //"/keys/" :: LongValue(Key.setId _)
             //"/keys/" :: LongValue((k,l) => k.id = l)
             "/keys/" :: LongValue(_.id = _)
