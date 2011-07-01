@@ -19,25 +19,17 @@ package rest
 import java.io._
 import java.nio.charset._
 
-
 /**
- * Given the request body's input stream and the used charset (if specified and relevant)
- * the body is read and made available to the resource handler in a meaningful way.
+ * A RequestBodyProcessor is responsible for transforming a request body's
+ * data – which is provided by an {{{InputStream}}} – into a suitable object-
+ * oriented representation.
+ *
+ * E.g., given the request body's input stream and the used charset (if
+ * specified and relevant), the body is then read and made available to the
+ * resource handler in a meaningful way.
  *
  * @author Michael Eichberg
  */
-class RequestBodyProcessor(val mediaType: MediaType.Value,
-                         val process: (Option[Charset], InputStream) => Unit)
-
-
-
-
-
-
-
-
-
-
-
-
-
+class RequestBodyProcessor(
+    val mediaType: MediaType.Value,
+    val process: (Option[Charset], InputStream) ⇒ Unit)

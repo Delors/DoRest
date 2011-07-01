@@ -16,23 +16,23 @@
 package org.dorest.server
 package rest
 
-
 import org.dorest.server.MediaType
 
-
 /**
- * A representation factory creates a representation of a resource that has the specified MediaType.
+ * A representation factory creates a representation of a resource. The 
+ * created representation has to satisfy expectations set out by the specified 
+ * MediaType.
  *
  * @author Michael Eichberg
  */
-class RepresentationFactory[M <: MediaType.Value](val mediaType: M,
-                                                  val createRepresentation: () => Option[Representation[M]])
-
+class RepresentationFactory[M <: MediaType.Value](
+    val mediaType: M,
+    val createRepresentation: () ⇒ Option[Representation[M]])
 
 object RepresentationFactory {
 
-    def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: => Option[Representation[M]]) =
-        new RepresentationFactory(mediaType, () => createRepresentation)
+    def apply[M <: MediaType.Value](mediaType: M)(createRepresentation: ⇒ Option[Representation[M]]) =
+        new RepresentationFactory(mediaType, () ⇒ createRepresentation)
 }
 
 

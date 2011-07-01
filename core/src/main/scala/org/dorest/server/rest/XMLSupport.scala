@@ -30,37 +30,31 @@ trait XMLSupport {
 
     protected implicit def xmlNodeToSomeXmlNode(node: Node) = Some(node)
 
-    def XML(makeXML: => Option[Node]) =
-        RepresentationFactory(MediaType.XML) {
-            makeXML match {
-                case Some(xml) => {
-                    Some(new Representation[MediaType.XML.type] {
+    def XML(makeXML: ⇒ Option[Node]) = RepresentationFactory(MediaType.XML) {
+        makeXML map (xml ⇒ new Representation[MediaType.XML.type] {
 
-                        val response = Codec.toUTF8(xml.get.buildString(false))
+            // TODO lazy val???
+            val response = Codec.toUTF8(xml.get.buildString(false))
 
-                        def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
+            def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
 
-                        def length = response.length
+            def length = response.length
 
-                        def write(out: OutputStream) {
-                            out.write(response)
-                        }
-
-                    })
-                }
-                case None => None
+            def write(out: OutputStream) {
+                out.write(response)
             }
-        }
+        })
+    }
 
     private[this] var body: Elem = _
 
     def XML: RequestBodyProcessor = new RequestBodyProcessor(
         MediaType.XML,
-        (charset: Option[Charset], in: InputStream) => {
+        (charset: Option[Charset], in: InputStream) ⇒ {
             charset match {
-                case Some(definedCharset) =>
+                case Some(definedCharset) ⇒
                     body = scala.xml.XML.loadString(scala.io.Source.fromInputStream(in)(scala.io.Codec(definedCharset)).mkString)
-                case _ =>
+                case _ ⇒
                     body = scala.xml.XML.loadString(scala.io.Source.fromInputStream(in)(Codec(Charset.forName("ISO-8859-1"))).mkString)
             }
         }

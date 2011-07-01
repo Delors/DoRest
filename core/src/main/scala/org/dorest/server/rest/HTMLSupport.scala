@@ -19,16 +19,18 @@ package rest
 import io.Codec
 
 /**
- * If you want to return HTML representations of your resources you can mix in this trait into your resource.
+ * Use this trait to return a text based HTML representation of your resources.
  *
- * IF you want to implement a Time resource that has an HTML representation your code could be:
+ * E.g., the code of a "Time" resource which offers a HTML based representation:
  * {{{
  * class Time
  *      extends RESTInterface
  *      with HTMLSupport {
  *
  *   get returns HTML {
- *      "<html><body>The current (server) time is: "+(new java.util.Date().toString)+"</body></html>"
+ *      "<html><body>The current (server) time is: "+
+ *          (new java.util.Date().toString)+
+ *      "</body></html>"
  * }
  * }
  * }}}
@@ -38,9 +40,9 @@ trait HTMLSupport {
 
     protected implicit def charSequenceToSomeHtml(html: CharSequence): Option[CharSequence] = Some(html)
 
-    def HTML(getHTML: => Option[CharSequence]) =
+    def HTML(getHTML: ⇒ Option[CharSequence]) =
         RepresentationFactory(MediaType.HTML) {
-            getHTML map ((html: CharSequence) => {
+            getHTML map ((html: CharSequence) ⇒ {
                 new UTF8BasedRepresentation(MediaType.HTML, Codec.toUTF8(html))
             })
         }
