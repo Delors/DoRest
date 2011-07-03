@@ -23,10 +23,8 @@
         <groupId>org.dorest</groupId>
         <version>0.0.0-SNAPSHOT</version>
     </parent>
-
-	<groupId>org.dorest</groupId>
+	
 	<artifactId>org.dorest.ext</artifactId>
-	<version>0.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>DoRest-Ext</name>
 	
