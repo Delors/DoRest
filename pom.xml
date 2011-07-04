@@ -36,6 +36,7 @@
 	<modules>
 		<module>core</module>
 		<module>ext</module>
+		<module>demo</module>
 	</modules>
 
 	<!-- TODO enable building the overall scaladoc -->

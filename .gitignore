@@ -1,4 +1,6 @@
 target/
+LocalConfiguration.txt
+Safari*OLD*
 .DS_Store
 Icon?
 .classpath
