@@ -20,7 +20,7 @@ import org.dorest.server.MediaType
 
 /**
  * A representation factory creates a representation of a resource. The 
- * created representation has to satisfy expectations set out by the specified 
+ * created representation has to satisfy the expectations set out by the specified 
  * MediaType.
  *
  * @author Michael Eichberg

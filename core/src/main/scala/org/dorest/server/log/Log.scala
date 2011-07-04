@@ -41,9 +41,16 @@ case object DEBUG extends LogLevel
 
 
 trait Log /* TODO implement a LogProvider */ {
+    def log[T](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[T]) 
 
+    def log[T](level: LogLevel,exception: Throwable)(implicit clazz: scala.reflect.ClassManifest[T])
+}
 
+object ConsoleLogging extends Log {    
     /**
+     * Creates the logging message (evaluates the function) iff messages with
+     * the given logging level are going to be logged.
+     * 
      * Example Scenario:
      * {{{
      * class MyServer {
@@ -56,7 +63,6 @@ trait Log /* TODO implement a LogProvider */ {
      * @tparam T if specified, the runtime log message will include the (compile-time) name of the specified type. I.e.,
      * we use the generic type parameter as an optional parameter.
      */
-    // TODO (How) Can we bind T to the current class in which the call is made?
     def log[T](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[T]) {
         if (clazz != ClassManifest.Nothing)
             print(clazz.toString + ": ")

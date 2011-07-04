@@ -33,7 +33,6 @@ trait XMLSupport {
     def XML(makeXML: ⇒ Option[Node]) = RepresentationFactory(MediaType.XML) {
         makeXML map (xml ⇒ new Representation[MediaType.XML.type] {
 
-            // TODO lazy val???
             val response = Codec.toUTF8(xml.get.buildString(false))
 
             def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
@@ -60,6 +59,9 @@ trait XMLSupport {
         }
     )
 
+    /**
+     * Returns the request's body as an scala.xml.Elem object. 
+     */
     def XMLRequestBody: Elem =
         if (body == null)
             throw new Error("The request body's media type is not application/xml.")
