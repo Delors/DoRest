@@ -16,17 +16,19 @@
 package org.dorest.server
 package jdk
 
-import org.dorest.server.rest._
-import java.lang.Long
+import rest._
+import log._
+import utils._
 
+import java.lang.Long
 
 class Time
         extends RESTInterface
-                with PerformanceMonitor
-                with TEXTSupport
-                with HTMLSupport
-                with XMLSupport {
-
+        with ConsoleLogging // TODO needs to exchanged
+        with PerformanceMonitor
+        with TEXTSupport
+        with HTMLSupport
+        with XMLSupport {
 
     val dateString = new java.util.Date().toString
 
@@ -34,26 +36,23 @@ class Time
         dateString
     }
 
-
     get returns HTML {
-        "<html><body>The current (server) time is: " + dateString + "</body></html>"
+        "<html><body>The current (server) time is: "+dateString+"</body></html>"
     }
 
     get returns XML {
-        <time>{dateString}</time>
+        <time>{ dateString }</time>
     }
 }
-
 
 class User extends RESTInterface with TEXTSupport {
 
-    var user: String = _
+    var user : String = _
 
     get returns TEXT {
-        "Welcome " + user
+        "Welcome "+user
     }
 }
-
 
 /**
  * Implementation of a very primitive, thread-safe key-value store.
@@ -63,22 +62,22 @@ object KVStore {
     private val ds = new scala.collection.mutable.HashMap[Long, String]()
     private var id = 0l
 
-    private def nextId: Long = {
+    private def nextId : Long = {
         id += 1l;
         id
     }
 
-    def +(value: String): Long = synchronized {
-        val id: Long = nextId
+    def +(value : String) : Long = synchronized {
+        val id : Long = nextId
         ds += ((id, value))
         id
     }
 
-    def apply(id: Long) = synchronized {
+    def apply(id : Long) = synchronized {
         ds(id)
     }
 
-    def size: Int = synchronized {
+    def size : Int = synchronized {
         ds.size
     }
 
@@ -86,15 +85,15 @@ object KVStore {
         ds.keySet
     }
 
-    def updated(id: Long, v: String) = synchronized {
+    def updated(id : Long, v : String) = synchronized {
         ds.update(id, v)
     }
 
-    def contains(id: Long) = synchronized {
+    def contains(id : Long) = synchronized {
         ds.contains(id)
     }
 
-    def remove(id: Long) = synchronized {
+    def remove(id : Long) = synchronized {
         ds.remove(id)
     }
 }
@@ -103,8 +102,8 @@ class Keys extends RESTInterface with XMLSupport {
 
     get returns XML {
         KVStore.synchronized {
-            <keys count={KVStore.size.toString}>{
-                for (k <- KVStore.keySet) yield <key>{k}</key>
+            <keys count={ KVStore.size.toString }>{
+                for (k <- KVStore.keySet) yield <key>{ k }</key>
             }</keys>
         }
     }
@@ -112,14 +111,14 @@ class Keys extends RESTInterface with XMLSupport {
     post of XML returns XML {
         val value = XMLRequestBody.text
         val id = KVStore + value
-        <value id={id.toString}>{value}</value>
+        <value id={ id.toString }>{ value }</value>
     }
 
 }
 
 class Key extends RESTInterface with XMLSupport {
 
-    var id: Long = _
+    var id : Long = _
 
     get returns XML {
         KVStore.synchronized {
@@ -128,7 +127,7 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 val value = KVStore(id)
-                <value id={id.toString}>{value}</value>
+                <value id={ id.toString }>{ value }</value>
             }
         }
     }
@@ -140,7 +139,7 @@ class Key extends RESTInterface with XMLSupport {
                 None
             } else {
                 KVStore.updated(id, XMLRequestBody.text)
-                <value id={id.toString}>{
+                <value id={ id.toString }>{
                     XMLRequestBody.text
                 }</value>
             }
@@ -155,20 +154,23 @@ class Key extends RESTInterface with XMLSupport {
 
 object Key {
 
-    def setId(key: Key, id: Long) {
+    def setId(key : Key, id : Long) {
         key.id = id
     }
 }
 
-
-class MonitoredMappedDirectory(baseDirectory: String)
-        extends MappedDirectory(baseDirectory)
-                with PerformanceMonitor
-
+class MonitoredMappedDirectory(baseDirectory : String)
+    extends MappedDirectory(baseDirectory)
+    with ConsoleLogging // TODO needs to exchanged
+    with PerformanceMonitor
 
 class Demo
 
-object Demo extends Server(9000) with App {
+object Demo
+        extends Server(9000)
+        with App
+        with ConsoleLogging // TODO needs to exchanged
+        {
 
     this register new HandlerFactory[Keys] {
         path {
@@ -187,7 +189,7 @@ object Demo extends Server(9000) with App {
     this register new HandlerFactory[Key] {
         path {
             // "/keys/" :: LongValue(v => _.id = v)
-          
+
             //"/keys/" :: LongValue(Key.setId _)
             //"/keys/" :: LongValue((k,l) => k.id = l)
             "/keys/" :: LongValue(_.id = _)
@@ -201,7 +203,7 @@ object Demo extends Server(9000) with App {
             "/user/" :: StringValue(_.user = _)
         }
 
-        def create = new User with PerformanceMonitor
+        def create = new User with PerformanceMonitor with ConsoleLogging // TODO needs to exchanged
     }
 
     register(
@@ -222,13 +224,12 @@ object Demo extends Server(9000) with App {
             path {
                 "/static" :: AnyPath(
                     v => _.path = {
-                        if (v startsWith "/") v else "/" + v
+                        if (v startsWith "/") v else "/"+v
                     })
             }
 
             def create = new MonitoredMappedDirectory(System.getProperty("user.home"))
         })
-
 
     start()
 }

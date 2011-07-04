@@ -18,7 +18,7 @@ package jdk
 
 import com.sun.net.httpserver._
 import java.net._
-import log.{ SEVERE, INFO, Log }
+import log._
 
 /**
  * Simple stand alone server that uses the (SUN) JDKs built-in HTTP server.
@@ -27,8 +27,8 @@ import log.{ SEVERE, INFO, Log }
  */
 class Server(val port : Int)
         extends DoRestServer
-        with DoRestApp
-        with Log {
+        with ConsoleLogging // TODO needs to exchanged
+        with DoRestApp {
 
     private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
