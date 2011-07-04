@@ -24,10 +24,12 @@ trait Authentication {
 
     /**
      * Tries to authenticate the given user. If the authentication
-     * fails, <code>false</code> has to be returned.<p>
+     * fails, {{{false}}} has to be returned.
+     * 
      * If the user credentials, in particular the user name,
      * is later on required, it is possible to additionally use, e.g.,
-     * the trait [[org.dorest.server.auth.AuthenticatedUser]].
+     * the trait [[org.dorest.server.auth.AuthenticatedUser]] to make the
+     * information explicitly accessible.
      */
     def authenticate(user: String, pwd: String): Boolean
 }

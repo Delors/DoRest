@@ -33,7 +33,6 @@ trait XMLSupport {
     def XML(makeXML: ⇒ Option[Node]) = RepresentationFactory(MediaType.XML) {
         makeXML map (xml ⇒ new Representation[MediaType.XML.type] {
 
-            // TODO lazy val???
             val response = Codec.toUTF8(xml.get.buildString(false))
 
             def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
@@ -46,6 +45,7 @@ trait XMLSupport {
         })
     }
 
+    // TODO scala.xml.Node or scala.xml.Elem?
     private[this] var body: Elem = _
 
     def XML: RequestBodyProcessor = new RequestBodyProcessor(

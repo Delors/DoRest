@@ -17,7 +17,7 @@ package org.dorest.server
 package auth
 
 /**
- * If the name/id of an authenticated user is required later on you can mix in this trait.
+ * Makes the name/id of an authenticated user accessible.
  *
  * @author Michael Eichberg
  */
@@ -26,7 +26,7 @@ trait AuthenticatedUser extends Authentication {
     /**
      * Stores the name of a successfully authenticated user.
      */
-    private var _authenticatedUser : String = _
+    private[this] var _authenticatedUser : String = _
 
     def authenticatedUser : String = _authenticatedUser
 
