@@ -16,9 +16,10 @@
 package org.dorest.server
 package auth
 
-import org.dorest.server.jdk._
-import org.dorest.server._
-import org.dorest.server.rest._
+import utils._
+import jdk._
+import log._
+import rest._
 
 
 /**
@@ -59,6 +60,7 @@ trait Authorization
  */
 class Time
         extends RESTInterface
+		  with ConsoleLogging
         with Authorization
         with PerformanceMonitor
         with TEXTSupport
@@ -82,7 +84,10 @@ class Time
 
 class Demo
 
-object Demo extends Server(9000) with App {
+object Demo 
+		extends Server(9000) 
+		with ConsoleLogging
+		with App {
 
     val userHomeDir = System.getProperty("user.home")
 
