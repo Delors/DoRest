@@ -60,6 +60,9 @@ trait XMLSupport {
         }
     )
 
+    /**
+     * Returns the request's body as an scala.xml.Elem object. 
+     */
     def XMLRequestBody: Elem =
         if (body == null)
             throw new Error("The request body's media type is not application/xml.")

@@ -14,19 +14,31 @@
    limitations under the License.
  */
 package org.dorest.server
+package utils
+
+import log.INFO
+import log.LogLevel
 
 import java.io._
 
+/**
+ * Measures the time it takes to process a request. This time never takes into account the time required by the framework to identify the correct handler and parse the URL; it's just the time required to create the representation.
+ *
+ * @author Michael Eichberg
+ */
 trait PerformanceMonitor extends Handler {
 
-    override abstract def processRequest(requestBody: InputStream): Response = {
+    def log[T](level : LogLevel)(message : => String)(implicit clazz : scala.reflect.ClassManifest[T]) : Unit
+
+    override abstract def processRequest(requestBody : InputStream) : Response = {
         val startTime = System.nanoTime
         try {
             val response = super.processRequest(requestBody)
             response
         } finally {
             val endTime = System.nanoTime
-            println("Time to process the request: " + (endTime - startTime) + " nanoseconds")
+
+            log[this.type](INFO){ "Time to process the request: "+(endTime - startTime)+" nanoseconds" }
         }
     }
 }

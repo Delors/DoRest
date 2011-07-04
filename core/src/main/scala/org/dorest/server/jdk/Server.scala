@@ -18,22 +18,30 @@ package jdk
 
 import com.sun.net.httpserver._
 import java.net._
-import log.{SEVERE, INFO, Log}
+import log._
 
-class Server(val port: Int) extends DoRestServer with DoRestApp with Log {
+/**
+ * Simple stand alone server that uses the (SUN) JDKs built-in HTTP server.
+ *
+ * @author Michael Eichberg
+ */
+class Server(val port : Int)
+        extends DoRestServer
+        with ConsoleLogging // TODO needs to exchanged
+        with DoRestApp {
 
-    private val server = HttpServer.create(new InetSocketAddress(port), 0);
+    private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
     private class DoRestHandler extends HttpHandler {
 
-        def handle(t: HttpExchange) {
+        def handle(t : HttpExchange) {
 
             val uri = t.getRequestURI.normalize()
             val path = uri.getPath
             val query = uri.getQuery
 
             log[Server](INFO) {
-                var message = ""+t.getRemoteAddress() + " " + new java.util.Date
+                var message = ""+t.getRemoteAddress()+" "+new java.util.Date
                 val it = t.getRequestHeaders().entrySet.iterator
                 while (it.hasNext) {
                     message += "; "+it.next
@@ -82,17 +90,17 @@ class Server(val port: Int) extends DoRestServer with DoRestApp with Log {
                                 }
                             } finally {
                                 // we were able to handle the request..
-                                return;
+                                return ;
                             }
                         }
-                        case _ =>; // the current handler factory's path didn't match the path
+                        case _ => ; // the current handler factory's path didn't match the path
                     }
                     factories = factories.tail
                 }
             } catch {
                 // something went really wrong...
                 case ex => {
-                    log[Server](SEVERE,ex)
+                    log[Server](SEVERE, ex)
                     sendResponseHeaders(t, 500, -1)
                     t.close()
                 }
@@ -105,20 +113,23 @@ class Server(val port: Int) extends DoRestServer with DoRestApp with Log {
 
     }
 
-    def sendResponseHeaders(httpExchange: HttpExchange, code: Int, length: Int) {
+    protected def sendResponseHeaders(httpExchange : HttpExchange, code : Int, length : Int) {
         val it = httpExchange.getResponseHeaders.entrySet().iterator()
         while (it.hasNext) {
             val header = it.next()
-            System.err.println(header.getKey + "=" + header.getValue)
+            System.err.println(header.getKey+"="+header.getValue)
         }
         httpExchange.sendResponseHeaders(code, length)
     }
 
+    /**
+     * Starts the server.
+     */
     def start() {
         server.createContext("/", new DoRestHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        log(INFO){"Server started...: " + port}
+        log(INFO){ "Server started...: "+port }
     }
 
 }
