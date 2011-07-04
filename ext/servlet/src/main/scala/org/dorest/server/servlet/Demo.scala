@@ -16,6 +16,9 @@
 package org.dorest.server
 package servlet
 
+import utils._
+import log._
+
 import java.util.ArrayList;
 
 import org.mortbay.jetty.Connector;
@@ -127,6 +130,7 @@ object MyApp {
 class Time
         extends RESTInterface
         with PerformanceMonitor
+        with ConsoleLogging
         with TEXTSupport
         with HTMLSupport
         with XMLSupport {

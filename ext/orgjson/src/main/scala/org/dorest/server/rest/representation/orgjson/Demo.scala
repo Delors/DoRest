@@ -13,11 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.dorest.server.rest.representation.orgjson
+package org.dorest.server
+package rest.representation.orgjson
 
-import org.dorest.server._
-import org.dorest.server.jdk._
-import org.dorest.server.rest._
+import log._
+import utils._
+import jdk._
+import rest._
+
 import org.json._
 
 /**
@@ -95,7 +98,7 @@ class Time
  */
 class Demo
 
-object Demo extends Server(9000) with App {
+object Demo extends Server(9000)  with App  {
 
     register(new HandlerFactory[Echo] {
         path { "/echo" }
@@ -108,7 +111,7 @@ object Demo extends Server(9000) with App {
 
         path {"/time" }
 
-        def create = new Time() with PerformanceMonitor
+        def create = new Time() with PerformanceMonitor with ConsoleLogging
 
     })
 

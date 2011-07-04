@@ -46,6 +46,7 @@ trait Log /* TODO implement a LogProvider */ {
     def log[T](level: LogLevel,exception: Throwable)(implicit clazz: scala.reflect.ClassManifest[T])
 }
 
+
 trait ConsoleLogging extends Log {    
     /**
      * Creates the logging message (evaluates the function) iff messages with
