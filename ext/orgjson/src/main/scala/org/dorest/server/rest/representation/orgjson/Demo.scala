@@ -67,9 +67,7 @@ class Time
         dateString
     }
 
-
 }
-
 
 /**
  * Demonstrates how to use the org.json support for processing requests.
@@ -98,7 +96,7 @@ class Time
  */
 class Demo
 
-object Demo extends Server(9000)  with App  {
+object Demo extends Server(9000) with App {
 
     register(new HandlerFactory[Echo] {
         path { "/echo" }
@@ -109,7 +107,7 @@ object Demo extends Server(9000)  with App  {
 
     register(new HandlerFactory[Time] {
 
-        path {"/time" }
+        path { "/time" }
 
         def create = new Time() with PerformanceMonitor with ConsoleLogging
 

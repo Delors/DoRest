@@ -121,6 +121,7 @@ trait RESTInterface extends Handler {
      */
     final object get {
 
+        // just an alternative way to specify which media type is accepted
         def accepts(t : RepresentationFactory[MediaType.Value]){
             returns(t)
         }

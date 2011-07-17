@@ -36,7 +36,7 @@ trait Authorization
     def authenticationRealm = "Demo App"
 
     // the SimpleAuthenticator relies on the following two variables to authenticate a user.
-    val authorizationUser = "user"
+    val authorizationUser = "Max"
     val authorizationPwd = "safe"
 }
 
@@ -82,6 +82,15 @@ class Time
     }
 }
 
+class Info extends RESTInterface with Authorization with TEXTSupport {
+
+    var info : String = _
+
+    get returns TEXT {
+        "Info: "+info+" [user="+authenticatedUser+"]"
+    }
+}
+
 class Demo
 
 object Demo 
@@ -89,7 +98,7 @@ object Demo
 		with ConsoleLogging
 		with App {
 
-    val userHomeDir = System.getProperty("user.home")
+   
 
     register(new HandlerFactory[Time] {
         path {
@@ -101,12 +110,24 @@ object Demo
 
 
     register(new HandlerFactory[MappedDirectory] {
+        
+         val userHomeDir = System.getProperty("user.home")
+         
         path {
             "/static" :: AnyPath(v => _.path = if (v startsWith "/") v else "/" + v)
         }
 
         def create = new MappedDirectory(userHomeDir) with Authorization
     })
+    
+    this register new HandlerFactory[Info] {
+        path {
+            "/info/" :: StringValue(_.info = _)
+        }
+
+        def create = new Info with PerformanceMonitor with ConsoleLogging // TODO needs to exchanged
+    }
+
 
     start()
 }
