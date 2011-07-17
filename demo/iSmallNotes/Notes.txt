@@ -1,0 +1,8 @@
+Notes:
+- one note can have multiple tags
+- one user can define multiple tags
+- each user (implicitly) defines a tag with its name that is automatically associated with every note that the user creates
+- one or more users can share the same Tag
+- a tag can be used by multiple users
+- a tag can be associated with multiple notes
+- a user can only delete its specific instance of the tag (a note without any tag will be garbage collected)
