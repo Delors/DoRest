@@ -43,15 +43,15 @@ trait ORGJSONSupport {
      * Generates a JSON representation for the JSONObject/JSONArray
      */
     def JSON(getJSONObject: => Option[Object]) =
-        RepresentationFactory(MediaType.JSON) {
-            getJSONObject map ((json) => new UTF8BasedRepresentation(MediaType.JSON, Codec.toUTF8(json.toString)))
+        RepresentationFactory(MediaType.APPLICATION_JSON) {
+            getJSONObject map ((json) => new UTF8BasedRepresentation(MediaType.APPLICATION_JSON, Codec.toUTF8(json.toString)))
         }
 
 
     private[this] var body: JSONObject = _
 
     def JSON: RequestBodyProcessor = new RequestBodyProcessor(
-        MediaType.JSON,
+        MediaType.APPLICATION_JSON,
         (charset: Option[Charset], in: InputStream) => {
             charset match {
                 case Some(charset) =>

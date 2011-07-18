@@ -22,15 +22,33 @@ import log.LogLevel
 import java.io._
 
 /**
- * Measures the time it takes to process a request. This time never takes into account the time required by the framework to identify the correct handler and parse the URL; it's just the time required to create the representation.
+ * Measures the time it takes the subsequent handlers to execute the "processRequest" method.
+ *
+ * This time never takes into account the time required by the framework to identify the correct handler and to parse the
+ * URL; it's just the time required "to create the representation". What is precisely measured depends on the position
+ * where you mix in this trait. E.g.,
+ * {{{
+ * class Time
+ *      extends RESTInterface
+ *      with PerformanceMonitor
+ *      with Authorization
+ *      ... {
+ * }}}
+ * {{{
+ * class Time
+ *      extends RESTInterface
+ *      with Authorization
+ *      with PerformanceMonitor
+ *      ... {
+ * }}}
  *
  * @author Michael Eichberg
  */
 trait PerformanceMonitor extends Handler {
 
-    def log[T](level : LogLevel)(message : => String)(implicit clazz : scala.reflect.ClassManifest[T]) : Unit
+    def log[Logger](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[Logger]): Unit
 
-    override abstract def processRequest(requestBody : InputStream) : Response = {
+    override abstract def processRequest(requestBody: InputStream): Response = {
         val startTime = System.nanoTime
         try {
             val response = super.processRequest(requestBody)
@@ -38,7 +56,9 @@ trait PerformanceMonitor extends Handler {
         } finally {
             val endTime = System.nanoTime
 
-            log[this.type](INFO){ "Time to process the request: "+(endTime - startTime)+" nanoseconds" }
+            log[this.type](INFO) {
+                "Time to process the request: " + (endTime - startTime) + " nanoseconds"
+            }
         }
     }
 }

@@ -30,18 +30,17 @@ class Time
         with HTMLSupport
         with XMLSupport {
 
-    val dateString = new java.util.Date().toString
 
     get returns TEXT {
-        dateString
+        new java.util.Date().toString
     }
 
     get returns HTML {
-        "<html><body>The current (server) time is: "+dateString+"</body></html>"
+        "<html><body>The current (server) time is: "+new java.util.Date().toString+"</body></html>"
     }
 
     get returns XML {
-        <time>{ dateString }</time>
+        <time>{ new java.util.Date().toString }</time>
     }
 }
 
@@ -123,8 +122,8 @@ class Key extends RESTInterface with XMLSupport {
     get returns XML {
         KVStore.synchronized {
             if (!KVStore.contains(id)) {
-                responseCode = 404 // NOT FOUND
-                None
+                responseCode = 404 // 404 = NOT FOUND
+                None // EMPTY BODY
             } else {
                 val value = KVStore(id)
                 <value id={ id.toString }>{ value }</value>
@@ -177,13 +176,7 @@ object Demo
             "/keys"
         }
 
-        /**
-         * Reusing one instance of a Resource to handle all requests requires that the resource is thread safe.
-         * If you are unsure, just create a new instance for each request!
-         * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
-         * and instead just create a new instance. (i.e., you don't write "lazy val" but write "def" in following.)
-         */
-        lazy val create = new Keys
+        def create = new Keys
     }
 
     this register new HandlerFactory[Key] {
@@ -215,9 +208,21 @@ object Demo
                 NoQuery
             }
 
-            // ("timezone",StringValue(v => _.timeZone = v))
-            def create = new Time() with PerformanceMonitor
+            /**
+             * Reusing one instance of a resource to handle all requests requires that the resource is thread safe.
+             * If you are unsure, just create a new instance for each request!
+             *
+             * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
+             * and instead just create a new instance. (i.e., you don't write "lazy val" but write "def" in following.)
+             *
+             * In general, whenever you have to extract path parameters or have to process a request body or your
+             * object representing the resource has some kind of mutable state, it is relatively certain that you
+             * have to create a new instance to handle a request.
+             */
+            lazy val create = new Time() with PerformanceMonitor
         })
+
+    // ("timezone",StringValue(v => _.timeZone = v))
 
     register(
         new HandlerFactory[MappedDirectory] {
@@ -231,6 +236,7 @@ object Demo
             def create = new MonitoredMappedDirectory(System.getProperty("user.home"))
         })
 
+    // start the server
     start()
 }
 

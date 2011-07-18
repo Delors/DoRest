@@ -20,18 +20,18 @@ package org.dorest.server
  */
 object MediaType extends Enumeration {
     val any = Value("*/*")
-    val XML = Value("application/xml")
-    val JSON = Value("application/json")
-    val TEXT = Value("text/plain")
-    val HTML = Value("text/html")
-    val CSS = Value("text/css")
-    val JAVASCRIPT = Value("application/javascript") // or "text/javascript"
-    val GIF = Value("image/gif")
-    val JPEG = Value("image/jpeg")
-    val PNG = Value("image/png") // Portable Network Graphics; Registered,[7] Defined in RFC 2083
-    val SVG = Value("image/svg+xml") // SVG vector image; Defined in SVG Tiny 1.2 Specification Appendix M
-    val TIFF = Value("image/tiff") //  Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
-    val ATOM = Value("application/atom+xml") // Atom feeds
-    val PDF = Value("application/pdf")
-    val ICO = Value("image/x-icon")
+    val APPLICATION_XML = Value("application/xml")
+    val APPLICATION_JSON = Value("application/json")
+    val TEXT_PLAIN = Value("text/plain")
+    val TEXT_HTML = Value("text/html")
+    val TEXT_CSS = Value("text/css")
+    val APPLICATION_JAVASCRIPT = Value("application/javascript") // or "text/javascript"
+    val IMAGE_GIF = Value("image/gif")
+    val IMAGE_JPEG = Value("image/jpeg")
+    val IMAGE_PNG = Value("image/png") // Portable Network Graphics; Registered,[7] Defined in RFC 2083
+    val IMAGE_SVG_XML = Value("image/svg+xml") // SVG vector image; Defined in SVG Tiny 1.2 Specification Appendix M
+    val IMAGE_TIFF = Value("image/tiff") //  Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
+    val APPLICATION_ATOM_XML = Value("application/atom+xml") // Atom feeds
+    val APPLICATION_PDF = Value("application/pdf")
+    val IMAGE_X_ICON = Value("image/x-icon")
 }

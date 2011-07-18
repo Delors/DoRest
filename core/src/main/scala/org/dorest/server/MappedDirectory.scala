@@ -56,17 +56,17 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
             val fileSuffix = fileName.substring(fileName.lastIndexOf('.') + 1)
             Some((
                     fileSuffix match {
-                        case "css" => MediaType.CSS
-                        case "javascript" => MediaType.JAVASCRIPT
-                        case "js" => MediaType.JAVASCRIPT
-                        case "htm" => MediaType.HTML
-                        case "html" => MediaType.HTML
-                        case "xml" => MediaType.XML
-                        case "txt" => MediaType.TEXT
-                        case "jpg" => MediaType.JPEG
-                        case "pdf" => MediaType.PDF
-                        case "png" => MediaType.PNG
-                        case "ico" => MediaType.ICO
+                        case "css" => MediaType.TEXT_CSS
+                        case "javascript" => MediaType.APPLICATION_JAVASCRIPT
+                        case "js" => MediaType.APPLICATION_JAVASCRIPT
+                        case "htm" => MediaType.TEXT_HTML
+                        case "html" => MediaType.TEXT_HTML
+                        case "xml" => MediaType.APPLICATION_XML
+                        case "txt" => MediaType.TEXT_PLAIN
+                        case "jpg" => MediaType.IMAGE_JPEG
+                        case "pdf" => MediaType.APPLICATION_PDF
+                        case "png" => MediaType.IMAGE_PNG
+                        case "ico" => MediaType.IMAGE_X_ICON
                         case _ => throw new Error("Media type detection based on file suffix (" + fileSuffix + ") failed: " + fileName)
                     },
                     // We are not able to reliably determine the used charset..

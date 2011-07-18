@@ -25,10 +25,10 @@ import io.Codec
  */
 trait TEXTSupport {
 
-    protected implicit def textToSomeText(html: String) : Option[String] = Some(html)
+    protected implicit def textToSomeText(textPlain: String) : Option[String] = Some(textPlain)
 
     def TEXT(getText: => Option[String]) =
-        RepresentationFactory(MediaType.TEXT) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT, Codec.toUTF8(text)))
+        RepresentationFactory(MediaType.TEXT_PLAIN) {
+            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT_PLAIN, Codec.toUTF8(text)))
         }
 }

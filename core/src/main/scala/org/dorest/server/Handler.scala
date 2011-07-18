@@ -19,14 +19,14 @@ import java.net._
 import java.io._
 
 /**
- * A Handler object is responsible for processing one request.
+ * Handlers are responsible for processing requests.
  *
  * This trait's core method is the [[#processRequest(InputStream):Response]] method. It will be called by the server component
  * after the request's path and query was successfully matched.
  *
  * If a handler fails to process the request, it is the responsibility
  * of the handler to create a [[org.dorest.server.Response]] object that appropriately describes the error. A server
- * adapter must not try to guess the error condition. If the process request method fails with an exception, the server
+ * adapter must not try to guess the error condition. If the process' request method fails with an exception, the server
  * is expected to return a response that just states that an internal server error (response code 500) was encountered.
  *
  * @author Michael Eichberg
@@ -92,8 +92,8 @@ trait Handler {
     var localAddress: String = _
 
     /**
-     * The precise data type used to store the request headers is not relevant, but we need to be at least
-     * able to extract specific headers.
+     * The precise data type used to store the request headers is not relevant, but it has to be possible
+     * to extract specific headers.
      */
     type HTTPHeaders = {
         def getFirst(key: String): String
@@ -115,7 +115,7 @@ trait Handler {
      *
      * '''Overriding This Method''':
      * When your handler overrides this method and reads from the stream, it is the responsibility of
-     * your handler to pass on a new InputStream to upstream Handlers which the latter ones can
+     * your handler to pass on a new InputStream to upstream handlers which the latter ones can
      * use to read the complete (e.g. decrypted, unpacked) request body.
      *
      * '''Design''':

@@ -18,8 +18,9 @@ package org.dorest.server
 import collection.mutable.Buffer
 
 /**
- * Base trait of all DoRest applications. It enables the registration of [[org.dorest.server.HandlerFactory]] objects
- * and provides the functionality to select matching handlers.
+ * Enables the registration of [[org.dorest.server.HandlerFactory]] objects.
+ *
+ * This trait is implemented by DoRest servers.
  *
  * @author Michael Eichberg
  */

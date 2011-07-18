@@ -234,7 +234,7 @@ abstract class HandlerFactory[T <: Handler] {
     }
 
     /**
-     * Creates a new handler object that will be further initialized based on the path matchers.
+     * Creates a new handler object that will be further initialized using the segments extracted by the path matchers.
      */
     def create(): T
 }

@@ -30,12 +30,12 @@ trait XMLSupport {
 
     protected implicit def xmlNodeToSomeXmlNode(node: Node) = Some(node)
 
-    def XML(makeXML: ⇒ Option[Node]) = RepresentationFactory(MediaType.XML) {
-        makeXML map (xml ⇒ new Representation[MediaType.XML.type] {
+    def XML(makeXML: ⇒ Option[Node]) = RepresentationFactory(MediaType.APPLICATION_XML) {
+        makeXML map (xml ⇒ new Representation[MediaType.APPLICATION_XML.type] {
 
             val response = Codec.toUTF8(xml.get.buildString(false))
 
-            def contentType = Some((MediaType.XML, Some(Codec.UTF8)))
+            def contentType = Some((MediaType.APPLICATION_XML, Some(Codec.UTF8)))
 
             def length = response.length
 
@@ -49,7 +49,7 @@ trait XMLSupport {
     private[this] var body: Elem = _
 
     def XML: RequestBodyProcessor = new RequestBodyProcessor(
-        MediaType.XML,
+        MediaType.APPLICATION_XML,
         (charset: Option[Charset], in: InputStream) ⇒ {
             charset match {
                 case Some(definedCharset) ⇒

@@ -29,9 +29,9 @@ class ErrorResponse(val code: Int, val text: String) extends Response {
 
     val body = Some(new ResponseBody {
 
-        private val response: Array[Byte] = Charset.forName("US-ASCII").encode(text).array()
+        private val response: Array[Byte] = ErrorResponse.ASCII_CHARSET.encode(text).array()
 
-        def contentType = Some((MediaType.TEXT, Some(Charset.forName("US-ASCII"))))
+        def contentType = Some((MediaType.TEXT_PLAIN, Some(ErrorResponse.ASCII_CHARSET)))
 
         def length: Int = response.length
 
@@ -43,6 +43,9 @@ class ErrorResponse(val code: Int, val text: String) extends Response {
 
 
 object ErrorResponse {
+
+    val ASCII_CHARSET = Charset.forName("US-ASCII")
+
     def apply(code: Int, text: String) = new ErrorResponse(code, text)
 }
 

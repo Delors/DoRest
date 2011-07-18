@@ -19,7 +19,7 @@ package rest
 import io.Codec
 
 /**
- * Use this trait to return a text based HTML representation of your resources.
+ * Use this trait to return a text (string) based HTML representation of your resources.
  *
  * E.g., the code of a "Time" resource which offers a HTML based representation:
  * {{{
@@ -34,6 +34,7 @@ import io.Codec
  * }
  * }
  * }}}
+ *
  * @author Michael Eichberg
  */
 trait HTMLSupport {
@@ -41,9 +42,9 @@ trait HTMLSupport {
     protected implicit def charSequenceToSomeHtml(html: CharSequence): Option[CharSequence] = Some(html)
 
     def HTML(getHTML: ⇒ Option[CharSequence]) =
-        RepresentationFactory(MediaType.HTML) {
+        RepresentationFactory(MediaType.TEXT_HTML) {
             getHTML map ((html: CharSequence) ⇒ {
-                new UTF8BasedRepresentation(MediaType.HTML, Codec.toUTF8(html))
+                new UTF8BasedRepresentation(MediaType.TEXT_HTML, Codec.toUTF8(html))
             })
         }
 }
