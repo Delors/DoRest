@@ -197,12 +197,13 @@ abstract class HandlerFactory[T <: Handler] {
     }
 
     def matchURI(path: String, query: String): Option[T] = {
-        this.pathMatcher.matchSegment(path) match {
+       pathMatcher matchSegment(path) map { create(_) }
+        /*this.pathMatcher.matchSegment(path) match {
             case Some(fs) ⇒ {
                 Some(create(fs))
             }
             case _ ⇒ None
-        }
+        }*/
     }
 
     private def create(fs: List[(T) ⇒ Unit]): T = {

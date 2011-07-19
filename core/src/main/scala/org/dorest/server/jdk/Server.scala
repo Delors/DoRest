@@ -42,6 +42,7 @@ class Server(val port : Int)
 
             log[Server](INFO) {
                 var message = ""+t.getRemoteAddress()+" "+new java.util.Date
+                message += path+"?"+query
                 val it = t.getRequestHeaders().entrySet.iterator
                 while (it.hasNext) {
                     message += "; "+it.next

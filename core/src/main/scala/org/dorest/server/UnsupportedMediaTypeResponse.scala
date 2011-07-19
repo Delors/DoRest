@@ -15,8 +15,10 @@
  */
 package org.dorest.server
 
-
 /**
+ * http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+ * '''The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.'''
+ *
  * @author Michael Eichberg
  */
 object UnsupportedMediaTypeResponse extends PlainResponse(415)

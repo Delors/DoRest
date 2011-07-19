@@ -39,19 +39,17 @@ case object INFO extends LogLevel
  */
 case object DEBUG extends LogLevel
 
-
 trait Log /* TODO implement a LogProvider */ {
-    def log[Logger](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[Logger])
+    def log[Logger](level: LogLevel)(message: ⇒ String)(implicit clazz: scala.reflect.ClassManifest[Logger])
 
-    def log[Logger](level: LogLevel,exception: Throwable)(implicit clazz: scala.reflect.ClassManifest[Logger])
+    def log[Logger](level: LogLevel, exception: Throwable)(implicit clazz: scala.reflect.ClassManifest[Logger])
 }
 
-
-trait ConsoleLogging extends Log {    
+trait ConsoleLogging extends Log {
     /**
      * Creates the logging message (evaluates the function) iff messages with
      * the given logging level are going to be logged.
-     * 
+     *
      * Example Scenario:
      * {{{
      * class MyServer {
@@ -64,17 +62,18 @@ trait ConsoleLogging extends Log {
      * @tparam T if specified, the runtime log message will include the (compile-time) name of the specified type. I.e.,
      * we use the generic type parameter as an optional parameter.
      */
-    def log[Logger](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[Logger]) {
+    def log[Logger](level: LogLevel)(message: ⇒ String)(implicit clazz: scala.reflect.ClassManifest[Logger]) {
+        print("["+level+"] ")
         if (clazz != ClassManifest.Nothing)
-            print(clazz.toString + ": ")
-        println(level + ": " + message)
+            print(clazz.toString+": ")
+        println(": "+message)
     }
 
-    def log[Logger](level: LogLevel,exception: Throwable)(implicit clazz: scala.reflect.ClassManifest[Logger]) {
+    def log[Logger](level: LogLevel, exception: Throwable)(implicit clazz: scala.reflect.ClassManifest[Logger]) {
+        print("["+level+"] ")
         if (clazz != ClassManifest.Nothing)
-            print(clazz.toString + ": ")
-        println(level + ": " + exception.toString)
+            print(clazz.toString+": ")
+        println(": "+exception.toString)
     }
-
 
 }
