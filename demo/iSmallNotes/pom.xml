@@ -11,7 +11,6 @@
 
 	<groupId>de.smallnotes</groupId>
 	<artifactId>de.smallnotes</artifactId>
-	<version>1.0</version>
 	<name>iSmallNotes</name>
 
 	<build>
