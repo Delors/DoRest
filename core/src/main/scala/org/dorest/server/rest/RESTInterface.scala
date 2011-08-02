@@ -17,6 +17,7 @@ package org.dorest.server
 package rest
 
 import java.io._
+import java.net.{URL,URI}
 
 
 /**
@@ -33,6 +34,8 @@ trait RESTInterface extends Handler {
 
     /**
      * The response code (sometimes also called status code) send to the client.
+     * 
+     * The default value is "200"; i.e., "OK".
      */
     protected var responseCode = 200 // OK
 
@@ -72,6 +75,7 @@ trait RESTInterface extends Handler {
             case POST if !postHandlers.isEmpty => {
                 // if we cannot handle the request body, we have to return a UnsupportedMediaTypeResponse
                 // TODO nearly everything... matching...
+                responseCode = 201
                 val postHandler = postHandlers.head
                 postHandler.requestBodyHandler.process(None, requestBody)
                 responseBody = postHandler.representationFactory.createRepresentation()
@@ -126,8 +130,9 @@ trait RESTInterface extends Handler {
             returns(t)
         }
 
-        def returns(t: RepresentationFactory[MediaType.Value]) {
+        def returns(t: RepresentationFactory[MediaType.Value]) : RESTInterface = {
             getHandlers += t
+            RESTInterface.this
         }
     }
 
@@ -135,9 +140,10 @@ trait RESTInterface extends Handler {
 
         var representationFactory: RepresentationFactory[MediaType.Value] = _
 
-        def returns(t: RepresentationFactory[MediaType.Value]) {
+        def returns(t: RepresentationFactory[MediaType.Value]) : RESTInterface = {
             representationFactory = t
             registerThisHandler
+            RESTInterface.this
         }
 
         def registerThisHandler: Unit
@@ -153,6 +159,12 @@ trait RESTInterface extends Handler {
 
     }
 
+    /**
+     * ===HTTP 1.1 Specification===
+     * If a resource has been created on the origin server, the response SHOULD 
+     * be 201 (Created) and contain an entity which describes the status of the 
+     * request and refers to the new resource, and a Location header.
+     */
     final object post {
 
         /**
@@ -160,7 +172,7 @@ trait RESTInterface extends Handler {
          */
         def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
 
-        def of(requestBodyHandler: RequestBodyProcessor) = new PostHandler(requestBodyHandler)
+        def of(requestBodyHandler: RequestBodyProcessor) : PostHandler = new PostHandler(requestBodyHandler)
     }
 
     final class PutHandler(requestBodyHandler: RequestBodyProcessor)
@@ -179,7 +191,7 @@ trait RESTInterface extends Handler {
          */
         def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
 
-        def of(requestBodyHandler: RequestBodyProcessor) = new PutHandler(requestBodyHandler)
+        def of(requestBodyHandler: RequestBodyProcessor) : PutHandler = new PutHandler(requestBodyHandler)
     }
 
     /**
@@ -193,6 +205,54 @@ trait RESTInterface extends Handler {
     final def delete(f: => Boolean) {
         deleteHandler = Some(() => f)
     }
+    
+   
+    
+    /**
+     * Sets a response-header's location field.
+     * 
+     * ===HTTP 1.1 Specification===
+     * The Location response-header field is used to redirect the recipient to 
+     * a location other than the Request-URI for completion of the request or 
+     * identification of a new resource. For 201 (Created) responses, the 
+     * Location is that of the new resource which was created by the request.
+     *  
+     * For 3xx responses, the location SHOULD indicate the server's preferred 
+     * URI for automatic redirection to the resource. The field value consists 
+     * of a single absolute URI.
+	 *
+     *  Location       = "Location" ":" absoluteURI
+	 *
+     */
+    final def Location(location : URL) {
+        responseHeaders.set("Location",location.toString) // TODO figure out which is the correct encoding
+    }
+    
+    
+    /**
+     * Sets a response-header's location field.
+     * 
+     * ===HTTP 1.1 Specification===
+     * The Location response-header field is used to redirect the recipient to 
+     * a location other than the Request-URI for completion of the request or 
+     * identification of a new resource. For 201 (Created) responses, the 
+     * Location is that of the new resource which was created by the request.
+     *  
+     * For 3xx responses, the location SHOULD indicate the server's preferred 
+     * URI for automatic redirection to the resource. The field value consists 
+     * of a single absolute URI.
+	 *
+     *  Location       = "Location" ":" absoluteURI
+	 *
+     * /
+    final def relativeLocation(path: String ){
+                
+        println(requestURI)
+        val baseURL = new URL("http",localAddress,requestURI.toString)
+    	val location = new URL(baseURL,path)
+        responseHeaders.set("Location",location.toString) // TODO figure out which is the correct encoding
+    }
+    */
 }
 
 

@@ -21,6 +21,7 @@ import log._
 import utils._
 
 import java.lang.Long
+import java.net.{InetAddress,URI,URL}
 
 class Time
         extends RESTInterface
@@ -110,8 +111,16 @@ class Keys extends RESTInterface with XMLSupport {
     post of XML returns XML {
         val value = XMLRequestBody.text
         val id = KVStore + value
+        
+        // Set the response-header's Location field using the provided 
+        // convenience method: Location(URI)
+        // Alternatively, it is possible to directly set the response headers
+        // using the corresponding response headers data structure.
+        Location( new URL("http://"+InetAddress.getLocalHost.getHostName+":9000/keys/"+id.toString) ) // TODO enable to specify the relative path
+        
+        // the "response body"
         <value id={ id.toString }>{ value }</value>
-    }
+      } 
 
 }
 
@@ -165,6 +174,13 @@ class MonitoredMappedDirectory(baseDirectory : String)
 
 class Demo
 
+/**
+ * To test the restful web serice you can use, e.g., curl. For example, to 
+ * add a value to the simple key-value store you can use:
+ * 
+ * curl -v -X POST -d "<value>Test</value>" http://localhost:9000/keys
+ *  
+ */
 object Demo
         extends Server(9000)
         with scala.App

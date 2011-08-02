@@ -78,6 +78,7 @@ trait Handler {
      * '''Remark''':
      * This field is only to be written by the server component.
      */
+    // TODO should we replace this field by "remoteHostName" and "remotePort"?
     var remoteAddress: String = _
 
     /**
@@ -89,6 +90,7 @@ trait Handler {
      * '''Remark''':
      * This field is only to be written by the server component.
      */
+    // TODO should we replace this field by "loaclHostName" and "localPort"?
     var localAddress: String = _
 
     /**
