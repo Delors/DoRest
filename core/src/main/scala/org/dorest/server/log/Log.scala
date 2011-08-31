@@ -74,6 +74,7 @@ trait ConsoleLogging extends Log {
         if (clazz != ClassManifest.Nothing)
             print(clazz.toString+": ")
         println(": "+exception.toString)
+        exception.printStackTrace() // TODO Improve....
     }
 
 }
