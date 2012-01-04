@@ -1,13 +1,11 @@
 package de.smallnotes
 
-import org.dorest.server.auth.{AuthenticatedUser, BasicAuthentication}
+import org.dorest.server.auth.BasicAuthentication
 
 trait SmallNotesAuthorization
         extends BasicAuthentication
-        with SmallNotesAuthenticator
-        with AuthenticatedUser {
+        with SmallNotesAuthenticator {
 
-    def authenticationRealm = "iSmallNotes"
 }
 
 

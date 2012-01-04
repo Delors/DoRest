@@ -13,21 +13,28 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.dorest.server
-package auth
-
+package org.dorest.server.auth
 
 /**
- * Authenticates the given user credentials against the specified user.
+ * Enables validation of user credentials.
  *
- * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
-trait SimpleAuthenticator extends Authentication {
-    
-    val authorizationUser: String
-    val authorizationPwd: String
+trait Authentication {
 
-    def authenticate(user: String, pwd: String): Boolean = {
-        (user == authorizationUser) && (pwd == authorizationPwd)
-    }
+  /**
+   * Provides the authentication realm to be included in an "unauthorized"-response.
+   */
+  def authenticationRealm: String
+
+  /**
+   * Provides the password for a given username (if available).
+   */
+  def password(username: String): Option[String]
+
+  /**
+   * Provides the username of the authenticated user (if authentication successful).
+   */
+  def authenticatedUser: Option[String]
+
 }

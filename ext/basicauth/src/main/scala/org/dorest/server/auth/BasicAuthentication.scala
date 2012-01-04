@@ -23,43 +23,31 @@ import java.io.InputStream
  *
  * @see [[org.dorest.server.auth.SimpleAuthenticator]]
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
 trait BasicAuthentication extends Authentication with Handler {
 
-    /**
-     * The required authentication realm, e.g. "My Website", that is sent back if
-     * the request does not contain the necessary credentials.
-     */
-    def authenticationRealm : String
+  private[this] var _authenticatedUser: Option[String] = None
 
-    override abstract def processRequest(requestBody : InputStream) : Response = {
-        var authorizationInfo = requestHeaders.getFirst("Authorization")
-        if (authorizationInfo == null) {
-            return Unauthorized(
-                "Authorization required.",
-                "Basic realm=\""+authenticationRealm+"\""
-            )
+  def authenticatedUser = _authenticatedUser
+
+  override abstract def processRequest(requestBody: InputStream): Response = {
+
+    def parseAuthorizationHeader(authorizationHeader: String): Array[String] =
+      new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(authorizationHeader.substring("Basic ".length))).split(":")
+
+    requestHeaders.getFirst("Authorization") match {
+      case authorizationHeader: String if authorizationHeader.startsWith("Basic ") =>
+        {
+          parseAuthorizationHeader(authorizationHeader) match {
+            case Array(username: String, requestPassword: String) => password(username) match {
+              case Some(validPassword) if requestPassword == validPassword => { _authenticatedUser = Some(username); super.processRequest(requestBody) }
+              case _ => UnauthorizedBasicResponse(authenticationRealm)
+            }
+            case _ => BadRequest
+          }
         }
-
-        if (!authorizationInfo.startsWith("Basic ")) {
-            return BadRequest
-        }
-
-        authorizationInfo = authorizationInfo.substring("Basic ".length)
-        authorizationInfo = new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(authorizationInfo))
-        //authorizationInfo = new String(org.apache.commons.codec.binary.Base64.decodeBase64(authorizationInfo))
-
-        val user_pwd = authorizationInfo.split(":")
-        if (user_pwd.length != 2) {
-            return BadRequest
-        }
-        if (!authenticate(user_pwd(0), user_pwd(1))) {
-            return Unauthorized(
-                "Authorization failed.",
-                "Basic realm=\""+authenticationRealm+"\"")
-        }
-
-        super.processRequest(requestBody)
+      case _ => UnauthorizedBasicResponse(authenticationRealm)
     }
-
+  }
 }

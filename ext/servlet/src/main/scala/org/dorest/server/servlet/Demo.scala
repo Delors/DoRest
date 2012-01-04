@@ -32,7 +32,7 @@ import org.mortbay.jetty.servlet.ServletMapping;
 
 import org.dorest.server.rest._
 import org.dorest.server._
-import auth.{SimpleAuthenticator, BasicAuthentication}
+import auth.BasicAuthentication
 
 
 /**

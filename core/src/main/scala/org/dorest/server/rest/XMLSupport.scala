@@ -29,11 +29,12 @@ import java.nio.charset.Charset
 trait XMLSupport {
 
     protected implicit def xmlNodeToSomeXmlNode(node: Node) = Some(node)
+    private[this] val prettyPrinter =  new scala.xml.PrettyPrinter(200,2)
 
     def XML(makeXML: ⇒ Option[Node]) = RepresentationFactory(MediaType.APPLICATION_XML) {
         makeXML map (xml ⇒ new Representation[MediaType.APPLICATION_XML.type] {
 
-            val response = Codec.toUTF8(xml.get.buildString(false))
+        	val response = Codec.toUTF8(prettyPrinter.format(xml))
 
             def contentType = Some((MediaType.APPLICATION_XML, Some(Codec.UTF8)))
 

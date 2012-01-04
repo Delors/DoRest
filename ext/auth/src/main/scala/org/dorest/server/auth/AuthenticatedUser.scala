@@ -13,29 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.dorest.server
-package auth
+package org.dorest.server.auth
 
 /**
- * Makes the name/id of an authenticated user accessible.
+ * Declares an interface to access the username of the authenticated user.
  *
- * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
-trait AuthenticatedUser extends Authentication {
+trait AuthenticatedUser {
 
-    /**
-     * Stores the name of a successfully authenticated user.
-     */
-    private[this] var _authenticatedUser : String = _
-
-    def authenticatedUser : String = _authenticatedUser
-
-    abstract override def authenticate(user : String, pwd : String) : Boolean = {
-        val authenticated = super.authenticate(user, pwd)
-        if (authenticated) {
-            _authenticatedUser = user
-        }
-        authenticated
-    }
-
+  /**
+   * Provides the username of the authenticated user (if authentication successful).
+   */
+    def authenticatedUser : Option[String]
+    
 }

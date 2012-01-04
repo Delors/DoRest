@@ -29,11 +29,17 @@ object HTTPMethod {
         case "PUT" => PUT
         case "DELETE" => DELETE
     }
-
-
+    
+    def unapply(method: HTTPMethod): String = method match {
+      case GET => "GET"
+      case POST => "POST"
+      case PUT => "PUT"
+      case DELETE => "DELETE"
+    }
+    
 }
 
-case object GET extends HTTPMethod
+case object GET extends HTTPMethod 
 
 case object POST extends HTTPMethod
 

@@ -27,38 +27,6 @@
 	<artifactId>org.dorest.ext.orgjson</artifactId>
 	<name>DoRest-Ext-ORGJSON</name>
     
-	<build>
-		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.scala-lang</groupId>
-						<artifactId>scala-library</artifactId>
-						<version>${scala.version}</version>
-						<scope>compile</scope>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<scalaVersion>${scala.version}</scalaVersion>
-					<excludes>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins> 
-	</build>
-    
 	<dependencies>
         <dependency>
         	<groupId>org.json</groupId>
@@ -70,8 +38,6 @@
         <dependency>
         	<groupId>org.dorest</groupId>
         	<artifactId>org.dorest.core</artifactId>
-        	<version>0.0.0-SNAPSHOT</version>
-        	<type>jar</type>
         	<scope>compile</scope>
         </dependency>
 	</dependencies>

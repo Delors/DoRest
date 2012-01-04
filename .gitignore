@@ -3,12 +3,10 @@ LocalConfiguration.txt
 Safari*OLD*
 .DS_Store
 Icon?
-.classpath
-.project
 .scala_dependencies
 .settings
+.cache*
 *.iml
 *.ipr
 *.iws
-*.httpclient
-.cache
+ext/stream/temp/

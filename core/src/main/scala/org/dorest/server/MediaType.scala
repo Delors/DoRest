@@ -34,4 +34,6 @@ object MediaType extends Enumeration {
     val APPLICATION_ATOM_XML = Value("application/atom+xml") // Atom feeds
     val APPLICATION_PDF = Value("application/pdf")
     val IMAGE_X_ICON = Value("image/x-icon")
+    
+    val stringValues = Set[String]() ++ values.map (_.toString)
 }

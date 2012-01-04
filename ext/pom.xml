@@ -18,34 +18,81 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>org.dorest</artifactId>
-        <groupId>org.dorest</groupId>
-        <version>0.0.0-SNAPSHOT</version>
-    </parent>
+	<parent>
+		<artifactId>org.dorest</artifactId>
+		<groupId>org.dorest</groupId>
+		<version>0.0.0-SNAPSHOT</version>
+	</parent>
 
 	<artifactId>org.dorest.ext</artifactId>
 	<packaging>pom</packaging>
 	<name>DoRest-Ext</name>
 
 	<modules>
-        <module>basicauth</module>
+		<module>auth</module>
+		<module>basicauth</module>
+		<module>digestauth</module>
 		<module>orgjson</module>
 		<module>gson</module>
 		<module>servlet</module>
 		<module>tiscaf</module>
+		<module>client</module>
+		<module>stream</module>
 	</modules>
 
-    <dependencies>
-		<dependency>
-			<groupId>org.dorest</groupId>
-			<artifactId>org.dorest.core</artifactId>
-			<version>${DoRest-version}</version>
-            <!--
-            <type>jar</type>
-			<scope>compile</scope>
-             -->
-		</dependency>
-    </dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.core</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.auth</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.basicauth</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.digestauth</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.orgjson</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.gson</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.servlet</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.tiscaf</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.client</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.stream</artifactId>
+				<version>${dorest.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>

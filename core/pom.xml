@@ -27,70 +27,16 @@
 	<artifactId>org.dorest.core</artifactId>
 	<name>DoRest-Core</name>
 
-	<build>
-		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.scala-lang</groupId>
-						<artifactId>scala-library</artifactId>
-						<version>${scala.version}</version>
-						<scope>compile</scope>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<scalaVersion>${scala.version}</scalaVersion>
-					<excludes>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.9</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.maven.surefire</groupId>
-						<artifactId>surefire-junit47</artifactId>
-						<version>2.9</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-		</plugins>
-	</build>
-
+	<!-- The core is not expected to have any dependencies on libraries other 
+		than the JDK and the Scala Library. -->
 	<dependencies>
-		<!-- The core is not expected to have any dependencies on libraries other 
-			than the JDK and the Scala Library. -->
-		<dependency><!-- TODO Can we get rid of it? -->
+		
+		<!-- TODO Can we get rid of it? -->
+		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.9.0</artifactId>
-			<version>1.6.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
+		
 	</dependencies>
 
 </project>

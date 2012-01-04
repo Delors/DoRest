@@ -15,21 +15,22 @@
  */
 package org.dorest.server.auth
 
-/**
- * Enables the authentication of a specific user.
- *
- * @author Michael Eichberg
- */
-trait Authentication {
+import org.dorest.server.ErrorResponse
 
-    /**
-     * Tries to authenticate the given user. If the authentication
-     * fails, {{{false}}} has to be returned.
-     * 
-     * If the user credentials, in particular the user name,
-     * is later on required, it is possible to additionally use, e.g.,
-     * the trait [[org.dorest.server.auth.AuthenticatedUser]] to make the
-     * information explicitly accessible.
-     */
-    def authenticate(user: String, pwd: String): Boolean
+/**
+ * @author Mateusz Parzonka
+ */
+class UnauthorizedDigestResponse(realm: String, qop: String, nonce: String, opaque: String, stale: Boolean) extends ErrorResponse(401, "Authorization required.") {
+
+  headers.set("WWW-Authenticate", "Digest realm=\"" + realm + "\", " +
+    "qop=\"" + qop + "\", " +
+    "nonce=\"" + nonce + "\", " +
+    "stale=\"" + stale + "\"," +
+    "opaque=\"" + opaque + "\"")
+
+}
+
+object UnauthorizedDigestResponse {
+  def apply(realm: String, qop: String, nonce: String, opaque: String, stale: Boolean) =
+    new UnauthorizedDigestResponse(realm, qop, nonce, opaque, stale)
 }
