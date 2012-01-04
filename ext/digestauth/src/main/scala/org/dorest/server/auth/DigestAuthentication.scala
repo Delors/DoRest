@@ -25,9 +25,9 @@ import StringUtils._
  * @author Mateusz Parzonka
  */
 trait DigestAuthentication extends Authentication with Handler {
-  
+
   private[this] var _authenticatedUser: Option[String] = None
-  
+
   def authenticatedUser = _authenticatedUser
 
   override abstract def processRequest(requestBody: InputStream): Response = {
@@ -46,7 +46,7 @@ trait DigestAuthentication extends Authentication with Handler {
     requestHeaders.getFirst("Authorization") match {
       case authorizationHeader: String if authorizationHeader.startsWith("Digest ") => {
         parseAuthorizationHeader(authorizationHeader) match {
-          case Some(m: Map[String, String]) => AuthorizationRequest(HTTPMethod.unapply(method), m("username"), m("realm"), m("nonce"), m("uri"), m("qop"), m("nc"), m("cnonce"), m("response"), m("opaque"))
+          case Some(m: Map[_,_]) => AuthorizationRequest(HTTPMethod.unapply(method), m("username"), m("realm"), m("nonce"), m("uri"), m("qop"), m("nc"), m("cnonce"), m("response"), m("opaque"))
           case _ => UnauthorizedRequest
         }
       }
