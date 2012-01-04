@@ -109,7 +109,7 @@ trait StringUtils {
   def hexEncode(in: Array[Byte]): String = {
     val sb = new StringBuilder
     val len = in.length
-    def addDigit(in: Array[Byte], pos: Int, len: Int, sb: StringBuilder) {
+    def addDigit(pos: Int) {
       if (pos < len) {
         val b: Int = in(pos)
         val msb = (b & 0xf0) >> 4
@@ -117,10 +117,10 @@ trait StringUtils {
         sb.append((if (msb < 10) ('0' + msb).asInstanceOf[Char] else ('a' + (msb - 10)).asInstanceOf[Char]))
         sb.append((if (lsb < 10) ('0' + lsb).asInstanceOf[Char] else ('a' + (lsb - 10)).asInstanceOf[Char]))
 
-        addDigit(in, pos + 1, len, sb)
+        addDigit( pos + 1)
       }
     }
-    addDigit(in, 0, len, sb)
+    addDigit(0)
     sb.toString
   }
 
