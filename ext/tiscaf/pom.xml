@@ -23,6 +23,19 @@
 		<artifactId>org.dorest.ext</artifactId>
 		<version>0.0.0-SNAPSHOT</version>
 	</parent>
+	
+	<build>
+		 <plugins>
+		 	<plugin>
+		 		<groupId>org.scala-tools</groupId>
+		 		<artifactId>maven-scala-plugin</artifactId>
+		 	</plugin>
+		 	<plugin>
+		 		<groupId>org.apache.maven.plugins</groupId>
+		 		<artifactId>maven-surefire-plugin</artifactId>
+		 	</plugin>
+		 </plugins>
+	</build>
 
 	<!-- ideally use tiscaf as dependency, bundled for maven but it is patched 
 		to accept more HTTP methods -->

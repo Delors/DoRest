@@ -26,7 +26,7 @@
 
 	<artifactId>org.dorest.core</artifactId>
 	<name>DoRest-Core</name>
-
+	
 	<!-- The core is not expected to have any dependencies on libraries other 
 		than the JDK and the Scala Library. -->
 	<dependencies>
@@ -35,6 +35,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 		
 	</dependencies>

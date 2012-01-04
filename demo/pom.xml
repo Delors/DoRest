@@ -23,6 +23,19 @@
         <groupId>org.dorest</groupId>
         <version>0.0.0-SNAPSHOT</version>
     </parent>
+
+	<build>
+		 <plugins>
+		 	<plugin>
+		 		<groupId>org.scala-tools</groupId>
+		 		<artifactId>maven-scala-plugin</artifactId>
+		 	</plugin>
+		 	<plugin>
+		 		<groupId>org.apache.maven.plugins</groupId>
+		 		<artifactId>maven-surefire-plugin</artifactId>
+		 	</plugin>
+		 </plugins>
+	</build>
 	
 	<artifactId>org.dorest.demos</artifactId>
 	<packaging>pom</packaging>
