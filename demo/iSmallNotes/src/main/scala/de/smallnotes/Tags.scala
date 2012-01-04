@@ -17,7 +17,7 @@ class Tags
                 from "USERS" u, "TAGS" t
                 where u.email =? and u.id=t.u_id
             """)
-        stmt.setString(1, authenticatedUser.get)
+        stmt.setString(1, authenticatedUser)
         val rs = stmt.executeQuery()
         val ja = new JSONArray()
         while (rs.next()) {
@@ -39,7 +39,7 @@ class Tags
                 select ?, id from "USERS" where email = ?
             """)
         insertStmt.setString(1, tag)
-        insertStmt.setString(2, authenticatedUser.get)
+        insertStmt.setString(2, authenticatedUser)
         insertStmt.executeUpdate()
 
         // return the newly created resource...
@@ -50,7 +50,7 @@ class Tags
             """
         )
         selectStmt.setString(1, tag)
-        selectStmt.setString(2, authenticatedUser.get)
+        selectStmt.setString(2, authenticatedUser)
         val rs = selectStmt.executeQuery()
         if (rs.next()) {
             val jo = new JSONObject()

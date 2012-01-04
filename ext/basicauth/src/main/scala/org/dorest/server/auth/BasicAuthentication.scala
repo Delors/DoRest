@@ -27,9 +27,9 @@ import java.io.InputStream
  */
 trait BasicAuthentication extends Authentication with Handler {
 
-  private[this] var _authenticatedUser: Option[String] = None
+  private[this] var _authenticatedUser: String = _
 
-  def authenticatedUser = _authenticatedUser
+  def authenticatedUser: String = _authenticatedUser
 
   override abstract def processRequest(requestBody: InputStream): Response = {
 
@@ -41,7 +41,7 @@ trait BasicAuthentication extends Authentication with Handler {
         {
           parseAuthorizationHeader(authorizationHeader) match {
             case Array(username: String, requestPassword: String) => password(username) match {
-              case Some(validPassword) if requestPassword == validPassword => { _authenticatedUser = Some(username); super.processRequest(requestBody) }
+              case Some(validPassword) if requestPassword == validPassword => { _authenticatedUser = username; super.processRequest(requestBody) }
               case _ => UnauthorizedBasicResponse(authenticationRealm)
             }
             case _ => BadRequest

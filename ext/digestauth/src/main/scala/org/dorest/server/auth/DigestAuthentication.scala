@@ -26,15 +26,15 @@ import StringUtils._
  */
 trait DigestAuthentication extends Authentication with Handler {
 
-  private[this] var _authenticatedUser: Option[String] = None
+  private[this] var _authenticatedUser: String = _
 
-  def authenticatedUser = _authenticatedUser
+  def authenticatedUser : String = _authenticatedUser
 
   override abstract def processRequest(requestBody: InputStream): Response = {
     requestHeaders
     incomingRequest match {
       case authorizationRequest: AuthorizationRequest => validate(authorizationRequest) match {
-        case ValidatedRequest => { _authenticatedUser = Some(authorizationRequest.username); super.processRequest(requestBody) }
+        case ValidatedRequest => { _authenticatedUser = authorizationRequest.username; super.processRequest(requestBody) }
         case StaleRequest => unauthorizedDigestResponse(stale = true)
         case _ => unauthorizedDigestResponse(stale = false)
       }
@@ -54,7 +54,7 @@ trait DigestAuthentication extends Authentication with Handler {
     }
   }
 
-  def parseAuthorizationHeader(authorizationHeader: String) = uniqueMap(splitNameValuePairs(authorizationHeader.substring("Digest ".length)))
+  def parseAuthorizationHeader(authorizationHeader: String) : Option[Map[String,String]] = uniqueMap(splitNameValuePairs(authorizationHeader.substring("Digest ".length)))
 
   def unauthorizedDigestResponse(stale: Boolean): Response = {
     val nonce = randomString(64)
@@ -62,7 +62,7 @@ trait DigestAuthentication extends Authentication with Handler {
     UnauthorizedDigestResponse(authenticationRealm, "auth", nonce, randomString(64), stale)
   }
 
-  def validate(r: AuthorizationRequest): Request = {
+  def validate(r: AuthorizationRequest): ProcessedAuthorizationRequest = {
     password(r.username) match {
       case Some(pwd: String) => {
         val ha1 = hexEncode(md5(r.username + ":" + r.realm + ":" + pwd))
@@ -89,9 +89,9 @@ object NonceStorage {
   import scala.collection.JavaConversions._
   private[this] val nonceMap: scala.collection.mutable.ConcurrentMap[String, (Int, Long)] = new java.util.concurrent.ConcurrentHashMap[String, (Int, Long)](32, 0.75f, 8)
 
-  private def nonceValidityPeriod = 30000
+  val nonceValidityPeriod = 30000
 
-  private def nonceCleaningInterval = 5000
+  val nonceCleaningInterval = 5000
 
   def addNonce(nonce: String) {
     nonceMap += (nonce -> (0, System.currentTimeMillis))
@@ -100,7 +100,7 @@ object NonceStorage {
   /**
    * Checks if the storage contains the given nonce assuring the given nc was not used before.
    */
-  def contains(nonce: String, nc: String) = {
+  def contains(nonce: String, nc: String) :Boolean = {
     val curNc = hexString2Int(nc)
     nonceMap.get(nonce) match {
       case Some((oldNc: Int, time: Long)) if curNc > oldNc => { nonceMap.replace(nonce, (curNc, time)); true }
@@ -125,9 +125,10 @@ object NonceStorage {
 
 }
 
-sealed abstract class Request
-case object UnauthorizedRequest extends Request
+sealed trait Request
 case class AuthorizationRequest(method: String, username: String, realm: String, nonce: String, uri: String, qop: String, nc: String, cnonce: String, response: String, opaque: String) extends Request
-case object ValidatedRequest extends Request
-case object StaleRequest extends Request
+sealed abstract class ProcessedAuthorizationRequest extends Request
+case object UnauthorizedRequest extends ProcessedAuthorizationRequest
+case object ValidatedRequest extends ProcessedAuthorizationRequest
+case object StaleRequest extends ProcessedAuthorizationRequest
 

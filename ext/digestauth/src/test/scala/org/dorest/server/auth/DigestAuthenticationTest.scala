@@ -36,7 +36,7 @@ import scala.xml.{ XML, Utility }
 
 /**
  * TestServer with unrestricted root and a restricted area.
- * 
+ *
  * @author Mateusz Parzonka
  */
 object DigestAuthTestServer extends Server(9000) {
@@ -61,7 +61,7 @@ object DigestAuthTestServer extends Server(9000) {
 
   class RestrictedResource extends RESTInterface with DigestAuthentication with DigestAuthenticatorMock with XMLSupport {
 
-    get returns XML {<hello>{ "Hello " + authenticatedUser.get + "!" }</hello>}
+    get returns XML {<hello>{ "Hello " + authenticatedUser + "!" }</hello>}
 
   }
 
@@ -94,7 +94,7 @@ class DigestAuthenticationTest extends FlatSpec with ShouldMatchers with BeforeA
   "RestrictedResource" should "return 401 for unauthorized (no credentials)" in {
     get("http://localhost:9000/restricted").statusCode should equal { 401 }
   }
-  
+
    it should "return 401 for wrong credentials" in {
     falseAuthGet("http://localhost:9000/restricted").statusCode should equal { 401 }
   }

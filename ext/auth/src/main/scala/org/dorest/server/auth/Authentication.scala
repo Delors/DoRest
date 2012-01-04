@@ -35,6 +35,6 @@ trait Authentication {
   /**
    * Provides the username of the authenticated user (if authentication successful).
    */
-  def authenticatedUser: Option[String]
+  def authenticatedUser: String
 
 }

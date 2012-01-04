@@ -45,14 +45,6 @@ trait StringUtils {
   }
 
   /**
-   * Converts a list of tuples to a map when the mapping is injective or returns None in the other case.
-   */
-  def uniqueMap[A, B](s: Seq[(A, B)]) = {
-    val m = s.toMap
-    if (m.size == s.length) Some(m) else None
-  }
-
-  /**
    * If str is surrounded by quotes it returns the content between the quotes
    */
   def unquote(str: String) = {
@@ -99,10 +91,18 @@ trait StringUtils {
     addChar(0, 0, new GoodSB(size)).toString
   }
 
+    /**
+   * Converts a list of tuples to a map when the mapping is injective or returns None in the other case.
+   */
+  def uniqueMap[A, B](s: Seq[(A, B)]) : Option[Map[A,B]] = {
+    val m = s.toMap
+    if (m.size == s.length) Some(m) else None
+  }
+
   /**
    * Calculate MD5 digest
    */
-  def md5(string: String) = md.digest(string.getBytes("UTF-8"))
+  def md5(string: String) : Array[Byte] = md.digest(string.getBytes("UTF-8"))
 
   /**
    * Encode a Byte array as hexadecimal characters
@@ -131,7 +131,7 @@ trait StringUtils {
 
   def hexString2Int(str: String): Int = {
 
-    def byteOf(in: Char): Int = in match {
+    def byteOf(in: Char): Int = (in: @scala.annotation.switch) match {
       case '0' => 0
       case '1' => 1
       case '2' => 2
@@ -163,6 +163,6 @@ trait StringUtils {
     }
 
     loop(0, 0, 1)
-  }
+    }
 
 }
