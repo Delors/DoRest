@@ -28,16 +28,16 @@
 	<name>DoRest-Ext-Auth</name>
 	
 	<build>
-		 <plugins>
-		 	<plugin>
-		 		<groupId>org.scala-tools</groupId>
-		 		<artifactId>maven-scala-plugin</artifactId>
-		 	</plugin>
-		 	<plugin>
-		 		<groupId>org.apache.maven.plugins</groupId>
-		 		<artifactId>maven-surefire-plugin</artifactId>
-		 	</plugin>
-		 </plugins>
+		<plugins>
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
-
+	
 </project>

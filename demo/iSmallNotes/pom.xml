@@ -29,33 +29,32 @@
 	<name>iSmallNotes</name>
 	
 	<build>
-		 <plugins>
-		 	<plugin>
-		 		<groupId>org.scala-tools</groupId>
-		 		<artifactId>maven-scala-plugin</artifactId>
-		 	</plugin>
-		 	<plugin>
-		 		<groupId>org.apache.maven.plugins</groupId>
-		 		<artifactId>maven-surefire-plugin</artifactId>
-		 	</plugin>
-		 </plugins>
+		<plugins>
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
-
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.dorest</groupId>
 			<artifactId>org.dorest.core</artifactId>
-			<version>0.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.dorest</groupId>
 			<artifactId>org.dorest.ext.basicauth</artifactId>
-			<version>0.0.0-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.dorest</groupId>
 			<artifactId>org.dorest.ext.orgjson</artifactId>
-			<version>0.0.0-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
