@@ -28,7 +28,7 @@ trait DigestAuthentication extends Authentication with Handler {
 
   private[this] var _authenticatedUser: String = _
 
-  def authenticatedUser : String = _authenticatedUser
+  def authenticatedUser: String = _authenticatedUser
 
   override abstract def processRequest(requestBody: InputStream): Response = {
     requestHeaders
@@ -45,16 +45,18 @@ trait DigestAuthentication extends Authentication with Handler {
   def incomingRequest: Request = {
     requestHeaders.getFirst("Authorization") match {
       case authorizationHeader: String if authorizationHeader.startsWith("Digest ") => {
-        parseAuthorizationHeader(authorizationHeader) match {
-          case Some(m: Map[_,_]) => AuthorizationRequest(HTTPMethod.unapply(method), m("username"), m("realm"), m("nonce"), m("uri"), m("qop"), m("nc"), m("cnonce"), m("response"), m("opaque"))
-          case _ => UnauthorizedRequest
-        }
+        val m = parseAuthorizationHeader(authorizationHeader)
+        AuthorizationRequest(HTTPMethod.unapply(method), m("username"), m("realm"), m("nonce"), m("uri"), m("qop"), m("nc"), m("cnonce"), m("response"), m("opaque"))
       }
       case _ => UnauthorizedRequest
     }
   }
 
-  def parseAuthorizationHeader(authorizationHeader: String) : Option[Map[String,String]] = uniqueMap(splitNameValuePairs(authorizationHeader.substring("Digest ".length)))
+  def parseAuthorizationHeader(authorizationHeader: String): Map[String, String] = {
+    val nameValuePairs: List[(String, String)] = splitNameValuePairs(authorizationHeader.substring("Digest ".length))
+    val nameValueMappings: Map[String, String] = nameValuePairs.toMap
+    if (nameValuePairs.length == nameValueMappings.size) nameValueMappings else throw new MalformedAuthorizationHeaderException(authorizationHeader)
+  }
 
   def unauthorizedDigestResponse(stale: Boolean): Response = {
     val nonce = randomString(64)
@@ -100,7 +102,7 @@ object NonceStorage {
   /**
    * Checks if the storage contains the given nonce assuring the given nc was not used before.
    */
-  def contains(nonce: String, nc: String) :Boolean = {
+  def contains(nonce: String, nc: String): Boolean = {
     val curNc = Integer.parseInt(nc, 16)
     nonceMap.get(nonce) match {
       case Some((oldNc: Int, time: Long)) if curNc > oldNc => { nonceMap.replace(nonce, (curNc, time)); true }
@@ -131,3 +133,6 @@ sealed abstract class ProcessedAuthorizationRequest extends Request
 case object UnauthorizedRequest extends ProcessedAuthorizationRequest
 case object ValidatedRequest extends ProcessedAuthorizationRequest
 case object StaleRequest extends ProcessedAuthorizationRequest
+case object BadRequest extends Request
+
+case class MalformedAuthorizationHeaderException(msg: String) extends Exception

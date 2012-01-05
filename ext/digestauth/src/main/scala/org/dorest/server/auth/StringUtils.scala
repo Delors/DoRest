@@ -80,7 +80,6 @@ trait StringUtils {
         } else {
           lastRand
         }
-
         sb.append((randNum & 0x1f) match {
           case n if n < 26 => ('a' + n).toChar
           case n => ('0' + (n - 26)).toChar
@@ -89,14 +88,6 @@ trait StringUtils {
       }
     }
     addChar(0, 0, new GoodSB(size)).toString
-  }
-
-  /**
-   * Converts a list of tuples to a map when the mapping is injective or returns None in the other case.
-   */
-  def uniqueMap[A, B](s: Seq[(A, B)]): Option[Map[A, B]] = {
-    val m = s.toMap
-    if (m.size == s.length) Some(m) else None
   }
 
   /**
