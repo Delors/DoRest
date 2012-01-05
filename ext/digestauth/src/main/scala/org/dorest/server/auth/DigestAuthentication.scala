@@ -101,7 +101,7 @@ object NonceStorage {
    * Checks if the storage contains the given nonce assuring the given nc was not used before.
    */
   def contains(nonce: String, nc: String) :Boolean = {
-    val curNc = hexString2Int(nc)
+    val curNc = Integer.parseInt(nc, 16)
     nonceMap.get(nonce) match {
       case Some((oldNc: Int, time: Long)) if curNc > oldNc => { nonceMap.replace(nonce, (curNc, time)); true }
       case _ => false
@@ -131,4 +131,3 @@ sealed abstract class ProcessedAuthorizationRequest extends Request
 case object UnauthorizedRequest extends ProcessedAuthorizationRequest
 case object ValidatedRequest extends ProcessedAuthorizationRequest
 case object StaleRequest extends ProcessedAuthorizationRequest
-

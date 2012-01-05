@@ -48,7 +48,7 @@ trait StringUtils {
    * If str is surrounded by quotes it returns the content between the quotes
    */
   def unquote(str: String) = {
-      // TODO can we remove the null check?
+    // TODO can we remove the null check?
     if (str != null && str.length >= 2 && str.charAt(0) == '\"' && str.charAt(str.length - 1) == '\"')
       str.substring(1, str.length - 1)
     else
@@ -91,10 +91,10 @@ trait StringUtils {
     addChar(0, 0, new GoodSB(size)).toString
   }
 
-    /**
+  /**
    * Converts a list of tuples to a map when the mapping is injective or returns None in the other case.
    */
-  def uniqueMap[A, B](s: Seq[(A, B)]) : Option[Map[A,B]] = {
+  def uniqueMap[A, B](s: Seq[(A, B)]): Option[Map[A, B]] = {
     val m = s.toMap
     if (m.size == s.length) Some(m) else None
   }
@@ -102,15 +102,15 @@ trait StringUtils {
   /**
    * Calculate MD5 digest
    */
-  def md5(string: String) : Array[Byte] = md.digest(string.getBytes("UTF-8"))
+  def md5(string: String): Array[Byte] = md.digest(string.getBytes("UTF-8"))
 
   /**
-   * Encode a Byte array as hexadecimal characters
+   * Encode a Byte array as hexadecimal characters and apply padding
    */
   def hexEncode(in: Array[Byte]): String = {
     val sb = new StringBuilder
     val len = in.length
-    def addDigit(pos: Int) {
+    def loop(pos: Int) {
       if (pos < len) {
         val b: Int = in(pos)
         val msb = (b & 0xf0) >> 4
@@ -118,51 +118,11 @@ trait StringUtils {
         sb.append((if (msb < 10) ('0' + msb).asInstanceOf[Char] else ('a' + (msb - 10)).asInstanceOf[Char]))
         sb.append((if (lsb < 10) ('0' + lsb).asInstanceOf[Char] else ('a' + (lsb - 10)).asInstanceOf[Char]))
 
-        addDigit( pos + 1)
+        loop(pos + 1)
       }
     }
-    addDigit(0)
+    loop(0)
     sb.toString
   }
-
-  /**
-   * Parses a string encoding a hex (without any prefix) and returns an int
-   */
-
-  def hexString2Int(str: String): Int = {
-
-    def byteOf(in: Char): Int = (in: @scala.annotation.switch) match {
-      case '0' => 0
-      case '1' => 1
-      case '2' => 2
-      case '3' => 3
-      case '4' => 4
-      case '5' => 5
-      case '6' => 6
-      case '7' => 7
-      case '8' => 8
-      case '9' => 9
-      case 'a' | 'A' => 10
-      case 'b' | 'B' => 11
-      case 'c' | 'C' => 12
-      case 'd' | 'D' => 13
-      case 'e' | 'E' => 14
-      case 'f' | 'F' => 15
-      case _ => 0
-    }
-
-    val max = str.length - 1
-
-    @scala.annotation.tailrec
-    def loop(result: Int, pos: Int, mult: Int): Int = {
-      if (pos <= max) {
-        loop(result + byteOf(str.charAt(max - pos)) * mult, pos + 1, mult << 4)
-      } else {
-        result
-      }
-    }
-
-    loop(0, 0, 1)
-    }
 
 }
