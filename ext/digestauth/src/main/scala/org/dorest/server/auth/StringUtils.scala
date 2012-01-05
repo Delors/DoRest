@@ -48,8 +48,7 @@ trait StringUtils {
    * If str is surrounded by quotes it returns the content between the quotes
    */
   def unquote(str: String) = {
-    // TODO can we remove the null check?
-    if (str != null && str.length >= 2 && str.charAt(0) == '\"' && str.charAt(str.length - 1) == '\"')
+    if (str.length >= 2 && str.charAt(0) == '\"' && str.charAt(str.length - 1) == '\"')
       str.substring(1, str.length - 1)
     else
       str
