@@ -19,7 +19,8 @@ import java.nio.charset.Charset
 import java.io._
 
 /**
- * Response to send a redirect.
+ * Handler to send a standard redirect (HTTP status code 303). The "Location" header sent back to the
+ * client is set to the given location. The location information can be relative or absolute.
  *
  * @author Michael Eichberg
  */
@@ -28,13 +29,13 @@ class Redirect(val location: String) extends Handler {
     val response = new Response {
         def code = 303;
 
-        val headers = new DefaultResponseHeaders()
-        headers.set("Location", location)
+        val headers = new DefaultResponseHeaders("Location" -> location)
 
         def body = None
     }
 
     def processRequest(requestBody: InputStream) = {
+        // we actually don't process the request at all
         response;
     }
 
