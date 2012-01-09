@@ -15,7 +15,6 @@
  */
 package org.dorest.server
 
-
 /**
  * Map based implementation of the ResponseHeaders trait.
  *
@@ -25,24 +24,31 @@ class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
         extends ResponseHeaders {
 
     def this(header: Tuple2[String, String]) {
-        this (Map() + header)
+        this(Map() + header)
     }
 
     def this(headers: List[Tuple2[String, String]]) {
-        this (Map() ++ headers)
+        this(Map() ++ headers)
     }
 
     def set(key: String, value: String): Unit = {
         headers = headers.updated(key, value)
     }
 
-    def foreach[U](f: ((String, String)) => U) {
+    def foreach[U](f: ((String, String)) ⇒ U) {
         headers.foreach(f)
     }
 
 }
 
+object DefaultResponseHeaders {
 
+    def apply(headers: (String, String)*): DefaultResponseHeaders = {
+        val responseHeaders = new DefaultResponseHeaders(headers.toMap)
+        responseHeaders
+    }
+
+}
 
 
 
