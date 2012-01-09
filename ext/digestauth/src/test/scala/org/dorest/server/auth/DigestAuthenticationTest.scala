@@ -39,7 +39,7 @@ import scala.xml.{ XML, Utility }
  *
  * @author Mateusz Parzonka
  */
-object DigestAuthTestServer extends Server(9000) {
+object DigestAuthTestServer extends Server(9999) {
 
   this register new HandlerFactory[RootResource] {
     path { "/" }
@@ -92,15 +92,15 @@ class DigestAuthenticationTest extends FlatSpec with ShouldMatchers with BeforeA
   val falseAuthGet = SimpleClient.get(Map("ACCEPT" -> "application/xml"), new DigestAuth("somebody", "falsePassword")) _
 
   "RestrictedResource" should "return 401 for unauthorized (no credentials)" in {
-    get("http://localhost:9000/restricted").statusCode should equal { 401 }
+    get("http://localhost:9999/restricted").statusCode should equal { 401 }
   }
 
    it should "return 401 for wrong credentials" in {
-    falseAuthGet("http://localhost:9000/restricted").statusCode should equal { 401 }
+    falseAuthGet("http://localhost:9999/restricted").statusCode should equal { 401 }
   }
 
   it should "return 200 for authorized" in {
-    authGet("http://localhost:9000/restricted").statusCode should equal { 200 }
+    authGet("http://localhost:9999/restricted").statusCode should equal { 200 }
   }
 
 }
