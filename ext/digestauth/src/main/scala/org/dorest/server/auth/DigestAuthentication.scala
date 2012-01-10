@@ -55,7 +55,10 @@ trait DigestAuthentication extends Authentication with Handler {
   def parseAuthorizationHeader(authorizationHeader: String): Map[String, String] = {
     val nameValuePairs: List[(String, String)] = splitNameValuePairs(authorizationHeader.substring("Digest ".length))
     val nameValueMappings: Map[String, String] = nameValuePairs.toMap
-    if (nameValuePairs.length == nameValueMappings.size) nameValueMappings else throw new MalformedAuthorizationHeaderException(authorizationHeader)
+    if (nameValuePairs.length == nameValueMappings.size)
+      nameValueMappings
+    else
+      throw new ResponseMappedException(BadRequest("Malformed authorization header: " + authorizationHeader))
   }
 
   def unauthorizedDigestResponse(stale: Boolean): Response = {
@@ -133,6 +136,3 @@ sealed abstract class ProcessedAuthorizationRequest extends Request
 case object UnauthorizedRequest extends ProcessedAuthorizationRequest
 case object ValidatedRequest extends ProcessedAuthorizationRequest
 case object StaleRequest extends ProcessedAuthorizationRequest
-case object BadRequest extends Request
-
-case class MalformedAuthorizationHeaderException(msg: String) extends Exception

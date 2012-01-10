@@ -22,21 +22,11 @@ package org.dorest.server
  * the request without modifications.
  *
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
-object BadRequest extends PlainResponse(400)
+class BadRequest(text: String) extends ErrorResponse(400, text)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+object BadRequest {
+  def apply(text: String) = new BadRequest(text)
+  def apply() = new BadRequest("")
+}
