@@ -61,7 +61,17 @@ class Server(val port : Int)
                             handler.remoteAddress = t.getRemoteAddress().toString // TODO check that the result is as expected...
                             handler.localAddress = t.getLocalAddress().toString // TODO check that the result is as expected...
                             handler.requestHeaders = t.getRequestHeaders()
-                            val response = handler.processRequest(t.getRequestBody())
+                            
+                            // try to process a request and yield a response 
+                            // (unpacking ResponseMappedExceptions to responses in case of throw)
+                            val response: Response = {
+                            try {
+                                handler.processRequest(t.getRequestBody())
+                            } catch {
+                                case ex: ResponseMappedException =>  ex.response
+                                }
+                            }
+                            
                             try {
                                 response.body match {
                                     case Some(body) => {
