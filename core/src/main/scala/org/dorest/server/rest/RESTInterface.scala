@@ -24,6 +24,7 @@ import java.nio.charset.Charset
  * Main trait of all Resources.
  *
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
 trait RESTInterface extends Handler {
 
@@ -91,40 +92,42 @@ trait RESTInterface extends Handler {
               // TODO reevaluate necessity of having an optional response-body
               // When a representation creates NONE this should encode a 404 -mateusz
               case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
-              case None => NotFoundResponse
+              case None => return NotFoundResponse
             }
           }
-          case None =>
-            return NotAcceptableResponse
+          case None => return NotAcceptableResponse
         }
       }
       case POST if !postHandlers.isEmpty => {
-        // if we cannot handle the request body, we have to return a UnsupportedMediaTypeResponse
-        // TODO nearly everything... matching...
-        responseCode = 201
-        val postHandler = postHandlers.head
-        postHandler.requestBodyHandler.process(contentType.charset, requestBody)
-        responseBody = postHandler.representationFactory.createRepresentation()
-        return Response(responseCode, responseHeaders, responseBody)
+         // if we cannot handle the request body, we have to return a UnsupportedMediaTypeResponse (superfluous comment? -mateusz)
+        // TODO nearly everything... matching... (done? -mateusz)
+        postHandlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
+          case Some(postHandler) => {
+        	responseCode = 201 // TODO do we need mutable state? -mateusz
+            postHandler.requestBodyHandler.process(contentType.charset, requestBody)
+            responseBody = postHandler.representationFactory.createRepresentation()
+            return Response(responseCode, responseHeaders, responseBody)
+            }
+          case None => return UnsupportedMediaTypeResponse
+        }
       }
       case PUT if !putHandlers.isEmpty => {
-        // TODO nearly everything... matching...
+        // TODO nearly everything... matching... (done? -mateusz)
         putHandlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
           case Some(putHandler) =>
             putHandler.requestBodyHandler.process(contentType.charset, requestBody)
-            putHandler.representationFactory.createRepresentation() match {
-              case Some(responseBody) => return Response(responseCode, responseHeaders, Some(responseBody))
-              case None => NotFoundResponse
+            responseBody = putHandler.representationFactory.createRepresentation() 
+            responseBody match {
+              case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
+              case None => return NotFoundResponse
             }
-          case None => UnsupportedMediaTypeResponse
+          case None => return UnsupportedMediaTypeResponse
         }
       }
-
       case DELETE if deleteHandler.isDefined => {
         if (!(deleteHandler.get)()) {
           return NotFoundResponse
         }
-
         return NoContent // delete was successful
       }
       case _ => {
