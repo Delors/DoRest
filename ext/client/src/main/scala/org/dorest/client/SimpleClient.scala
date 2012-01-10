@@ -70,6 +70,7 @@ object SimpleClient {
 
 object Entity {
   def apply(content: String) = new StringEntity(content)
+  def apply(content: String, contentType: String, contentEncoding: String) = new StringEntity(content, contentType, contentEncoding)
   def apply(file: java.io.File, contentType: String, contentEncoding: String = null) = {
     val entity = new FileEntity(file, contentType)
     if (contentEncoding != null) entity.setContentEncoding(contentEncoding)
