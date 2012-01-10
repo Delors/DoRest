@@ -52,20 +52,23 @@ trait RESTInterface extends Handler {
   protected var responseBody: Option[ResponseBody] = None
 
   /**
-   * Parses a tuple (mediaType, Option(charset)) from the content-type header, if specified.
-   * Exceptions are thrown when content-type not provided or mediatype unknown.
-   * A mediaType is unknown if not contained in MediaType.Values
+   * Parses the content-type header, if specified and creates a ContentType.
+   * Mapped exceptions are thrown when content-type is not provided or mediatype unknown.
+   * A mediaType is unknown if not contained in MediaType.Values.
    */
-  lazy val contentType: (MediaType.Value, Option[Charset]) = {
+  lazy val contentType: ContentType = {
     def charset(cs: String): Option[Charset] = if (Charset.isSupported(cs)) Some(Charset.forName(cs)) else None
-    def mediaType(mt: String): MediaType.Value = if (MediaType.stringValues.contains(mt)) MediaType.withName(mt) else throw new RuntimeException("Unknown MediaType %s" format mt)
+    def mediaType(mt: String): MediaType.Value = if (MediaType.stringValues.contains(mt))
+      MediaType.withName(mt)
+    else
+      throw new ResponseMappedException(ErrorResponse(401, "Unknown MediaType %s" format mt))
     requestHeaders.getFirst("Content-Type") match {
       case ct: String => ct.split("; charset=") match {
-        case Array(mt, cs) => (mediaType(mt), charset(cs))
-        case Array(mt) => (mediaType(mt), None)
-        case _ => throw new RuntimeException("MediaType not provided")
+        case Array(mt, cs) => ContentType(mediaType(mt), charset(cs))
+        case Array(mt) => ContentType(mediaType(mt), None)
+        case _ => throw new ResponseMappedException(BadRequest("MediaType not provided"))
       }
-      case _ => throw new RuntimeException("No content type specified")
+      case _ => throw new ResponseMappedException(BadRequest("Content-Type not provided"))
     }
   }
 
@@ -89,7 +92,6 @@ trait RESTInterface extends Handler {
               // When a representation creates NONE this should encode a 404 -mateusz
               case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
               case None => NotFoundResponse
-
             }
           }
           case None =>
@@ -101,22 +103,22 @@ trait RESTInterface extends Handler {
         // TODO nearly everything... matching...
         responseCode = 201
         val postHandler = postHandlers.head
-        postHandler.requestBodyHandler.process(contentType._2, requestBody)
+        postHandler.requestBodyHandler.process(contentType.charset, requestBody)
         responseBody = postHandler.representationFactory.createRepresentation()
         return Response(responseCode, responseHeaders, responseBody)
       }
       case PUT if !putHandlers.isEmpty => {
         // TODO nearly everything... matching...
-        putHandlers.find(_.requestBodyHandler.mediaType == contentType._1) match {
+        putHandlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
           case Some(putHandler) =>
-            putHandler.requestBodyHandler.process(contentType._2, requestBody)
+            putHandler.requestBodyHandler.process(contentType.charset, requestBody)
             putHandler.representationFactory.createRepresentation() match {
               case Some(responseBody) => return Response(responseCode, responseHeaders, Some(responseBody))
               case None => NotFoundResponse
             }
           case None => UnsupportedMediaTypeResponse
         }
-      } 
+      }
 
       case DELETE if deleteHandler.isDefined => {
         if (!(deleteHandler.get)()) {
@@ -145,6 +147,8 @@ trait RESTInterface extends Handler {
 
     NotFoundResponse
   }
+
+  case class ContentType(mediaType: MediaType.Value, charset: Option[Charset])
 
   /**
    *
@@ -281,16 +285,3 @@ trait RESTInterface extends Handler {
    * }
    */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
