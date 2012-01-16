@@ -44,7 +44,7 @@ trait BasicAuthentication extends Authentication with Handler {
               case Some(validPassword) if requestPassword == validPassword => { _authenticatedUser = username; super.processRequest(requestBody) }
               case _ => UnauthorizedBasicResponse(authenticationRealm)
             }
-            case _ => BadRequest
+            case _ => BadRequest()
           }
         }
       case _ => UnauthorizedBasicResponse(authenticationRealm)

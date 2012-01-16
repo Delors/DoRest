@@ -17,8 +17,10 @@ package org.dorest.server
 
 /**
  * This exception can be caught by a DoRest server implementation returning the contained server response to the client.
- * Allows forwarding of responses from any point in the implementation regardless of return type of the containing method.   
- * 
+ * Allows forwarding of responses from any point in the implementation regardless of return type of the containing method.
+ *
+ * @param response
+ * 	typical usage: {{{ response = BadRequest("Content-Type not provided") }}}
  * @author Mateusz Parzonka
  */
-case class ResponseMappedException(response: Response) extends Exception
+case class ResponseMappedException(response: ErrorResponse) extends Exception

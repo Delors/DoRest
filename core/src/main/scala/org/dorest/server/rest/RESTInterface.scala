@@ -69,7 +69,7 @@ trait RESTInterface extends Handler {
         case Array(mt) => ContentType(mediaType(mt), None)
         case _ => throw new ResponseMappedException(BadRequest("MediaType not provided"))
       }
-      case _ => throw new ResponseMappedException(BadRequest("Content-Type not provided"))
+      case _ => throw new ResponseMappedException(response = BadRequest("Content-Type not provided"))
     }
   }
 
