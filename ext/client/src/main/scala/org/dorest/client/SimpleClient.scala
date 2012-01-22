@@ -50,9 +50,9 @@ object SimpleClient {
   }
 
   def put(headers: Map[String, String], auth: Auth = NoAuth)(url: String, entity: HttpEntity): Response = {
-    val post: HttpPut = new HttpPut(url)
-    post.setEntity(entity)
-    execute(post, headers, auth)
+    val put: HttpPut = new HttpPut(url)
+    put.setEntity(entity)
+    execute(put, headers, auth)
   }
 
   def delete(headers: Map[String, String], auth: Auth = NoAuth)(url: String): Response = {
