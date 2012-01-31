@@ -91,7 +91,7 @@ object Entity {
 }
 
 object Part {
-  def apply(name: String, content: String, mimeType: String) = StringBody.create(content, mimeType, null)
+  def apply(content: String, mimeType: String) = StringBody.create(content, mimeType, null)
   def apply(file: java.io.File, contentType: String) = new FileBody(file, file.getName, contentType, "UTF-8")
 }
 
