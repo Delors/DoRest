@@ -68,7 +68,7 @@ class Server(val port : Int)
                             try {
                                 handler.processRequest(t.getRequestBody())
                             } catch {
-                                case ex: ResponseMappedException =>  ex.response
+                                case ex: RequestException =>  ex.response
                                 }
                             }
                             

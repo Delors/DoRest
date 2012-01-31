@@ -62,16 +62,16 @@ trait RESTInterface extends Handler {
     def mediaType(mt: String): MediaType.Value = if (MediaType.stringValues.contains(mt))
       MediaType.withName(mt)
     else
-      throw new ResponseMappedException(ErrorResponse(415, "Unknown MediaType %s" format mt))
+      throw new RequestException(response = ErrorResponse(415, "Unknown MediaType %s" format mt))
     requestHeaders.getFirst("Content-Type") match {
       case ct: String => ct.split("; ") match {
         // TODO this is pretty ugly. We probably need to introduce a new class representing the incoming request. -mateusz
         case Array(mt, cs) if cs.startsWith("charset=") => ContentType(mediaType(mt), charset(cs.substring("charset=".length())))
         case Array(mt, cs) if cs.startsWith("boundary=") => ContentType(mediaType(mt), None)
         case Array(mt) => ContentType(mediaType(mt), None)
-        case _ => throw new ResponseMappedException(BadRequest("MediaType not provided"))
+        case _ => throw new RequestException(response = BadRequest("MediaType not provided"))
       }
-      case _ => throw new ResponseMappedException(response = BadRequest("Content-Type not provided"))
+      case _ => throw new RequestException(response = BadRequest("Content-Type not provided"))
     }
   }
 

@@ -58,7 +58,7 @@ trait DigestAuthentication extends Authentication with Handler {
     if (nameValuePairs.length == nameValueMappings.size)
       nameValueMappings
     else
-      throw new ResponseMappedException(BadRequest("Malformed authorization header: " + authorizationHeader))
+      throw new RequestException(response = BadRequest("Malformed authorization header: " + authorizationHeader))
   }
 
   def unauthorizedDigestResponse(stale: Boolean): Response = {
