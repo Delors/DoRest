@@ -94,9 +94,9 @@ object NonceStorage {
   import scala.collection.JavaConversions._
   private[this] val nonceMap: scala.collection.mutable.ConcurrentMap[String, (Int, Long)] = new java.util.concurrent.ConcurrentHashMap[String, (Int, Long)](32, 0.75f, 8)
 
-  val nonceValidityPeriod = 30000
+  val nonceValidityPeriod = 30000 // msec
 
-  val nonceCleaningInterval = 5000
+  val nonceCleaningInterval = 5000 // msec
 
   def addNonce(nonce: String) {
     nonceMap += (nonce -> (0, System.currentTimeMillis))
@@ -118,16 +118,17 @@ object NonceStorage {
     for ((nonce, (nc, time)) <- nonceMap if (currentTime - time) > nonceValidityPeriod) nonceMap.-=(nonce)
   }
 
-  import scala.actors.{ Actor, TIMEOUT }
-  import Actor._
-  val nonceCleaner = actor {
-    loop {
-      reactWithin(nonceCleaningInterval) {
-        case TIMEOUT => clean
+  val nonceCleaner = new Thread() {
+    override def run() {
+      while (true) {
+        clean()
+        Thread.sleep(nonceCleaningInterval)
       }
     }
-  }
-
+  };
+  nonceCleaner.setDaemon(true)
+  nonceCleaner.start()
+ 
 }
 
 sealed trait Request
