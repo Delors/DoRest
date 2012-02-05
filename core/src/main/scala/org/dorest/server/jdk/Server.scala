@@ -142,6 +142,15 @@ class Server(val port : Int)
         server.start();
         log(INFO){ "Server started...: "+port }
     }
+    
+    /**
+     * Stops the server after a given delay (seconds).
+     */
+    def stop(shutdownDelay: Integer) {
+       log(INFO){ "Server (%d) shutdown initiated. Server will terminate in %d seconds.".format(port, shutdownDelay) }
+       server.stop(shutdownDelay)
+       log(INFO){ "Server (%d) has terminated normally.".format(port) }
+    }
 
 }
 
