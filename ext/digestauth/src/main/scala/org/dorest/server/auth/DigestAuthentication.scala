@@ -25,30 +25,30 @@ import StringUtils._
  * @author Mateusz Parzonka
  */
 trait DigestAuthentication extends Authentication with Handler {
-
+  
   private[this] var _authenticatedUser: String = _
 
   def authenticatedUser: String = _authenticatedUser
 
   override abstract def processRequest(requestBody: InputStream): Response = {
-    requestHeaders
     incomingRequest match {
       case authorizationRequest: AuthorizationRequest => validate(authorizationRequest) match {
-        case ValidatedRequest => { _authenticatedUser = authorizationRequest.username; super.processRequest(requestBody) }
-        case StaleRequest => unauthorizedDigestResponse(stale = true)
-        case _ => unauthorizedDigestResponse(stale = false)
+        case ValidatedRequest => { println("Validated"); _authenticatedUser = authorizationRequest.username; super.processRequest(requestBody) }
+        case StaleRequest => { println("Stale"); unauthorizedDigestResponse(stale = true) }
+        case r: ProcessedAuthorizationRequest => { println("UnAuth: [%s]".format(r)); unauthorizedDigestResponse(stale = false) }
       }
-      case _ => unauthorizedDigestResponse(stale = false)
+      case r: ProcessedAuthorizationRequest => { println("NoAuth: [%s]".format(r)); unauthorizedDigestResponse(stale = false) }
     }
   }
 
   def incomingRequest: Request = {
+    println("Expect=[%s]".format(requestHeaders.getFirst("Expect")))
     requestHeaders.getFirst("Authorization") match {
       case authorizationHeader: String if authorizationHeader.startsWith("Digest ") => {
         val m = parseAuthorizationHeader(authorizationHeader)
         AuthorizationRequest(HTTPMethod.unapply(method), m("username"), m("realm"), m("nonce"), m("uri"), m("qop"), m("nc"), m("cnonce"), m("response"), m("opaque"))
       }
-      case _ => UnauthorizedRequest
+      case _ => println("ReqHeader: [%s]."format(requestHeaders.getFirst("Authorization"))); UnauthorizedRequest
     }
   }
 
@@ -133,7 +133,7 @@ object NonceStorage {
 
 sealed trait Request
 case class AuthorizationRequest(method: String, username: String, realm: String, nonce: String, uri: String, qop: String, nc: String, cnonce: String, response: String, opaque: String) extends Request
-sealed abstract class ProcessedAuthorizationRequest extends Request
+sealed class ProcessedAuthorizationRequest extends Request
 case object UnauthorizedRequest extends ProcessedAuthorizationRequest
 case object ValidatedRequest extends ProcessedAuthorizationRequest
 case object StaleRequest extends ProcessedAuthorizationRequest
