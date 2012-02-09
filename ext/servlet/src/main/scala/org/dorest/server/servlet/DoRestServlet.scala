@@ -20,6 +20,12 @@ import javax.servlet.http._
 import org.dorest.server._
 import scala.collection.mutable.Buffer
 
+/**
+ * We have a static registry for servlets. 
+ * This means we can't have multiple factory-registries at the moment.
+ *
+ * @author Mateusz Parzonka
+ */
 object DoRestServlet {
 
   private var _factories: Buffer[HandlerFactory[_ <: Handler]] = Buffer()
@@ -31,9 +37,6 @@ object DoRestServlet {
   }
 
 }
-/**
- * After the start go to: "http://localhost:8080/date"
- */
 class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
 
   override def service(req: HttpServletRequest, res: HttpServletResponse) {
