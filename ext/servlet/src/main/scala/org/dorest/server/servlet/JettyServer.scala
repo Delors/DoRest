@@ -16,27 +16,30 @@
 package org.dorest.server
 package servlet
 
-import utils._
-import log._
 import java.util.ArrayList
-import org.eclipse.jetty.server.Connector
-import org.eclipse.jetty.server.Server
+
+import org.dorest.server.HandlerFactory
+import org.dorest.server.DoRestServer
+import org.dorest.server.log.Logger
 import org.eclipse.jetty.server.handler.HandlerList
 import org.eclipse.jetty.server.handler.ResourceHandler
 import org.eclipse.jetty.server.nio.SelectChannelConnector
+import org.eclipse.jetty.server.Connector
+import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.servlet.ServletMapping
-import org.dorest.server.rest._
-import org.dorest.server._
-import auth.BasicAuthentication
-import scala.collection.mutable.Buffer
+
+import log.Logging
 
 /**
+ * 
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
 class JettyServer(val port: Int) extends DoRestServer {
+
+  private val logger = Logger("org.dorest.server.servlet.JettyServer")
 
   // all Jetty objects required to start
   val connector = new SelectChannelConnector();
@@ -84,6 +87,7 @@ class JettyServer(val port: Int) extends DoRestServer {
     servletHandler.setServlets(holders.toArray(new Array[ServletHolder](0)));
     servletHandler.setServletMappings(mappings.toArray(new Array[ServletMapping](0)));
     server.start();
+    logger.info("Jetty started.")
   }
 
   def registerServlet(servlet: java.lang.Class[_], path: String) {
@@ -106,19 +110,20 @@ class JettyServer(val port: Int) extends DoRestServer {
   def register(handlerFactory: HandlerFactory[_ <: Handler]) {
     DoRestServlet.register(handlerFactory)
   }
-  
+
   /**
    * Stops the server after the given time (seconds).
    */
   def stop(shutdownDelay: Integer) {
+    logger.info("Stopping Jetty in in %s seconds...".format(shutdownDelay))
     new Thread(
       new Runnable() {
-	 def run() {
-	     Thread.sleep(shutdownDelay*1000)
-	     server.stop();
-	}
-    }).start
-      
+        def run() {
+          Thread.sleep(shutdownDelay * 1000)
+          server.stop();
+          logger.info("Stopped.")
+        }
+      }).start
   }
 
 }
