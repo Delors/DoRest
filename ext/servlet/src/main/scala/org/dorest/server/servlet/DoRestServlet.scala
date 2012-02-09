@@ -18,71 +18,80 @@ package servlet
 
 import javax.servlet.http._
 import org.dorest.server._
+import scala.collection.mutable.Buffer
 
+object DoRestServlet {
 
+  private var _factories: Buffer[HandlerFactory[_ <: Handler]] = Buffer()
+
+  def factories = _factories
+
+  def register(handlerFactory: HandlerFactory[_ <: Handler]) {
+    _factories += handlerFactory
+  }
+
+}
 /**
  * After the start go to: "http://localhost:8080/date"
  */
 class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
 
-    override def service(req: HttpServletRequest, res: HttpServletResponse) {
+  override def service(req: HttpServletRequest, res: HttpServletResponse) {
 
-        val path = req.getRequestURI
-        val query = req.getQueryString
+    val path = req.getRequestURI
+    val query = req.getQueryString
 
-        println("Handling request at " + new java.util.Date + " :" + path)
+    println("Handling request at " + new java.util.Date + " :" + path)
 
-        var factories = MyApp.factories
-        while (!factories.isEmpty) {
-            factories.head.matchURI(path, query) match {
-                case Some(_handler) => {
-                    val handler = _handler.asInstanceOf[Handler]
-                    handler.protocol = req.getProtocol()
-                    handler.method = HTTPMethod(req.getMethod())
-                    handler.requestURI = new java.net.URI(req.getRequestURI())
-                    handler.remoteAddress = req.getRemoteAddr()
-                    handler.localAddress = req.getLocalAddr()
-                    handler.requestHeaders = new Object {
-                        def getFirst(key: String): String = {
-                            req.getHeader(key)
-                        }
-                    }
-
-                    val response = handler.processRequest(req.getInputStream)
-                    try {
-                        res.setStatus(response.code);
-                        response.body match {
-                            case Some(body) => {
-                                setContentTypeResponseHeader(response.headers, body)
-                                response.headers.foreach((header) => {
-                                    val (key, value) = header;
-                                    res.setHeader(key, value)
-                                }
-                                )
-                                body.write(res.getOutputStream())
-                            }
-                            case None =>
-                                response.headers.foreach((header) => {
-                                    val (key, value) = header;
-                                    res.setHeader(key, value)
-                                } )
-                        }
-
-
-                    } catch {
-                        case ex => {
-                            ex.printStackTrace()
-                        }
-                    } finally {
-                        // we were able to handle the request..
-                        return;
-                    }
-                }
-                case _ =>;
+    var factories = DoRestServlet.factories
+    while (!factories.isEmpty) {
+      factories.head.matchURI(path, query) match {
+        case Some(_handler) => {
+          val handler = _handler.asInstanceOf[Handler]
+          handler.protocol = req.getProtocol()
+          handler.method = HTTPMethod(req.getMethod())
+          handler.requestURI = new java.net.URI(req.getRequestURI())
+          handler.remoteAddress = req.getRemoteAddr()
+          handler.localAddress = req.getLocalAddr()
+          handler.requestHeaders = new Object {
+            def getFirst(key: String): String = {
+              req.getHeader(key)
             }
-            factories = factories.tail
+          }
+
+          val response = handler.processRequest(req.getInputStream)
+          try {
+            res.setStatus(response.code);
+            response.body match {
+              case Some(body) => {
+                setContentTypeResponseHeader(response.headers, body)
+                response.headers.foreach((header) => {
+                  val (key, value) = header;
+                  res.setHeader(key, value)
+                })
+                body.write(res.getOutputStream())
+              }
+              case None =>
+                response.headers.foreach((header) => {
+                  val (key, value) = header;
+                  res.setHeader(key, value)
+                })
+            }
+
+          } catch {
+            case ex => {
+              ex.printStackTrace()
+            }
+          } finally {
+            // we were able to handle the request..
+            return ;
+          }
         }
-        res.sendError(404)
+        case _ => ;
+      }
+      factories = factories.tail
     }
+    res.sendError(404)
+  }
 
 }
