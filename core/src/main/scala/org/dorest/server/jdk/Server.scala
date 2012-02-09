@@ -24,11 +24,14 @@ import log._
  * Simple stand alone server that uses the (SUN) JDKs built-in HTTP server.
  *
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
 class Server(val port : Int)
         extends DoRestServer
-        with ConsoleLogging // TODO needs to exchanged
-        with DoRestApp {
+        with DoRestApp 
+        {
+  
+    private val logger = Logger("org.dorest.server.servlet.JDKServer")
 
     private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
@@ -40,7 +43,7 @@ class Server(val port : Int)
             val path = uri.getPath
             val query = uri.getQuery
 
-            log[Server](INFO) {
+            logger.info {
                 var message = ""+t.getRemoteAddress()+" "+new java.util.Date
                 message += path+"?"+query
                 val it = t.getRequestHeaders().entrySet.iterator
@@ -111,7 +114,7 @@ class Server(val port : Int)
             } catch {
                 // something went really wrong...
                 case ex => {
-                    log[Server](SEVERE, ex)
+                    logger.error(ex.toString())
                     sendResponseHeaders(t, 500, -1)
                     t.close()
                 }
@@ -140,16 +143,16 @@ class Server(val port : Int)
         server.createContext("/", new DoRestHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        log(INFO){ "Server started...: "+port }
+        logger.info( "JDKServer started at port: "+port )
     }
     
     /**
      * Stops the server after a given delay (seconds).
      */
     def stop(shutdownDelay: Integer) {
-       log(INFO){ "Server (%d) shutdown initiated. Server will terminate in %d seconds.".format(port, shutdownDelay) }
+       logger.info( "JDKServer at port %d has initiated shutdown. Will terminate in %d seconds.".format(port, shutdownDelay) )
        server.stop(shutdownDelay)
-       log(INFO){ "Server (%d) has terminated normally.".format(port) }
+       logger.info( "JDKServer at port %d has terminated normally.".format(port) )
     }
 
 }
