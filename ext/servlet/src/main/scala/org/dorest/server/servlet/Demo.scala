@@ -16,21 +16,12 @@
 package org.dorest.server
 package servlet
 
-import utils._
-import log._
-import java.util.ArrayList
-import org.mortbay.jetty.Connector
-import org.mortbay.jetty.Server
-import org.mortbay.jetty.handler.HandlerList
-import org.mortbay.jetty.handler.ResourceHandler
-import org.mortbay.jetty.nio.SelectChannelConnector
-import org.mortbay.jetty.servlet.ServletHandler
-import org.mortbay.jetty.servlet.ServletHolder
-import org.mortbay.jetty.servlet.ServletMapping
+import org.dorest.server.auth.BasicAuthentication
 import org.dorest.server.rest._
 import org.dorest.server._
-import auth.BasicAuthentication
-import scala.collection.mutable.Buffer
+
+import log._
+import utils._
 
 /**
  * After the start go to: "http://localhost:8080/time"
