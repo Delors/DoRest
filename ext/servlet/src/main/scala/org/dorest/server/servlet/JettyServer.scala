@@ -107,8 +107,18 @@ class JettyServer(val port: Int) extends DoRestServer {
     DoRestServlet.register(handlerFactory)
   }
   
+  /**
+   * Stops the server after the given time (seconds).
+   */
   def stop(shutdownDelay: Integer) {
-    // TODO
+    new Thread(
+      new Runnable() {
+	 def run() {
+	     Thread.sleep(shutdownDelay*1000)
+	     server.stop();
+	}
+    }).start
+      
   }
 
 }
