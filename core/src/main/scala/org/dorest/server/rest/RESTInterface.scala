@@ -80,8 +80,6 @@ trait RESTInterface extends Handler {
    */
   def processRequest(requestBody: InputStream): Response = {
     
-    println("Processing request " +  requestBody)
-
     method match {
       case GET if !getHandlers.isEmpty => {
         val mediaType = requestHeaders.getFirst("accept")
