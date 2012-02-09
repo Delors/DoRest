@@ -19,11 +19,13 @@ package servlet
 import javax.servlet.http._
 import org.dorest.server._
 import scala.collection.mutable.Buffer
+import org.dorest.server.log.Logger
 
 /**
- * We have a static registry for servlets. 
+ * We have a static registry for servlets.
  * This means we can't have multiple factory-registries at the moment.
  *
+ * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
 object DoRestServlet {
@@ -39,12 +41,24 @@ object DoRestServlet {
 }
 class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
 
+  private val logger = Logger("org.dorest.server.servlet.DoRestServlet")
+
   override def service(req: HttpServletRequest, res: HttpServletResponse) {
 
     val path = req.getRequestURI
     val query = req.getQueryString
 
-    println("Handling request at " + new java.util.Date + " :" + path)
+    logger.info {
+      "<-- %s %s %s".format(req.getMethod(), req.getRequestURI(), {
+        val headerNames = req.getHeaderNames()
+        val sb = new StringBuilder()
+        while (headerNames.hasMoreElements()) {
+          val headerName: String = headerNames.nextElement
+          sb.append(headerName).append("=[").append(req.getHeader(headerName)).append("] ")
+        }
+        sb.toString
+      })
+    }
 
     var factories = DoRestServlet.factories
     while (!factories.isEmpty) {
@@ -72,6 +86,17 @@ class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
                   val (key, value) = header;
                   res.setHeader(key, value)
                 })
+                logger.info {
+                  "--> %s %s".format(res.getStatus(), {
+                    val headerNames = res.getHeaderNames()
+                    val sb = new StringBuilder()
+                    import scala.collection.JavaConversions._
+                    for (headerName <- headerNames) {
+                      sb.append(headerName).append("=[").append(req.getHeader(headerName)).append("] ")
+                    }
+                    sb.toString
+                  })
+                }
                 body.write(res.getOutputStream())
               }
               case None =>
