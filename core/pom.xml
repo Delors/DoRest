@@ -26,7 +26,7 @@
 
 	<artifactId>org.dorest.core</artifactId>
 	<name>DoRest-Core</name>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -39,17 +39,23 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<!-- The core is not expected to have any dependencies on libraries other 
 		than the JDK and the Scala Library. -->
 	<dependencies>
-		
+
 		<!-- TODO Can we get rid of it? -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
