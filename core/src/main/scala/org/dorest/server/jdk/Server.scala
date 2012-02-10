@@ -31,12 +31,12 @@ class Server(val port : Int)
         with DoRestApp 
         {
   
-    private val logger = Logger("org.dorest.server.servlet.JDKServer")
+    private val logger = Logger(classOf[org.dorest.server.jdk.Server])
 
     private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
     private class DoRestHandler extends HttpHandler {
-
+      
         def handle(t : HttpExchange) {
 
             val uri = t.getRequestURI.normalize()
@@ -149,12 +149,11 @@ class Server(val port : Int)
     /**
      * Stops the server after a given delay (seconds).
      */
-    def stop(shutdownDelay: Integer) {
+    def stop(shutdownDelay: Int) {
        logger.info( "JDKServer at port %d has initiated shutdown. Will terminate in %d seconds.".format(port, shutdownDelay) )
        server.stop(shutdownDelay)
        logger.info( "JDKServer at port %d has terminated normally.".format(port) )
     }
 
 }
-
 

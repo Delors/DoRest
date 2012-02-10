@@ -41,7 +41,7 @@ object DoRestServlet {
 }
 class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
 
-  private val logger = Logger("org.dorest.server.servlet.DoRestServlet")
+  private[this] val logger = Logger(classOf[DoRestServlet])
 
   override def service(req: HttpServletRequest, res: HttpServletResponse) {
 

@@ -33,13 +33,14 @@ import org.eclipse.jetty.servlet.ServletMapping
 import log.Logging
 
 /**
- * 
+ * Serves the DoRestServlet.
+ *
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
 class JettyServer(val port: Int) extends DoRestServer {
 
-  private val logger = Logger("org.dorest.server.servlet.JettyServer")
+  private val logger = Logger(classOf[JettyServer])
 
   // all Jetty objects required to start
   val connector = new SelectChannelConnector();
@@ -114,7 +115,7 @@ class JettyServer(val port: Int) extends DoRestServer {
   /**
    * Stops the server after the given time (seconds).
    */
-  def stop(shutdownDelay: Integer) {
+  def stop(shutdownDelay: Int) {
     logger.info("Stopping Jetty in in %s seconds...".format(shutdownDelay))
     new Thread(
       new Runnable() {
