@@ -124,6 +124,6 @@ trait Handler {
      * The request body is a parameter of this method as it is subject
      * to various transformations and it may not be possible to read it multiple times.
      */
-    def processRequest(requestBody: InputStream): Response
+    def processRequest(requestBody: => InputStream): Response
 
 }

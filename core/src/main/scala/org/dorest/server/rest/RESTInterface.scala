@@ -78,7 +78,7 @@ trait RESTInterface extends Handler {
   /**
    * Analyzes the HTTP Request and dispatches to the correct (get,put,post,delete) handler object.
    */
-  def processRequest(requestBody: InputStream): Response = {
+  def processRequest(requestBody: => InputStream): Response = {
     
     method match {
       case GET if !getHandlers.isEmpty => {

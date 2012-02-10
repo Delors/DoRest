@@ -12,7 +12,7 @@ trait JDBCTransactionProvider
 
     def connection: Connection = _connection
 
-    override abstract def processRequest(requestBody: InputStream): Response = {
+    override abstract def processRequest(requestBody: => InputStream): Response = {
         // TODO implement connection pooling!
         _connection = DriverManager.getConnection("jdbc:postgresql://localhost/SmallNotes", "SmallNotesAdmin", "startSmallNotes");
         _connection.setAutoCommit(false)

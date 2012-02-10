@@ -30,7 +30,7 @@ trait DigestAuthentication extends Authentication with Handler {
 
   def authenticatedUser: String = _authenticatedUser
 
-  override abstract def processRequest(requestBody: InputStream): Response = {
+  override abstract def processRequest(requestBody: => InputStream): Response = {
     incomingRequest match {
       case authorizationRequest: AuthorizationRequest => validate(authorizationRequest) match {
         case ValidatedRequest => { _authenticatedUser = authorizationRequest.username; super.processRequest(requestBody) }

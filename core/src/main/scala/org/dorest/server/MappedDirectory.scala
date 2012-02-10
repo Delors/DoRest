@@ -29,7 +29,7 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
 
     var path: String = _
 
-    def processRequest(requestBody: InputStream): Response = {
+    def processRequest(requestBody: => InputStream): Response = {
         if (method != GET) {
             return new SupportedMethodsResponse(GET)
         }

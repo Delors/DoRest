@@ -34,7 +34,7 @@ class Redirect(val location: String) extends Handler {
         def body = None
     }
 
-    def processRequest(requestBody: InputStream) = {
+    def processRequest(requestBody: => InputStream) = {
         // we actually don't process the request at all
         response;
     }
