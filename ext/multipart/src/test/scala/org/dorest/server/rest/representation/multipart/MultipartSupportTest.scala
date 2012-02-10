@@ -6,7 +6,7 @@ import java.io._
 import org.apache.commons.io.IOUtils
 import org.dorest.client.DigestAuth
 import org.dorest.client.SimpleClient
-import org.dorest.server.jdk.Server
+import org.dorest.server.jdk.JDKServer
 import org.dorest.server.rest._
 import org.dorest.server._
 import org.junit.runner.RunWith
@@ -20,7 +20,7 @@ import org.dorest.client.Part
 /**
  * @author Mateusz Parzonka
  */
-object MultipartSupportTestServer extends Server(9998) {
+object MultipartSupportTestServer extends JDKServer(9998) {
 
 import org.apache.commons.io.{ IOUtils, FileUtils }
   this register new HandlerFactory[UploadResource] {

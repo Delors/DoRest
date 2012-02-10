@@ -26,12 +26,12 @@ import log._
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
-class Server(val port : Int)
+class JDKServer(val port : Int)
         extends DoRestServer
         with DoRestApp 
         {
   
-    private val logger = Logger(classOf[org.dorest.server.jdk.Server])
+    private[this] val logger = Logger(classOf[JDKServer])
 
     private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
@@ -54,7 +54,7 @@ class Server(val port : Int)
             }
 
             try {
-                var factories = Server.this.factories
+                var factories = JDKServer.this.factories
                 while (!factories.isEmpty) {
                     factories.head.matchURI(path, query) match {
                         case Some(handler) => {

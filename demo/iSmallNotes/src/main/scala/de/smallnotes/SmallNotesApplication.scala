@@ -1,11 +1,11 @@
 package de.smallnotes
 
 import org.dorest.server.{MappedDirectory, HandlerFactory}
-import org.dorest.server.jdk.Server
+import org.dorest.server.jdk.JDKServer
 
 class SmallNotesApplication
 
-object SmallNotesApplication extends Server(8182) with App {
+object SmallNotesApplication extends JDKServer(8182) with App {
 
     this register new HandlerFactory[Notes] {
         path {

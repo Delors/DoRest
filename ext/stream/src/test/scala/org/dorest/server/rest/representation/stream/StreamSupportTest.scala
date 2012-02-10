@@ -10,7 +10,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import org.dorest.client.SimpleClient
 import org.dorest.client.Entity
-import org.dorest.server.jdk.Server
+import org.dorest.server.jdk.JDKServer
 import org.dorest.server._
 import rest._
 import java.io._
@@ -22,7 +22,7 @@ import org.apache.commons.io.{ IOUtils, FileUtils }
  *
  * @author Mateusz Parzonka
  */
-object StreamSupportTestServer extends Server(9999) {
+object StreamSupportTestServer extends JDKServer(9999) {
 
   this register new HandlerFactory[ByteStreamResource] {
     path { "/bytestream" }

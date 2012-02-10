@@ -16,7 +16,7 @@
 
 package org.dorest.server.auth
 
-import org.dorest.server.jdk.Server
+import org.dorest.server.jdk.JDKServer
 import org.dorest.server.rest._
 import org.dorest.client._
 import org.junit.runner.RunWith
@@ -39,7 +39,7 @@ import scala.xml.{ XML, Utility }
  *
  * @author Mateusz Parzonka
  */
-object DigestAuthTestServer extends Server(9999) {
+object DigestAuthTestServer extends JDKServer(9999) {
 
   this register new HandlerFactory[RootResource] {
     path { "/" }
