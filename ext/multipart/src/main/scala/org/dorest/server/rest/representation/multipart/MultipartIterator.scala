@@ -13,27 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-
 package org.dorest.server.rest.representation.multipart
-
-import org.apache.commons.fileupload.{ RequestContext => IRequestContext }
-import org.apache.commons.io.IOUtils
-import java.io._
-import io.Codec
-import java.nio.charset.Charset
-import org.dorest.server.MediaType
+import org.apache.commons.fileupload.FileItemIterator
 
 /**
  * @author Mateusz Parzonka
  */
-class RequestContext(charset: Option[Charset], in: InputStream, contentType: String, contentLength: Int) extends IRequestContext {
+class MultipartIterator(iter: FileItemIterator) extends scala.collection.Iterator[FormData] {
 
-  def getCharacterEncoding: String = if (charset.isDefined) charset.get.toString else "US-ASCII"
+  def hasNext: Boolean = iter.hasNext()
 
-  def getContentType: String = contentType
-
-  def getContentLength: Int = contentLength
-
-  def getInputStream(): InputStream = in
+  def next: FormData = FormData(iter.next())
 
 }

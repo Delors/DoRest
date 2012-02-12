@@ -19,23 +19,22 @@ package representation.multipart
 
 import java.io._
 import java.nio.charset.Charset
-import scala.xml._
-import org.apache.commons.fileupload._
-import scala.collection.mutable.ListBuffer
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.apache.commons.fileupload._
+import scala.io.Source
 
 /**
  * Implements support for requests containing multipart/form-data entities.
  *
  * @author Mateusz Parzonka
  */
-trait MultipartSupport {
-  
+trait MultipartSupport extends Handler {
+
   /**
    * Files with a size less then 1MB are kept in RAM, bigger files are stored to the file repository.
    */
-  private val SIZE_THRESHOLD = 1024*1024
-  
+  private val SIZE_THRESHOLD = 1024 * 1024
+
   /**
    * Larger uploaded files are temporarly stored at this location.
    */
@@ -44,19 +43,18 @@ trait MultipartSupport {
   def Multipart: RequestBodyProcessor = new RequestBodyProcessor(
     MediaType.MULTIPART_FORM_DATA,
     (charset: Option[Charset], in: InputStream) ⇒ {
-      
+
       val fileRepository = new DiskFileItemFactory(SIZE_THRESHOLD, FILE_REPOSITORY)
       val fileUpload = new FileUpload(fileRepository)
-      val iter = fileUpload.getItemIterator(new RequestContext(charset, in))
-      val fileItemStreams = ListBuffer[FileItemStream]()
-      while(iter.hasNext())
-        fileItemStreams.+=(iter.next())
-      _parts = fileItemStreams.toList
-      
+      val contentType = requestHeaders.getFirst("Content-Type")
+      val contentLength = Integer.parseInt(requestHeaders.getFirst("Content-Length"))
+      val requestContext = new RequestContext(charset, in, contentType, contentLength)
+      _iter = new MultipartIterator(fileUpload.getItemIterator(requestContext))
+
     })
 
-  private var _parts: List[FileItemStream] = _
+  private var _iter: MultipartIterator = _
 
-  def parts: List[FileItemStream] = _parts
+  def multipartIterator = _iter
 
 }
