@@ -52,28 +52,7 @@ trait RESTInterface extends Handler {
    */
   protected var responseBody: Option[ResponseBody] = None
 
-  /**
-   * Parses the content-type header, if specified and creates a ContentType.
-   * Mapped exceptions are thrown when content-type is not provided or mediatype unknown.
-   * A mediaType is unknown if not contained in MediaType.Values.
-   */
-  lazy val contentType: ContentType = {
-    def charset(cs: String): Option[Charset] = if (Charset.isSupported(cs)) Some(Charset.forName(cs)) else None
-    def mediaType(mt: String): MediaType.Value = if (MediaType.stringValues.contains(mt))
-      MediaType.withName(mt)
-    else
-      throw new RequestException(response = ErrorResponse(415, "Unknown MediaType %s" format mt))
-    requestHeaders.getFirst("Content-Type") match {
-      case ct: String => ct.split("; ") match {
-        // TODO this is pretty ugly. We probably need to introduce a new class representing the incoming request. -mateusz
-        case Array(mt, cs) if cs.startsWith("charset=") => ContentType(mediaType(mt), charset(cs.substring("charset=".length())))
-        case Array(mt, cs) if cs.startsWith("boundary=") => ContentType(mediaType(mt), None)
-        case Array(mt) => ContentType(mediaType(mt), None)
-        case _ => throw new RequestException(response = BadRequest("MediaType not provided"))
-      }
-      case _ => throw new RequestException(response = BadRequest("Content-Type not provided"))
-    }
-  }
+  lazy val contentType = MediaType.parseContentType(requestHeaders.getFirst("Content-Type"))
 
   /**
    * Analyzes the HTTP Request and dispatches to the correct (get,put,post,delete) handler object.
