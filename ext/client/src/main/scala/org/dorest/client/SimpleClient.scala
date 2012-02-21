@@ -36,6 +36,7 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.HttpEntity
 import org.apache.http.HttpResponse
 import org.apache.http.util
+import java.nio.charset.Charset
 
 /**
  * Simple HTTP-client for testing purposes.
@@ -91,7 +92,8 @@ object Entity {
 }
 
 object Part {
-  def apply(content: String, mimeType: String) = StringBody.create(content, mimeType, null)
+  def apply(content: String) = StringBody.create(content, "text/plain", null)
+  def apply(content: String, mimeType: String) = {println("CONTENT: " + content); StringBody.create(content, mimeType, Charset.forName("UTF-8"))}
   def apply(file: java.io.File, contentType: String) = new FileBody(file, file.getName, contentType, "UTF-8")
 }
 

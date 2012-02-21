@@ -56,6 +56,7 @@ object MediaType extends Enumeration {
     contentType match {
       case ct: String => ct.split("; ") match {
         case Array(mt, cs) if cs.startsWith("charset=") => ContentType(mediaType(mt), charset(cs.substring("charset=".length())))
+        case Array(mt, cs) if cs.startsWith("boundary=") => ContentType(MULTIPART_FORM_DATA, None)
         case Array(mt) => ContentType(mediaType(mt), None)
         case _ => throw new RequestException(response = BadRequest("MediaType not provided"))
       }

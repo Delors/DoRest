@@ -20,6 +20,8 @@ import org.apache.commons.fileupload.FileItemStream
 import org.dorest.server.MediaType
 import java.nio.charset.Charset
 import scala.io.Source
+import org.apache.commons.io.IOUtils
+import java.io.ByteArrayInputStream
 
 /**
  * @author Mateusz Parzonka
@@ -43,18 +45,24 @@ case class FormField(fieldName: String) extends FormData {
 
 case class Data(val fieldName: String, val mediaType: MediaType.Value) extends FormData {
 
-  private[this] var _body: InputStream = _
+  private[this] var _body: Array[Byte] = _
   private[this] var _charset: Option[Charset] = _
+  private[this] var _fileName: String = _
 
-  def this(fieldName: String, mediaType: MediaType.Value, charset: Option[Charset], body: InputStream) = {
+  def this(fieldName: String, mediaType: MediaType.Value, charset: Option[Charset], body: InputStream, fileName: String) = {
     this(fieldName, mediaType)
-    _body = body
+    _body = IOUtils.toByteArray(body)
     _charset = charset
+    _fileName = fileName
   }
 
-  def body = _body
+  def openStream: InputStream = new ByteArrayInputStream(_body)
+  
+  def contentLength = _body.size
 
   def charset = _charset
+  
+  def fileName = _fileName
 
 }
 
@@ -63,7 +71,7 @@ object FormData {
     val contentType = MediaType.parseContentType(fis.getContentType())
     fis.isFormField() match {
       case true => new FormField(fis.getFieldName(), contentType.charset, fis.openStream())
-      case false => new Data(fis.getFieldName(), contentType.mediaType, contentType.charset, fis.openStream())
+      case false => new Data(fis.getFieldName(), contentType.mediaType, contentType.charset, fis.openStream(), fis.getName())
     }
   }
 }

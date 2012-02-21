@@ -61,7 +61,7 @@ object MultipartSupportTestServer extends JDKServer(9998) {
           case part @ Data("someFile", MediaType.APPLICATION_PDF) => {
             val fos = new FileOutputStream(new File("temp/uploaded .pdf"))
             var read: Int = 0
-            while ({ read = part.body.read; read != -1 }) {
+            while ({ read = part.openStream.read; read != -1 }) {
               fos.write(read)
             }
           }

@@ -56,5 +56,12 @@ trait MultipartSupport extends Handler {
   private var _iter: MultipartIterator = _
 
   def multipartIterator = _iter
+  
+  def dataPart(mediaType: MediaType.Value): Data = {
+     multipartIterator.next() match {
+        case part @ Data(_, mediaType) => part
+        case _ => throw new RuntimeException("No Datapart fits.")
+      }
+    }
 
 }
