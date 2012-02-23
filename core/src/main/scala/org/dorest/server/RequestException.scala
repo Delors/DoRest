@@ -23,4 +23,4 @@ package org.dorest.server
  * 	typical usage: {{{ response = BadRequest("Content-Type not provided") }}}
  * @author Mateusz Parzonka
  */
-case class RequestException(response: ErrorResponse) extends Exception
+case class RequestException(response: ErrorResponse) extends Exception("HTTP StatusCode: " + response.code.toString)
