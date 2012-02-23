@@ -76,7 +76,16 @@ class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
             }
           }
 
-          val response = handler.processRequest(req.getInputStream)
+          // try to process a request and yield a response 
+          // (unpacking RequestExceptions to responses in case of throw)
+          val response: Response = {
+            try {
+              handler.processRequest(req.getInputStream)
+            } catch {
+              case ex: RequestException => ex.response
+            }
+          }
+          
           try {
             res.setStatus(response.code);
             response.body match {
