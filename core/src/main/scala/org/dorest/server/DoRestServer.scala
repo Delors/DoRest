@@ -21,10 +21,10 @@ package org.dorest.server
  * '''Remark''' This class is generally only relevant for developers who want to extend/embed DoRest.
  * 
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
 trait DoRestServer {
 
-    // TODO Do we also have to set the Content-length header (in the general case?)
     protected final def setContentTypeResponseHeader(responseHeaders: ResponseHeaders, responseBody: ResponseBody) {
         responseBody.contentType match {
             case Some((mediaType, None)) => {
@@ -37,6 +37,7 @@ trait DoRestServer {
             }
             case _ => /*OK*/
         }
+        responseHeaders.set("Content-Length", responseBody.length.toString)
     }
 
 }
