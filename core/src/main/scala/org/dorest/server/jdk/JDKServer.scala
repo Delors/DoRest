@@ -66,7 +66,7 @@ class JDKServer(val port : Int)
                             handler.requestHeaders = t.getRequestHeaders()
                             
                             // try to process a request and yield a response 
-                            // (unpacking RequestExceptions to responses in case of throw)
+                            // (unpack RequestException to response in case of throw)
                             val response: Response = {
                             try {
                                 handler.processRequest(t.getRequestBody())
