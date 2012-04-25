@@ -23,14 +23,12 @@ package org.dorest.server
  *
  * @author Michael Eichberg
  */
-class SupportedMethodsResponse(val allowedMethods: List[HTTPMethod]) extends Response {
+class SupportedMethodsResponse(val allowedMethods: List[HTTPMethod], val code: Int = 200) extends Response {
 
     def this(allowedMethod: HTTPMethod) {
         this (allowedMethod :: Nil)
     }
-
-    final def code = 405
-
+    
     val headers = new DefaultResponseHeaders(("Allow", allowedMethods.mkString(", ")))
 
     def body = None

@@ -19,6 +19,7 @@ package rest
 import java.io._
 import java.net.{ URL, URI }
 import java.nio.charset.Charset
+import scala.collection.mutable.ListBuffer
 
 /**
  * Main trait of all Resources.
@@ -28,9 +29,10 @@ import java.nio.charset.Charset
  */
 trait RESTInterface extends Handler {
 
-  private val getHandlers = scala.collection.mutable.ListBuffer[RepresentationFactory[_]]()
-  private val postHandlers = scala.collection.mutable.ListBuffer[PostHandler]()
-  private val putHandlers = scala.collection.mutable.ListBuffer[PutHandler]()
+  private val getHandlers = ListBuffer[RepresentationFactory[_]]()
+  private val postHandlers = ListBuffer[PostHandler]()
+  private val putHandlers = ListBuffer[PutHandler]()
+  private val patchHandlers = ListBuffer[PatchHandler]()
   private var deleteHandler: Option[() => Boolean] = None
 
   /**
@@ -58,75 +60,79 @@ trait RESTInterface extends Handler {
    * Analyzes the HTTP Request and dispatches to the correct (get,put,post,delete) handler object.
    */
   def processRequest(requestBody: => InputStream): Response = {
-    
-    method match {
-      case GET if !getHandlers.isEmpty => {
-        val mediaType = requestHeaders.getFirst("accept")
-        if ((mediaType eq null) || (mediaType == "*/*")) {
-          return Response(responseCode, responseHeaders, responseBody)
-        }
-        // TODO improve the search for a matching handler
-        getHandlers.find(_.mediaType.toString == mediaType) match {
-          case Some(rbi) => {
-            responseBody = rbi.createRepresentation()
-            responseBody match {
-              // TODO reevaluate necessity of having an optional response-body
-              // When a representation creates NONE this should encode a 404 -mateusz
-              case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
-              case None => return NotFoundResponse
-            }
+
+    def createResponse(sendBody: Boolean): Response = {
+      val mediaType = requestHeaders.getFirst("accept")
+      if ((mediaType eq null) || (mediaType == "*/*")) {
+        return Response(responseCode, responseHeaders, responseBody)
+      }
+      // TODO improve the search for a matching handler
+      getHandlers.find(_.mediaType.toString == mediaType) match {
+        case Some(rbi) => {
+          responseBody = rbi.createRepresentation()
+          responseBody match {
+            case Some(_: ResponseBody) if !sendBody => return Response(responseCode, responseHeaders, None)
+            case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
+            case None => return NotFoundResponse
           }
-          case None => return NotAcceptableResponse
         }
+        case None => return NotAcceptableResponse
       }
-      case POST if !postHandlers.isEmpty => {
-         // if we cannot handle the request body, we have to return a UnsupportedMediaTypeResponse (superfluous comment? -mateusz)
-        // TODO nearly everything... matching... (done? -mateusz)
-        postHandlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
-          case Some(postHandler) => {
-        	responseCode = 201 // TODO do we need mutable state? -mateusz
-            postHandler.requestBodyHandler.process(contentType.charset, requestBody)
-            responseBody = postHandler.representationFactory.createRepresentation()
-            return Response(responseCode, responseHeaders, responseBody)
-            }
-          case None => return UnsupportedMediaTypeResponse
-        }
+    }
+
+    def handleRequestResponse[T <: RequestResponseHandlers](handlers: ListBuffer[T], responseCode: Int = 200): Response = {
+      handlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
+        case Some(handler) =>
+          handler.requestBodyHandler.process(contentType.charset, requestBody)
+          responseBody = handler.representationFactory.createRepresentation()
+          responseBody match {
+            case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
+            case None => return NotFoundResponse
+          }
+        case None => return UnsupportedMediaTypeResponse
       }
-      case PUT if !putHandlers.isEmpty => {
-        // TODO nearly everything... matching... (done? -mateusz)
-        putHandlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
-          case Some(putHandler) =>
-            putHandler.requestBodyHandler.process(contentType.charset, requestBody)
-            responseBody = putHandler.representationFactory.createRepresentation() 
-            responseBody match {
-              case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
-              case None => return NotFoundResponse
-            }
-          case None => return UnsupportedMediaTypeResponse
-        }
-      }
+    }
+
+    def supportedMethods(responseCode: Int = 200): Response = {
+      var supportedMethods: List[HTTPMethod] = Nil
+      if (!getHandlers.isEmpty)
+        supportedMethods = GET :: supportedMethods
+      if (!putHandlers.isEmpty)
+        supportedMethods = PUT :: supportedMethods
+      if (!postHandlers.isEmpty)
+        supportedMethods = POST :: supportedMethods
+      if (!patchHandlers.isEmpty)
+        supportedMethods = PATCH :: supportedMethods
+      if (!deleteHandler.isEmpty)
+        supportedMethods = DELETE :: supportedMethods
+      supportedMethods = HEAD :: OPTIONS :: supportedMethods
+
+      return new SupportedMethodsResponse(supportedMethods, responseCode)
+    }
+
+    method match {
+      case GET if !getHandlers.isEmpty =>
+        return createResponse(sendBody = true)
+      case HEAD if !getHandlers.isEmpty =>
+        return createResponse(sendBody = false)
+      case POST if !postHandlers.isEmpty =>
+        return handleRequestResponse(postHandlers, responseCode = 201)
+      case PUT if !putHandlers.isEmpty =>
+        return handleRequestResponse(putHandlers)
+      case PATCH if !patchHandlers.isEmpty =>
+        return handleRequestResponse(patchHandlers)
       case DELETE if deleteHandler.isDefined => {
         if (!(deleteHandler.get)()) {
           return NotFoundResponse
         }
         return NoContent // delete was successful
       }
-      case _ => {
-        var supportedMethods: List[HTTPMethod] = Nil
-        if (!getHandlers.isEmpty)
-          supportedMethods = GET :: supportedMethods;
-
-        if (!putHandlers.isEmpty)
-          supportedMethods = PUT :: supportedMethods;
-
-        if (!postHandlers.isEmpty)
-          supportedMethods = POST :: supportedMethods;
-
-        if (!deleteHandler.isEmpty)
-          supportedMethods = DELETE :: supportedMethods;
-
-        return new SupportedMethodsResponse(supportedMethods)
+      case OPTIONS => {
+        return supportedMethods()
       }
+      case _ =>
+        return supportedMethods(responseCode = 405)
+
     }
 
     NotFoundResponse
@@ -210,6 +216,25 @@ trait RESTInterface extends Handler {
     def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
 
     def of(requestBodyHandler: RequestBodyProcessor): PutHandler = new PutHandler(requestBodyHandler)
+  }
+
+  final class PatchHandler(requestBodyHandler: RequestBodyProcessor)
+    extends RequestResponseHandlers(requestBodyHandler) {
+
+    def registerThisHandler {
+      patchHandlers += this
+    }
+
+  }
+
+  final object patch {
+
+    /**
+     * @see [[#of(RequestBodyProcessor)]]
+     */
+    def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
+
+    def of(requestBodyHandler: RequestBodyProcessor): PatchHandler = new PatchHandler(requestBodyHandler)
   }
 
   /**
