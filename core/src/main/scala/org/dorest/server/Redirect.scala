@@ -22,6 +22,8 @@ import java.io._
  * Handler to send a standard redirect (HTTP status code 303). The "Location" header sent back to the
  * client is set to the given location. The location information can be relative or absolute.
  *
+ * This class is thread safe.
+ *
  * @author Michael Eichberg
  */
 class Redirect(val location: String) extends Handler {
@@ -41,7 +43,26 @@ class Redirect(val location: String) extends Handler {
 
 }
 
+abstract class DynamicRedirect extends Handler {
 
+    def location: String
+
+    private def response(): Response = {
+        new Response {
+            def code = 303;
+
+            val headers = new DefaultResponseHeaders("Location" -> location)
+
+            def body = None
+        }
+    }
+
+    def processRequest(requestBody: InputStream) = {
+        // we actually don't process the request at all
+        response();
+    }
+
+}
 
 
 
