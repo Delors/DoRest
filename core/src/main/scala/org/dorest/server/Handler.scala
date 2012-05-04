@@ -124,6 +124,7 @@ trait Handler {
      * The request body is a parameter of this method as it is subject
      * to various transformations and it may not be possible to read it multiple times.
      */
-    def processRequest(requestBody: InputStream): Response
+    // TODO Is it Ok if we ignore the request body (take a look in the specification).
+    def processRequest(requestBody: => InputStream): Response
 
 }

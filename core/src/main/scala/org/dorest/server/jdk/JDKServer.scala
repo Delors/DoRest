@@ -24,23 +24,26 @@ import log._
  * Simple stand alone server that uses the (SUN) JDKs built-in HTTP server.
  *
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
-class Server(val port : Int)
+class JDKServer(val port : Int)
         extends DoRestServer
-        with ConsoleLogging // TODO needs to exchanged
-        with DoRestApp {
+        with DoRestApp 
+        {
+  
+    private[this] val logger = Logger(classOf[JDKServer])
 
     private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
     private class DoRestHandler extends HttpHandler {
-
+      
         def handle(t : HttpExchange) {
 
             val uri = t.getRequestURI.normalize()
             val path = uri.getPath
             val query = uri.getQuery
 
-            log[Server](INFO) {
+            logger.info {
                 var message = ""+t.getRemoteAddress()+" "+new java.util.Date
                 message += path+"?"+query
                 val it = t.getRequestHeaders().entrySet.iterator
@@ -51,7 +54,7 @@ class Server(val port : Int)
             }
 
             try {
-                var factories = Server.this.factories
+                var factories = JDKServer.this.factories
                 while (!factories.isEmpty) {
                     factories.head.matchURI(path, query) match {
                         case Some(handler) => {
@@ -61,7 +64,17 @@ class Server(val port : Int)
                             handler.remoteAddress = t.getRemoteAddress().toString // TODO check that the result is as expected...
                             handler.localAddress = t.getLocalAddress().toString // TODO check that the result is as expected...
                             handler.requestHeaders = t.getRequestHeaders()
-                            val response = handler.processRequest(t.getRequestBody())
+                            
+                            // try to process a request and yield a response 
+                            // (unpack RequestException to response in case of throw)
+                            val response: Response = {
+                            try {
+                                handler.processRequest(t.getRequestBody())
+                            } catch {
+                                case ex: RequestException =>  ex.response
+                                }
+                            }
+                            
                             try {
                                 response.body match {
                                     case Some(body) => {
@@ -101,7 +114,8 @@ class Server(val port : Int)
             } catch {
                 // something went really wrong...
                 case ex => {
-                    log[Server](SEVERE, ex)
+                    logger.error(ex.toString())
+                    ex.printStackTrace()
                     sendResponseHeaders(t, 500, -1)
                     t.close()
                 }
@@ -130,9 +144,17 @@ class Server(val port : Int)
         server.createContext("/", new DoRestHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        log(INFO){ "Server started...: "+port }
+        logger.info( "JDKServer started at port: "+port )
+    }
+    
+    /**
+     * Stops the server after a given delay (seconds).
+     */
+    def stop(shutdownDelay: Int) {
+       logger.info( "JDKServer at port %d has initiated shutdown. Will terminate in %d seconds.".format(port, shutdownDelay) )
+       server.stop(shutdownDelay)
+       logger.info( "JDKServer at port %d has terminated normally.".format(port) )
     }
 
 }
-
 

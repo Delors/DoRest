@@ -38,6 +38,7 @@
 		<module>tiscaf</module>
 		<module>client</module>
 		<module>stream</module>
+		<module>multipart</module>
 	</modules>
 
 	<dependencyManagement>
@@ -90,6 +91,11 @@
 			<dependency>
 				<groupId>org.dorest</groupId>
 				<artifactId>org.dorest.ext.stream</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dorest</groupId>
+				<artifactId>org.dorest.ext.multipart</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

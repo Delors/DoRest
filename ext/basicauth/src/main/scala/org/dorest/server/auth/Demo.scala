@@ -99,7 +99,7 @@ class Info extends RESTInterface with Authorization with TEXTSupport {
 class Demo
 
 object Demo
-  extends Server(9000)
+  extends JDKServer(9000)
   with ConsoleLogging
   with App {
 

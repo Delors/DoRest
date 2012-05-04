@@ -182,7 +182,7 @@ class Demo
  *  
  */
 object Demo
-        extends Server(9000)
+        extends JDKServer(9000)
         with scala.App
         with ConsoleLogging // TODO needs to exchanged
         {

@@ -36,7 +36,7 @@ class Redirect(val location: String) extends Handler {
         def body = None
     }
 
-    def processRequest(requestBody: InputStream) = {
+    def processRequest(requestBody: ⇒ InputStream) = {
         // we actually don't process the request at all
         response;
     }
@@ -45,19 +45,23 @@ class Redirect(val location: String) extends Handler {
 
 abstract class DynamicRedirect extends Handler {
 
-    def location: String
+    def location : Option[String]
 
     private def response(): Response = {
-        new Response {
-            def code = 303;
+        location match {
+            case Some(l) ⇒
+                return new Response {
+                    def code = 303;
 
-            val headers = new DefaultResponseHeaders("Location" -> location)
+                    val headers = new DefaultResponseHeaders("Location" -> l)
 
-            def body = None
+                    def body = None
+                }
+            case None ⇒ NotFoundResponse
         }
     }
 
-    def processRequest(requestBody: InputStream) = {
+    def processRequest(requestBody: => InputStream) : Response = {
         // we actually don't process the request at all
         response();
     }

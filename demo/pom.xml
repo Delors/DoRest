@@ -30,6 +30,7 @@
 	
 	<modules>
         <module>iSmallNotes</module>
+        <module>HelloWorld</module>
 	</modules>
             
 </project>

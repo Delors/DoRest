@@ -19,11 +19,16 @@ import org.apache.http.auth.params.AuthPNames
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.methods.HttpDelete
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
 import org.apache.http.client.methods.HttpRequestBase
 import org.apache.http.client.params.AuthPolicy
+import org.apache.http.entity.mime.content.ContentBody
+import org.apache.http.entity.mime.content.FileBody
+import org.apache.http.entity.mime.content.StringBody
+import org.apache.http.entity.mime.MultipartEntity
 import org.apache.http.entity.FileEntity
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.BasicCredentialsProvider
@@ -31,6 +36,7 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.HttpEntity
 import org.apache.http.HttpResponse
 import org.apache.http.util
+import java.nio.charset.Charset
 
 /**
  * Simple HTTP-client for testing purposes.
@@ -44,20 +50,20 @@ object SimpleClient {
   }
 
   def post(headers: Map[String, String], auth: Auth = NoAuth)(url: String, entity: HttpEntity): Response = {
-    val post: HttpPost = new HttpPost(url)
-    post.setEntity(entity)
-    execute(post, headers, auth)
+    executeWithEntity(new HttpPost(url), headers, auth, entity)
   }
 
   def put(headers: Map[String, String], auth: Auth = NoAuth)(url: String, entity: HttpEntity): Response = {
-    val post: HttpPut = new HttpPut(url)
-    post.setEntity(entity)
-    execute(post, headers, auth)
+    executeWithEntity(new HttpPut(url), headers, auth, entity)
+  }
+  
+  def delete(headers: Map[String, String], auth: Auth = NoAuth)(url: String): Response = {
+    execute(new HttpDelete(url), headers, auth)
   }
 
-  def delete(headers: Map[String, String], auth: Auth = NoAuth)(url: String): Response = {
-    val delete: HttpDelete = new HttpDelete(url)
-    execute(delete, headers, auth)
+  private[this] def executeWithEntity[T <: HttpEntityEnclosingRequestBase, S <: Auth, U <: HttpEntity](request: T, headers: Map[String, String], auth: S, entity: U): Response = {
+    request.setEntity(entity)
+    execute(request, headers, auth)
   }
 
   private[this] def execute[T <: HttpRequestBase, S <: Auth](request: T, headers: Map[String, String], auth: S): Response = {
@@ -70,11 +76,25 @@ object SimpleClient {
 
 object Entity {
   def apply(content: String) = new StringEntity(content)
+  def apply(content: String, contentType: String, contentEncoding: String) = new StringEntity(content, contentType, contentEncoding)
   def apply(file: java.io.File, contentType: String, contentEncoding: String = null) = {
     val entity = new FileEntity(file, contentType)
     if (contentEncoding != null) entity.setContentEncoding(contentEncoding)
     entity
   }
+  def apply(parts: (String, ContentBody)*): MultipartEntity = {
+    val entity = new MultipartEntity()
+    for (part <- parts) {
+      entity.addPart(part._1, part._2)
+    }
+    entity
+  }
+}
+
+object Part {
+  def apply(content: String) = StringBody.create(content, "text/plain", null)
+  def apply(content: String, mimeType: String) = {println("CONTENT: " + content); StringBody.create(content, mimeType, Charset.forName("UTF-8"))}
+  def apply(file: java.io.File, contentType: String) = new FileBody(file, file.getName, contentType, "UTF-8")
 }
 
 /**

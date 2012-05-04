@@ -10,7 +10,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import org.dorest.client.SimpleClient
 import org.dorest.client.Entity
-import org.dorest.server.jdk.Server
+import org.dorest.server.jdk.JDKServer
 import org.dorest.server._
 import rest._
 import java.io._
@@ -22,7 +22,7 @@ import org.apache.commons.io.{ IOUtils, FileUtils }
  *
  * @author Mateusz Parzonka
  */
-object StreamSupportTestServer extends Server(9000) {
+object StreamSupportTestServer extends JDKServer(9999) {
 
   this register new HandlerFactory[ByteStreamResource] {
     path { "/bytestream" }
@@ -43,18 +43,21 @@ object StreamSupportTestServer extends Server(9000) {
 
   class ByteStreamResource extends RESTInterface with XMLSupport with StreamSupport {
 
-    def byteStream(file: String) = new BufferedInputStream(new FileInputStream(file))
+    def byteStream(filePath: String): Option[(InputStream, Int)] = {
+      val file = new File(filePath); 
+      Some((new BufferedInputStream(new FileInputStream(file)), file.length.toInt))
+    }
 
     get returns ByteStream(MediaType.APPLICATION_PDF) {
-      Some(byteStream("src/test/resources/test.pdf"), 17320)
+      byteStream("src/test/resources/test.pdf")
     }
 
     get returns ByteStream(MediaType.IMAGE_PNG) {
-      Some(byteStream("src/test/resources/test.png"), 9930)
+      byteStream("src/test/resources/test.png")
     }
 
     def writeByteStream(inputStream: InputStream, file: String) = {
-      val outputStream = new BufferedOutputStream(new FileOutputStream(file), 4096)
+      val outputStream= new FileOutputStream(file)
       IOUtils.copy(inputStream, outputStream)
       outputStream.close()
     }
@@ -132,69 +135,75 @@ class StreamSupportTest extends FlatSpec with ShouldMatchers with BeforeAndAfter
   val put = SimpleClient.put(Map("Accept" -> "application/xml")) _
 
   "StreamSupport with bytestream" should "allow a client to GET a pdf" in {
-    val response = get("application/pdf")("http://localhost:9000/bytestream")
+    val response = get("application/pdf")("http://localhost:9999/bytestream")
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/pdf; charset=UTF-8" }
     org.apache.commons.io.FileUtils.writeByteArrayToFile(new java.io.File("temp/downloaded.pdf"), response.bytes)
   }
 
   it should "allow a client to GET a png" in {
-    val response = get("image/png")("http://localhost:9000/bytestream")
+    val response = get("image/png")("http://localhost:9999/bytestream")
     response.statusCode should equal { 200 }
     response.contentType should equal { "image/png; charset=UTF-8" }
     FileUtils.writeByteArrayToFile(new java.io.File("temp/downloaded.png"), response.bytes)
   }
 
   it should "allow a client to PUT a pdf" in {
-    val response = put("http://localhost:9000/bytestream", Entity(new File("src/test/resources/test.pdf"), "application/pdf"))
+    val response = put("http://localhost:9999/bytestream", Entity(new File("src/test/resources/test.pdf"), "application/pdf"))
+    response.statusCode should equal { 200 }
+    response.contentType should equal { "application/xml; charset=UTF-8" }
+  }
+  
+  it should "allow a client to PUT a 2 MB pdf" in {
+    val response = put("http://localhost:9999/bytestream", Entity(new File("src/test/resources/Better Builds With Maven.pdf"), "application/pdf"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   it should "allow a client to PUT a png" in {
-    val response = put("http://localhost:9000/bytestream", Entity(new File("src/test/resources/test.png"), "image/png"))
+    val response = put("http://localhost:9999/bytestream", Entity(new File("src/test/resources/test.png"), "image/png"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   "StreamSupport with bytes" should "allow a client to PUT a pdf" in {
-    val response = put("http://localhost:9000/bytestream/bytes", Entity(new File("src/test/resources/test.pdf"), "application/pdf"))
+    val response = put("http://localhost:9999/bytestream/bytes", Entity(new File("src/test/resources/test.pdf"), "application/pdf"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   it should "allow a client to PUT a png" in {
-    val response = put("http://localhost:9000/bytestream/bytes", Entity(new File("src/test/resources/test.png"), "image/png"))
+    val response = put("http://localhost:9999/bytestream/bytes", Entity(new File("src/test/resources/test.png"), "image/png"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   "StreamSupport with characterStream" should "allow a client to PUT xml using UTF-8" in {
-    val response = put("http://localhost:9000/characterstream/UTF-8", Entity(new File("src/test/resources/test_utf-8.xml"), "application/xml; charset=UTF-8"))
+    val response = put("http://localhost:9999/characterstream/UTF-8", Entity(new File("src/test/resources/test_utf-8.xml"), "application/xml; charset=UTF-8"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   it should "allow a client to PUT xml using ISO-8859-1" in {
-    val response = put("http://localhost:9000/characterstream/ISO-8859-1", Entity(new File("src/test/resources/test_ISO-8859-1.xml"), "application/xml; charset=ISO-8859-1"))
+    val response = put("http://localhost:9999/characterstream/ISO-8859-1", Entity(new File("src/test/resources/test_ISO-8859-1.xml"), "application/xml; charset=ISO-8859-1"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   it should "allow a client to PUT text using UTF-8" in {
-    val response = put("http://localhost:9000/characterstream/UTF-8", Entity(new File("src/test/resources/test_utf-8.txt"), "text/plain; charset=UTF-8"))
+    val response = put("http://localhost:9999/characterstream/UTF-8", Entity(new File("src/test/resources/test_utf-8.txt"), "text/plain; charset=UTF-8"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   it should "allow a client to PUT text using ISO-8859-1" in {
-    val response = put("http://localhost:9000/characterstream/ISO-8859-1", Entity(new File("src/test/resources/test_ISO-8859-1.txt"), "text/plain; charset=ISO-8859-1"))
+    val response = put("http://localhost:9999/characterstream/ISO-8859-1", Entity(new File("src/test/resources/test_ISO-8859-1.txt"), "text/plain; charset=ISO-8859-1"))
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
   }
 
   it should "allow a client to GET xml using UTF-8" in {
-    val response = get("application/xml")("http://localhost:9000/characterstream/UTF-8")
+    val response = get("application/xml")("http://localhost:9999/characterstream/UTF-8")
     response.statusCode should equal { 200 }
     response.contentType should equal { "application/xml; charset=UTF-8" }
     println(response.body)

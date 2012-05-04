@@ -48,7 +48,7 @@ trait PerformanceMonitor extends Handler {
 
     def log[Logger](level: LogLevel)(message: => String)(implicit clazz: scala.reflect.ClassManifest[Logger]): Unit
 
-    override abstract def processRequest(requestBody: InputStream): Response = {
+    override abstract def processRequest(requestBody: => InputStream): Response = {
         val startTime = System.nanoTime
         try {
             val response = super.processRequest(requestBody)

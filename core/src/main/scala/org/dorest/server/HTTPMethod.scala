@@ -18,6 +18,7 @@ package org.dorest.server
 /**
  *
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
 sealed trait HTTPMethod
 
@@ -28,6 +29,9 @@ object HTTPMethod {
         case "POST" => POST
         case "PUT" => PUT
         case "DELETE" => DELETE
+        case "PATCH" => PATCH
+        case "OPTIONS" => OPTIONS
+        case "HEAD" => HEAD
     }
     
     def unapply(method: HTTPMethod): String = method match {
@@ -35,6 +39,9 @@ object HTTPMethod {
       case POST => "POST"
       case PUT => "PUT"
       case DELETE => "DELETE"
+      case PATCH => "PATCH"
+      case OPTIONS => "OPTIONS"
+      case HEAD => "HEAD"
     }
     
 }
@@ -47,17 +54,8 @@ case object PUT extends HTTPMethod
 
 case object DELETE extends HTTPMethod
 
-/*
-object HTTPMethod extends Enumeration {
-    val GET = Value("GET")
-    val POST = Value("POST")
-    val PUT = Value("PUT")
-    val DELETE = Value("DELETE")
+case object PATCH extends HTTPMethod
 
-    // The following methods will be added, when needed...
-    // val OPTIONS = Value("OPTIONS")
-    // val HEAD = Value("HEAD")
-    // val TRACE = Value("TRACE")
-    // val CONNECT = Value("CONNECT")
-}
-*/
+case object OPTIONS extends HTTPMethod
+
+case object HEAD extends HTTPMethod

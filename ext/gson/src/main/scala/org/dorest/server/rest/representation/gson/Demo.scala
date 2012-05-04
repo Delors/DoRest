@@ -63,7 +63,7 @@ class DemosResource
  */
 class Demo
 
-object Demo extends Server(9000) with App {
+object Demo extends JDKServer(9000) with App {
 
     register(new HandlerFactory[DemosResource] {
         path { "/demos" }

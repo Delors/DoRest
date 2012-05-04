@@ -19,17 +19,20 @@ package rest
 import java.io._
 import java.net.{ URL, URI }
 import java.nio.charset.Charset
+import scala.collection.mutable.ListBuffer
 
 /**
  * Main trait of all Resources.
  *
  * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
 trait RESTInterface extends Handler {
 
-    private val getHandlers = scala.collection.mutable.ListBuffer[RepresentationFactory[_]]()
-    private val postHandlers = scala.collection.mutable.ListBuffer[PostHandler]()
-    private val putHandlers = scala.collection.mutable.ListBuffer[PutHandler]()
+    private val getHandlers = ListBuffer[RepresentationFactory[_]]()
+    private val postHandlers = ListBuffer[PostHandler]()
+    private val putHandlers = ListBuffer[PutHandler]()
+    private val patchHandlers = ListBuffer[PatchHandler]()
     private var deleteHandler: Option[() ⇒ Boolean] = None
 
     /**
@@ -51,118 +54,108 @@ trait RESTInterface extends Handler {
      */
     protected var responseBody: Option[ResponseBody] = None
 
-    /**
-     * Parses a tuple (mediaType, Option(charset)) from the content-type header, if specified.
-     * Exceptions are thrown when content-type not provided or mediatype unknown.
-     * A mediaType is unknown if not contained in MediaType.Values
-     */
-    lazy val contentType: (MediaType.Value, Option[Charset]) = {
-        def charset(cs: String): Option[Charset] = if (Charset.isSupported(cs)) Some(Charset.forName(cs)) else None
-        def mediaType(mt: String): MediaType.Value = if (MediaType.stringValues.contains(mt)) MediaType.withName(mt) else throw new RuntimeException("Unknown MediaType %s" format mt)
-        requestHeaders.getFirst("Content-Type") match {
-            case ct: String ⇒ ct.split("; charset=") match {
-                case Array(mt, cs) ⇒ (mediaType(mt), charset(cs))
-                case Array(mt)     ⇒ (mediaType(mt), None)
-                case _             ⇒ throw new RuntimeException("MediaType not provided")
-            }
-            case _ ⇒ throw new RuntimeException("No content type specified")
-        }
-    }
+    lazy val contentType = MediaType.parseContentType(requestHeaders.getFirst("Content-Type"))
 
     /**
      * Analyzes the HTTP Request and dispatches to the correct (get,put,post,delete) handler object.
      */
-    def processRequest(requestBody: InputStream): Response = {
+    def processRequest(requestBody: ⇒ InputStream): Response = {
 
-        method match {
-            case GET if !getHandlers.isEmpty ⇒ {
-                val mediaType = requestHeaders.getFirst("accept")
-                if ((mediaType eq null) || (mediaType == "*/*")) {
-                    return Response(responseCode, responseHeaders, responseBody)
-                }
-                // TODO improve the search for a matching handler
-                for (acceptedMediaType ← mediaType.split(",").map(_.trim)) {
-                    getHandlers.find(_.mediaType.toString == acceptedMediaType) match {
-                        case Some(rbi) ⇒ {
-                            responseBody = rbi.createRepresentation()
-                            responseBody match {
-                                // TODO reevaluate necessity of having an optional response-body
-                                // When a representation creates NONE this should encode a 404 -mateusz
-                                case Some(_: ResponseBody) ⇒ return Response(responseCode, responseHeaders, responseBody)
-                                case None                  ⇒ NotFoundResponse
-
-                            }
-                        }
-                        case None ⇒
-                    }
-                }
-                return NotAcceptableResponse
-                /*
-        getHandlers.find(_.mediaType.toString == mediaType) match {
-          case Some(rbi) => {
-            responseBody = rbi.createRepresentation()
-            responseBody match {
-              // TODO reevaluate necessity of having an optional response-body
-              // When a representation creates NONE this should encode a 404 -mateusz
-              case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
-              case None => NotFoundResponse
-
-            }
-          }
-          case None =>
-            return NotAcceptableResponse
-        }
-        */
-            }
-            case POST if !postHandlers.isEmpty ⇒ {
-                // if we cannot handle the request body, we have to return a UnsupportedMediaTypeResponse
-                // TODO nearly everything... matching...
-                responseCode = 201
-                val postHandler = postHandlers.head
-                postHandler.requestBodyHandler.process(contentType._2, requestBody)
-                responseBody = postHandler.representationFactory.createRepresentation()
+        def createResponse(sendBody: Boolean): Response = {
+            val mediaType = requestHeaders.getFirst("accept")
+            if ((mediaType eq null) || (mediaType == "*/*")) {
                 return Response(responseCode, responseHeaders, responseBody)
             }
-            case PUT if !putHandlers.isEmpty ⇒ {
-                // TODO nearly everything... matching...
-                putHandlers.find(_.requestBodyHandler.mediaType == contentType._1) match {
-                    case Some(putHandler) ⇒
-                        putHandler.requestBodyHandler.process(contentType._2, requestBody)
-                        putHandler.representationFactory.createRepresentation() match {
-                            case Some(responseBody) ⇒ return Response(responseCode, responseHeaders, Some(responseBody))
-                            case None               ⇒ NotFoundResponse
+            // TODO improve the search for a matching handler
+            for (acceptedMediaType ← mediaType.split(",").map(_.trim)) {
+                getHandlers.find(_.mediaType.toString == acceptedMediaType) match {
+                    case Some(rbi) ⇒ {
+                        responseBody = rbi.createRepresentation()
+                        responseBody match {
+                            case Some(_: ResponseBody) if !sendBody ⇒ return Response(responseCode, responseHeaders, None)
+                            case Some(_: ResponseBody)              ⇒ return Response(responseCode, responseHeaders, responseBody)
+                            case None                               ⇒ NotFoundResponse
+
                         }
-                    case None ⇒ UnsupportedMediaTypeResponse
+                    }
+                    case None ⇒
                 }
             }
+            return NotAcceptableResponse
+            /*
+              getHandlers.find(_.mediaType.toString == mediaType) match {
+                case Some(rbi) => {
+                  responseBody = rbi.createRepresentation()
+                  responseBody match {
+                    case Some(_: ResponseBody) if !sendBody => return Response(responseCode, responseHeaders, None)
+                    case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
+                    case None => return NotFoundResponse
+                  }
+                }
+                case None => return NotAcceptableResponse
+              }
+           */
+        }
 
+        def handleRequestResponse[T <: RequestResponseHandlers](handlers: ListBuffer[T], responseCode: Int = 200): Response = {
+            handlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
+                case Some(handler) ⇒
+                    handler.requestBodyHandler.process(contentType.charset, requestBody)
+                    responseBody = handler.representationFactory.createRepresentation()
+                    responseBody match {
+                        case Some(_: ResponseBody) ⇒ return Response(responseCode, responseHeaders, responseBody)
+                        case None                  ⇒ return NotFoundResponse
+                    }
+                case None ⇒ return UnsupportedMediaTypeResponse
+            }
+        }
+
+        def supportedMethods(responseCode: Int = 200): Response = {
+            var supportedMethods: List[HTTPMethod] = Nil
+            if (!getHandlers.isEmpty)
+                supportedMethods = GET :: supportedMethods
+            if (!putHandlers.isEmpty)
+                supportedMethods = PUT :: supportedMethods
+            if (!postHandlers.isEmpty)
+                supportedMethods = POST :: supportedMethods
+            if (!patchHandlers.isEmpty)
+                supportedMethods = PATCH :: supportedMethods
+            if (!deleteHandler.isEmpty)
+                supportedMethods = DELETE :: supportedMethods
+            supportedMethods = HEAD :: OPTIONS :: supportedMethods
+
+            return new SupportedMethodsResponse(supportedMethods, responseCode)
+        }
+
+        method match {
+            case GET if !getHandlers.isEmpty ⇒
+                return createResponse(sendBody = true)
+            case HEAD if !getHandlers.isEmpty ⇒
+                return createResponse(sendBody = false)
+            case POST if !postHandlers.isEmpty ⇒
+                return handleRequestResponse(postHandlers, responseCode = 201)
+            case PUT if !putHandlers.isEmpty ⇒
+                return handleRequestResponse(putHandlers)
+            case PATCH if !patchHandlers.isEmpty ⇒
+                return handleRequestResponse(patchHandlers)
             case DELETE if deleteHandler.isDefined ⇒ {
                 if (!(deleteHandler.get)()) {
                     return NotFoundResponse
                 }
-
                 return NoContent // delete was successful
             }
-            case _ ⇒ {
-                var supportedMethods: List[HTTPMethod] = Nil
-                if (!getHandlers.isEmpty)
-                    supportedMethods = GET :: supportedMethods;
-
-                if (!putHandlers.isEmpty)
-                    supportedMethods = PUT :: supportedMethods;
-
-                if (!postHandlers.isEmpty)
-                    supportedMethods = POST :: supportedMethods;
-
-                if (!deleteHandler.isEmpty)
-                    supportedMethods = DELETE :: supportedMethods;
-
-                return new SupportedMethodsResponse(supportedMethods)
+            case OPTIONS ⇒ {
+                return supportedMethods()
             }
+            case _ ⇒
+                return supportedMethods(responseCode = 405)
+
         }
 
         NotFoundResponse
     }
+
+    case class ContentType(mediaType: MediaType.Value, charset: Option[Charset])
 
     /**
      *
@@ -242,6 +235,25 @@ trait RESTInterface extends Handler {
         def of(requestBodyHandler: RequestBodyProcessor): PutHandler = new PutHandler(requestBodyHandler)
     }
 
+    final class PatchHandler(requestBodyHandler: RequestBodyProcessor)
+            extends RequestResponseHandlers(requestBodyHandler) {
+
+        def registerThisHandler {
+            patchHandlers += this
+        }
+
+    }
+
+    final object patch {
+
+        /**
+         * @see [[#of(RequestBodyProcessor)]]
+         */
+        def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
+
+        def of(requestBodyHandler: RequestBodyProcessor): PatchHandler = new PatchHandler(requestBodyHandler)
+    }
+
     /**
      * ===HTTP 1.1 Specification===
      * A successful response SHOULD be 200 (OK) if the response includes an entity describing the status, 202 (Accepted)
@@ -273,42 +285,4 @@ trait RESTInterface extends Handler {
     final def Location(location: URL) {
         responseHeaders.set("Location", location.toString) // TODO figure out which is the correct encoding
     }
-
-    /**
-     * Sets a response-header's location field.
-     *
-     * ===HTTP 1.1 Specification===
-     * The Location response-header field is used to redirect the recipient to
-     * a location other than the Request-URI for completion of the request or
-     * identification of a new resource. For 201 (Created) responses, the
-     * Location is that of the new resource which was created by the request.
-     *
-     * For 3xx responses, the location SHOULD indicate the server's preferred
-     * URI for automatic redirection to the resource. The field value consists
-     * of a single absolute URI.
-     *
-     *  Location       = "Location" ":" absoluteURI
-     *
-     * /
-     * final def relativeLocation(path: String ){
-     *
-     * println(requestURI)
-     * val baseURL = new URL("http",localAddress,requestURI.toString)
-     * val location = new URL(baseURL,path)
-     * responseHeaders.set("Location",location.toString) // TODO figure out which is the correct encoding
-     * }
-     */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

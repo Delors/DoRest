@@ -30,8 +30,7 @@ trait DigestAuthentication extends Authentication with Handler {
 
   def authenticatedUser: String = _authenticatedUser
 
-  override abstract def processRequest(requestBody: InputStream): Response = {
-    requestHeaders
+  override abstract def processRequest(requestBody: => InputStream): Response = {
     incomingRequest match {
       case authorizationRequest: AuthorizationRequest => validate(authorizationRequest) match {
         case ValidatedRequest => { _authenticatedUser = authorizationRequest.username; super.processRequest(requestBody) }
@@ -43,6 +42,7 @@ trait DigestAuthentication extends Authentication with Handler {
   }
 
   def incomingRequest: Request = {
+
     requestHeaders.getFirst("Authorization") match {
       case authorizationHeader: String if authorizationHeader.startsWith("Digest ") => {
         val m = parseAuthorizationHeader(authorizationHeader)
@@ -55,7 +55,10 @@ trait DigestAuthentication extends Authentication with Handler {
   def parseAuthorizationHeader(authorizationHeader: String): Map[String, String] = {
     val nameValuePairs: List[(String, String)] = splitNameValuePairs(authorizationHeader.substring("Digest ".length))
     val nameValueMappings: Map[String, String] = nameValuePairs.toMap
-    if (nameValuePairs.length == nameValueMappings.size) nameValueMappings else throw new MalformedAuthorizationHeaderException(authorizationHeader)
+    if (nameValuePairs.length == nameValueMappings.size)
+      nameValueMappings
+    else
+      throw new RequestException(response = BadRequest("Malformed authorization header: " + authorizationHeader))
   }
 
   def unauthorizedDigestResponse(stale: Boolean): Response = {
@@ -91,9 +94,9 @@ object NonceStorage {
   import scala.collection.JavaConversions._
   private[this] val nonceMap: scala.collection.mutable.ConcurrentMap[String, (Int, Long)] = new java.util.concurrent.ConcurrentHashMap[String, (Int, Long)](32, 0.75f, 8)
 
-  val nonceValidityPeriod = 30000
+  val nonceValidityPeriod = 30000 // msec
 
-  val nonceCleaningInterval = 5000
+  val nonceCleaningInterval = 5000 // msec
 
   def addNonce(nonce: String) {
     nonceMap += (nonce -> (0, System.currentTimeMillis))
@@ -115,16 +118,17 @@ object NonceStorage {
     for ((nonce, (nc, time)) <- nonceMap if (currentTime - time) > nonceValidityPeriod) nonceMap.-=(nonce)
   }
 
-  import scala.actors.{ Actor, TIMEOUT }
-  import Actor._
-  val nonceCleaner = actor {
-    loop {
-      reactWithin(nonceCleaningInterval) {
-        case TIMEOUT => clean
+  val nonceCleaner = new Thread() {
+    override def run() {
+      while (true) {
+        clean()
+        Thread.sleep(nonceCleaningInterval)
       }
     }
-  }
-
+  };
+  nonceCleaner.setDaemon(true)
+  nonceCleaner.start()
+ 
 }
 
 sealed trait Request
@@ -133,6 +137,3 @@ sealed abstract class ProcessedAuthorizationRequest extends Request
 case object UnauthorizedRequest extends ProcessedAuthorizationRequest
 case object ValidatedRequest extends ProcessedAuthorizationRequest
 case object StaleRequest extends ProcessedAuthorizationRequest
-case object BadRequest extends Request
-
-case class MalformedAuthorizationHeaderException(msg: String) extends Exception

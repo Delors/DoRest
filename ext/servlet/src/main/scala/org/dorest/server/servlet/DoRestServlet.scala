@@ -18,71 +18,117 @@ package servlet
 
 import javax.servlet.http._
 import org.dorest.server._
-
+import scala.collection.mutable.Buffer
+import org.dorest.server.log.Logger
 
 /**
- * After the start go to: "http://localhost:8080/date"
+ * We have a static registry for servlets.
+ * This means we can't have multiple factory-registries at the moment.
+ *
+ * @author Michael Eichberg
+ * @author Mateusz Parzonka
  */
+object DoRestServlet {
+
+  private var _factories: Buffer[HandlerFactory[_ <: Handler]] = Buffer()
+
+  def factories = _factories
+
+  def register(handlerFactory: HandlerFactory[_ <: Handler]) {
+    _factories += handlerFactory
+  }
+
+}
 class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
 
-    override def service(req: HttpServletRequest, res: HttpServletResponse) {
+  private[this] val logger = Logger(classOf[DoRestServlet])
 
-        val path = req.getRequestURI
-        val query = req.getQueryString
+  override def service(req: HttpServletRequest, res: HttpServletResponse) {
 
-        println("Handling request at " + new java.util.Date + " :" + path)
+    val path = req.getRequestURI
+    val query = req.getQueryString
 
-        var factories = MyApp.factories
-        while (!factories.isEmpty) {
-            factories.head.matchURI(path, query) match {
-                case Some(_handler) => {
-                    val handler = _handler.asInstanceOf[Handler]
-                    handler.protocol = req.getProtocol()
-                    handler.method = HTTPMethod(req.getMethod())
-                    handler.requestURI = new java.net.URI(req.getRequestURI())
-                    handler.remoteAddress = req.getRemoteAddr()
-                    handler.localAddress = req.getLocalAddr()
-                    handler.requestHeaders = new Object {
-                        def getFirst(key: String): String = {
-                            req.getHeader(key)
-                        }
-                    }
-
-                    val response = handler.processRequest(req.getInputStream)
-                    try {
-                        res.setStatus(response.code);
-                        response.body match {
-                            case Some(body) => {
-                                setContentTypeResponseHeader(response.headers, body)
-                                response.headers.foreach((header) => {
-                                    val (key, value) = header;
-                                    res.setHeader(key, value)
-                                }
-                                )
-                                body.write(res.getOutputStream())
-                            }
-                            case None =>
-                                response.headers.foreach((header) => {
-                                    val (key, value) = header;
-                                    res.setHeader(key, value)
-                                } )
-                        }
-
-
-                    } catch {
-                        case ex => {
-                            ex.printStackTrace()
-                        }
-                    } finally {
-                        // we were able to handle the request..
-                        return;
-                    }
-                }
-                case _ =>;
-            }
-            factories = factories.tail
+    logger.info {
+      "<-- %s %s %s".format(req.getMethod(), req.getRequestURI(), {
+        val headerNames = req.getHeaderNames()
+        val sb = new StringBuilder()
+        while (headerNames.hasMoreElements()) {
+          val headerName: String = headerNames.nextElement
+          sb.append(headerName).append("=[").append(req.getHeader(headerName)).append("] ")
         }
-        res.sendError(404)
+        sb.toString
+      })
     }
+
+    var factories = DoRestServlet.factories
+    while (!factories.isEmpty) {
+      factories.head.matchURI(path, query) match {
+        case Some(_handler) => {
+          val handler = _handler.asInstanceOf[Handler]
+          handler.protocol = req.getProtocol()
+          handler.method = HTTPMethod(req.getMethod())
+          handler.requestURI = new java.net.URI(req.getRequestURI())
+          handler.remoteAddress = req.getRemoteAddr()
+          handler.localAddress = req.getLocalAddr()
+          handler.requestHeaders = new Object {
+            def getFirst(key: String): String = {
+              req.getHeader(key)
+            }
+          }
+
+          // try to process a request and yield a response 
+          // (unpacking RequestExceptions to responses in case of throw)
+          val response: Response = {
+            try {
+              handler.processRequest(req.getInputStream)
+            } catch {
+              case ex: RequestException => ex.response
+            }
+          }
+          
+          try {
+            res.setStatus(response.code);
+            response.body match {
+              case Some(body) => {
+                setContentTypeResponseHeader(response.headers, body)
+                response.headers.foreach((header) => {
+                  val (key, value) = header;
+                  res.setHeader(key, value)
+                })
+                logger.info {
+                  "--> %s %s".format(res.getStatus(), {
+                    val headerNames = res.getHeaderNames()
+                    val sb = new StringBuilder()
+                    import scala.collection.JavaConversions._
+                    for (headerName <- headerNames) {
+                      sb.append(headerName).append("=[").append(req.getHeader(headerName)).append("] ")
+                    }
+                    sb.toString
+                  })
+                }
+                body.write(res.getOutputStream())
+              }
+              case None =>
+                response.headers.foreach((header) => {
+                  val (key, value) = header;
+                  res.setHeader(key, value)
+                })
+            }
+
+          } catch {
+            case ex => {
+              ex.printStackTrace()
+            }
+          } finally {
+            // we were able to handle the request..
+            return ;
+          }
+        }
+        case _ => ;
+      }
+      factories = factories.tail
+    }
+    res.sendError(404)
+  }
 
 }

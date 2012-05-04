@@ -31,7 +31,7 @@ trait BasicAuthentication extends Authentication with Handler {
 
   def authenticatedUser: String = _authenticatedUser
 
-  override abstract def processRequest(requestBody: InputStream): Response = {
+  override abstract def processRequest(requestBody: => InputStream): Response = {
 
     def parseAuthorizationHeader(authorizationHeader: String): Array[String] =
       new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(authorizationHeader.substring("Basic ".length))).split(":")
@@ -44,7 +44,7 @@ trait BasicAuthentication extends Authentication with Handler {
               case Some(validPassword) if requestPassword == validPassword => { _authenticatedUser = username; super.processRequest(requestBody) }
               case _ => UnauthorizedBasicResponse(authenticationRealm)
             }
-            case _ => BadRequest
+            case _ => BadRequest()
           }
         }
       case _ => UnauthorizedBasicResponse(authenticationRealm)
