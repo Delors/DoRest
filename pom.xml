@@ -30,7 +30,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.build.sourceDirectory>src/main/scala</project.build.sourceDirectory>
 		<project.build.testSourceDirectory>src/test/scala</project.build.testSourceDirectory>
-		<scala.version>2.9.1</scala.version>
+		<scala.version>2.9.2</scala.version>
 	</properties>
 
 	<repositories>
