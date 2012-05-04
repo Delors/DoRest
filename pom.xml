@@ -89,7 +89,7 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
@@ -110,7 +110,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- DoRest -->
