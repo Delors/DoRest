@@ -59,11 +59,15 @@ object MultipartSupportTestServer extends JDKServer(9998) {
         part match {
           case part @ FormField("someString") => println(part.content)
           case part @ Data("someFile", MediaType.APPLICATION_PDF) => {
-            val fos = new FileOutputStream(new File("temp/uploaded .pdf"))
+            val fos = new FileOutputStream(new File("target/test-uploaded.pdf"))
             var read: Int = 0
-            while ({ read = part.openStream.read; read != -1 }) {
+            val stream = part.openStream
+            while ({ read = stream.read; read != -1 }) {
               fos.write(read)
             }
+            stream.close()
+            fos.flush()
+            fos.close()
           }
         }
       }
