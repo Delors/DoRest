@@ -35,18 +35,6 @@ object DemoStore {
 
 }
 
-class DemoResource
-        extends RESTInterface
-        with GSONSupport {
-
-    type DomainType = DemoDomain
-    def domainClass: java.lang.Class[DomainType] = classOf[DemoDomain]
-
-    get returns JSON {
-        DemoDomain.apply("Benjamin",  SubDomain(1))
-    }
-}
-
 /**
  * A resource that returns the current (server-side) time.
  */
@@ -58,6 +46,8 @@ class DemosResource
     def domainClass: java.lang.Class[DomainType] = classOf[DemoDomain]
 
     post of JSON returns JSON {
+        // ATTENTION: If the passed in JSON does not match
+        // the DomainObject, the JSON element is empty!
         DemoStore.store += JSONRequestBody
         JSONRequestBody
     }
@@ -82,14 +72,6 @@ object Demo extends Server(9000) with App {
 
     })
 
-    //    register(new HandlerFactory[Time] {
-    //
-    //        path { "/time" }
-    //
-    //        def create = new Time() with PerformanceMonitor with ConsoleLogging
-    //
-    //    })
-    //
     start()
 }
 
