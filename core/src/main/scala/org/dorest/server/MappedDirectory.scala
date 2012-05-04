@@ -18,9 +18,9 @@ package org.dorest.server
 import io.Source
 import java.lang.Boolean
 
-
 /**
  * Makes the content of a directory accessible.
+ *
  * @author Michael Eichberg (mail at michael-eichberg.de)
  */
 class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
@@ -42,8 +42,7 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
         if (file.isDirectory) {
             if (!enableIndexHTMLDeliveryOnDirectoryAccess) {
                 return new Forbidden("Browsing directories is forbidden.")
-            }
-            else {
+            } else {
                 file = new File(baseDirectory + "/" + path + "/index.html")
                 if (!file.exists) {
                     return NotFoundResponse
@@ -55,23 +54,24 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
         val fileType = {
             val fileSuffix = fileName.substring(fileName.lastIndexOf('.') + 1)
             Some((
-                    fileSuffix match {
-                        case "css" => MediaType.TEXT_CSS
-                        case "javascript" => MediaType.APPLICATION_JAVASCRIPT
-                        case "js" => MediaType.APPLICATION_JAVASCRIPT
-                        case "htm" => MediaType.TEXT_HTML
-                        case "html" => MediaType.TEXT_HTML
-                        case "xml" => MediaType.APPLICATION_XML
-                        case "txt" => MediaType.TEXT_PLAIN
-                        case "jpg" => MediaType.IMAGE_JPEG
-                        case "pdf" => MediaType.APPLICATION_PDF
-                        case "png" => MediaType.IMAGE_PNG
-                        case "ico" => MediaType.IMAGE_X_ICON
-                        case _ => throw new Error("Media type detection based on file suffix (" + fileSuffix + ") failed: " + fileName)
-                    },
-                    // We are not able to reliably determine the used charset..
-                    None
-                    ))
+                fileSuffix match {
+                    case "css"        ⇒ MediaType.TEXT_CSS
+                    case "javascript" ⇒ MediaType.APPLICATION_JAVASCRIPT
+                    case "js"         ⇒ MediaType.APPLICATION_JAVASCRIPT
+                    case "htm"        ⇒ MediaType.TEXT_HTML
+                    case "html"       ⇒ MediaType.TEXT_HTML
+                    case "xml"        ⇒ MediaType.APPLICATION_XML
+                    case "txt"        ⇒ MediaType.TEXT_PLAIN
+                    case "jpg"        ⇒ MediaType.IMAGE_JPEG
+                    case "pdf"        ⇒ MediaType.APPLICATION_PDF
+                    case "png"        ⇒ MediaType.IMAGE_PNG
+                    case "ico"        ⇒ MediaType.IMAGE_X_ICON
+                    case "svg"        ⇒ MediaType.IMAGE_SVG_XML
+                    case _            ⇒ throw new Error("Media type detection based on file suffix (" + fileSuffix + ") failed: " + fileName)
+                },
+                // We are not able to reliably determine the used charset..
+                None
+            ))
         }
 
         // TODO Check that the accept header supports the file's media type.
@@ -89,16 +89,34 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
                 def write(responseBody: OutputStream) {
                     // TODO Read blocks and not just single bytes.
                     // TODO Think about caching files.
-                    val in = new FileInputStream(file)
+                    /*val in = new FileInputStream(file)
                     try {
                         while (in.available > 0)
                             responseBody.write(in.read)
                     } finally {
                         if (in != null)
                             in.close
+                    }*/
+                    responseBody.write(readFully(file))
+                }
+
+                def readFully(file: File) : Array[Byte] = {
+                    val in = new FileInputStream(file)
+                    try {
+                        val length = file.length.asInstanceOf[Int];
+                        val data = new Array[Byte](length);
+                        var read = 0;
+                        while (read < length) {
+                            read += in.read(data, read, length - read);
+                        }
+                        return data;
+                    } finally {
+                        if (in != null)
+                            in.close();
                     }
                 }
             })
         }
     }
 }
+
