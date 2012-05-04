@@ -26,7 +26,7 @@ import java.io.ByteArrayInputStream
 /**
  * @author Mateusz Parzonka
  */
-sealed case class FormData
+sealed trait FormData
 
 case class FormField(fieldName: String) extends FormData {
 
