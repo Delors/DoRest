@@ -63,7 +63,8 @@ trait RESTInterface extends Handler {
 
         def createResponse(sendBody: Boolean): Response = {
             val mediaType = requestHeaders.getFirst("accept")
-            if ((mediaType eq null) || (mediaType == "*/*")) {
+            if ((mediaType eq null) || (mediaType == "*/*") && getHandlers.nonEmpty) {
+                responseBody = getHandlers(0).createRepresentation()
                 return Response(responseCode, responseHeaders, responseBody)
             }
             // TODO improve the search for a matching handler
