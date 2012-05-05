@@ -87,13 +87,16 @@ trait RESTInterface extends Handler {
 
         def handleRequestResponse[T <: RequestResponseHandlers](handlers: ListBuffer[T], responseCode: Int = 200): Response = {
             handlers.find(_.requestBodyHandler.mediaType == contentType.mediaType) match {
-                case Some(handler) ⇒
+                case Some(handler) ⇒ try {
                     handler.requestBodyHandler.process(contentType.charset, requestBody)
                     responseBody = handler.representationFactory.createRepresentation()
                     responseBody match {
                         case Some(_: ResponseBody) ⇒ return Response(responseCode, responseHeaders, responseBody)
-                        case None                  ⇒ return NotFoundResponse
+                        case None                  ⇒ return NotFoundResponse // TODO Is this the right code?
                     }
+                } catch {
+                    case _ => return BadRequest()
+                }
                 case None ⇒ return UnsupportedMediaTypeResponse
             }
         }
