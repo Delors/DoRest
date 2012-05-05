@@ -83,19 +83,6 @@ trait RESTInterface extends Handler {
                 }
             }
             return NotAcceptableResponse
-            /*
-              getHandlers.find(_.mediaType.toString == mediaType) match {
-                case Some(rbi) => {
-                  responseBody = rbi.createRepresentation()
-                  responseBody match {
-                    case Some(_: ResponseBody) if !sendBody => return Response(responseCode, responseHeaders, None)
-                    case Some(_: ResponseBody) => return Response(responseCode, responseHeaders, responseBody)
-                    case None => return NotFoundResponse
-                  }
-                }
-                case None => return NotAcceptableResponse
-              }
-           */
         }
 
         def handleRequestResponse[T <: RequestResponseHandlers](handlers: ListBuffer[T], responseCode: Int = 200): Response = {
@@ -152,8 +139,6 @@ trait RESTInterface extends Handler {
                 return supportedMethods(responseCode = 405)
 
         }
-
-        NotFoundResponse
     }
 
     case class ContentType(mediaType: MediaType.Value, charset: Option[Charset])
