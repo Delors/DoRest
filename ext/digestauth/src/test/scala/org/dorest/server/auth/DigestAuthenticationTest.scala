@@ -71,7 +71,7 @@ trait DigestAuthenticatorMock {
 
   def authenticationRealm = "http://www.somewhere.org"
 
-  def password(username: String): Some[String] = Some("password")
+  def password(username: String): Option[String] = Some("password")
 
 }
 
