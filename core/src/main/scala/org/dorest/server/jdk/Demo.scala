@@ -111,16 +111,16 @@ class Keys extends RESTInterface with XMLSupport {
     post of XML returns XML {
         val value = XMLRequestBody.text
         val id = KVStore + value
-        
-        // Set the response-header's Location field using the provided 
+
+        // Set the response-header's Location field using the provided
         // convenience method: Location(URI)
         // Alternatively, it is possible to directly set the response headers
         // using the corresponding response headers data structure.
         Location( new URL("http://"+InetAddress.getLocalHost.getHostName+":9000/keys/"+id.toString) ) // TODO enable to specify the relative path
-        
+
         // the "response body"
         <value id={ id.toString }>{ value }</value>
-      } 
+      }
 
 }
 
@@ -175,14 +175,14 @@ class MonitoredMappedDirectory(baseDirectory : String)
 class Demo
 
 /**
- * To test the restful web serice you can use, e.g., curl. For example, to 
+ * To test the restful web serice you can use, e.g., curl. For example, to
  * add a value to the simple key-value store you can use:
- * 
- * curl -v -X POST -d "<value>Test</value>" http://localhost:9000/keys
- *  
+ *
+ * curl -v -X POST -d "<value>Test</value>" -H content-type:application/xml http://localhost:9009/keys
+ * curl http://localhost:9009/keys
  */
 object Demo
-        extends JDKServer(9000)
+        extends JDKServer(9009)
         with scala.App
         with ConsoleLogging // TODO needs to exchanged
         {
