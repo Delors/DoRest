@@ -95,6 +95,7 @@ trait RESTInterface extends Handler {
                         case None                  ⇒ return NotFoundResponse // TODO Is this the right code?
                     }
                 } catch {
+                    case ex: RequestException =>  return ex.response
                     case _ => return BadRequest()
                 }
                 case None ⇒ return UnsupportedMediaTypeResponse
