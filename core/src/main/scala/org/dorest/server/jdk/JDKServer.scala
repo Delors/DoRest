@@ -19,24 +19,34 @@ package jdk
 import com.sun.net.httpserver._
 import java.net._
 import log._
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /**
  * Simple stand alone server that uses the (SUN) JDKs built-in HTTP server.
  *
+ * This implementation of a server is primarily provided for testing and
+ * debugging applications. It is not intended to be used for real world
+ * deployments.
+ *
+ * @param port The port that is to be used by this HTTP server. Typically, port 80 or 8080.
+ * @param executor The executor that is used to handle HTTP exchanges, if <code>null</code>
+ * 		a default strategy is used.
+ *
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
-class JDKServer(val port : Int)
+class JDKServer(val port : Int,val executor : Executor = Executors.newCachedThreadPool())
         extends DoRestServer
-        with DoRestApp 
+        with DoRestApp
         {
-  
+
     private[this] val logger = Logger(classOf[JDKServer])
 
     private[this] val server = HttpServer.create(new InetSocketAddress(port), 0);
 
     private class DoRestHandler extends HttpHandler {
-      
+
         def handle(t : HttpExchange) {
 
             val uri = t.getRequestURI.normalize()
@@ -64,8 +74,8 @@ class JDKServer(val port : Int)
                             handler.remoteAddress = t.getRemoteAddress().toString // TODO check that the result is as expected...
                             handler.localAddress = t.getLocalAddress().toString // TODO check that the result is as expected...
                             handler.requestHeaders = t.getRequestHeaders()
-                            
-                            // try to process a request and yield a response 
+
+                            // try to process a request and yield a response
                             // (unpack RequestException to response in case of throw)
                             val response: Response = {
                             try {
@@ -74,7 +84,7 @@ class JDKServer(val port : Int)
                                 case ex: RequestException =>  ex.response
                                 }
                             }
-                            
+
                             try {
                                 response.body match {
                                     case Some(body) => {
@@ -142,11 +152,11 @@ class JDKServer(val port : Int)
      */
     def start() {
         server.createContext("/", new DoRestHandler());
-        server.setExecutor(null); // creates a default executor
+        server.setExecutor(executor); // creates a default executor
         server.start();
         logger.info( "JDKServer started at port: "+port )
     }
-    
+
     /**
      * Stops the server after a given delay (seconds).
      */
