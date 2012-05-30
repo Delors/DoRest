@@ -61,25 +61,33 @@ trait RESTInterface extends Handler {
      */
     def processRequest(requestBody: ⇒ InputStream): Response = {
 
+        // handles get requests
         def createResponse(sendBody: Boolean): Response = {
-            val mediaType = requestHeaders.getFirst("accept")
-            if ((mediaType eq null) || (mediaType == "*/*") && getHandlers.nonEmpty) {
-                responseBody = getHandlers(0).createRepresentation()
-                return Response(responseCode, responseHeaders, responseBody)
+            def createSomeResponse(): Response = {
+                Response(responseCode, responseHeaders, getHandlers(0).createRepresentation())
+            }
+            val mediaType = requestHeaders.getFirst("Accept")
+            if (mediaType eq null) {
+                return createSomeResponse()
             }
             // TODO improve the search for a matching handler
             for (acceptedMediaType ← mediaType.split(",").map(_.trim)) {
-                getHandlers.find(_.mediaType.toString == acceptedMediaType) match {
-                    case Some(rbi) ⇒ {
-                        responseBody = rbi.createRepresentation()
-                        responseBody match {
-                            case Some(_: ResponseBody) if !sendBody ⇒ return Response(responseCode, responseHeaders, None)
-                            case Some(_: ResponseBody)              ⇒ return Response(responseCode, responseHeaders, responseBody)
-                            case None                               ⇒ NotFoundResponse
+                // startsWith is used to handle cases where, e.g., the browser also specifies a quality level (*/*;q=0.7)
+                if (acceptedMediaType.startsWith("*/*")) {
+                    return createSomeResponse()
+                } else {
+                    getHandlers.find((h) ⇒ acceptedMediaType.startsWith(h.mediaType.toString)) match {
+                        case Some(rbi) ⇒ {
+                            responseBody = rbi.createRepresentation()
+                            responseBody match {
+                                case Some(_: ResponseBody) if !sendBody ⇒ return Response(responseCode, responseHeaders, None)
+                                case Some(_: ResponseBody)              ⇒ return Response(responseCode, responseHeaders, responseBody)
+                                case None                               ⇒ NotFoundResponse
 
+                            }
                         }
+                        case None ⇒
                     }
-                    case None ⇒
                 }
             }
             return NotAcceptableResponse
@@ -95,8 +103,8 @@ trait RESTInterface extends Handler {
                         case None                  ⇒ return NotFoundResponse // TODO Is this the right code?
                     }
                 } catch {
-                    case ex: RequestException =>  return ex.response
-                    case _ => return BadRequest()
+                    case ex: RequestException ⇒ return ex.response
+                    case _                    ⇒ return BadRequest()
                 }
                 case None ⇒ return UnsupportedMediaTypeResponse
             }
