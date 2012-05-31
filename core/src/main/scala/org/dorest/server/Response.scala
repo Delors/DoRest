@@ -15,33 +15,35 @@
  */
 package org.dorest.server
 
-/**
- * A response object encapsulates a specific representation that will be send back to the client.
- */
-trait Response extends {
+/** A response object encapsulates a request's response.
+  *
+  * The precise structure of a response depends on the request and is defined by
+  * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC 2616</a>.
+  *
+  * @author Michael Eichberg
+  */
+trait Response {
 
-    /**
-     * The status code of the response.
-     *
-     * Go to: <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10">HTTP Status Codes</a> for further
-     * details.
-     */
+    /** The status code of the response.
+      *
+      * Go to: <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10">HTTP Status Codes</a> for further
+      * details.
+      */
     def code: Int
 
-    /**
-     * A response's headers. The response headers for the Content-type and Content-length are automatically set based
-     * on the response body.
-     *
-     * '''Remark''': ResponseHeaders must not be null and mutable.
-     */
+    /** A response's headers.
+      *
+      * The response headers for the Content-type and Content-length are automatically set based on the 
+      * response body. 
+      *
+      * '''Remark''': ResponseHeaders must not be null and mutable.
+      */
     def headers: ResponseHeaders
 
-    /**
-     * The body that is send back to the client.
-     */
+    /** The body that is send back to the client.
+      */
     def body: Option[ResponseBody]
 }
-
 
 object Response {
 
