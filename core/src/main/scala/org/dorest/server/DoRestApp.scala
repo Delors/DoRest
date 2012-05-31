@@ -17,20 +17,19 @@ package org.dorest.server
 
 import collection.mutable.Buffer
 
-/**
- * Enables the registration of [[org.dorest.server.HandlerFactory]] objects.
- *
- * This trait is implemented by DoRest servers.
- *
- * @author Michael Eichberg
- */
+/** Enables the registration of [[org.dorest.server.HandlerFactory]] objects.
+  *
+  * This trait is implemented by DoRest servers.
+  *
+  * @author Michael Eichberg
+  */
 trait DoRestApp {
 
-    private var _factories: Buffer[HandlerFactory[_ <: Handler]] = Buffer()
+    private var _factories: Buffer[HandlerCreator] = Buffer()
 
     def factories = _factories
 
-    def register(handlerFactory: HandlerFactory[_ <: Handler]) {
+    def register(handlerFactory: HandlerCreator) {
         _factories += handlerFactory
     }
 

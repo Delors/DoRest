@@ -17,37 +17,46 @@ package org.dorest.server
 
 import java.lang.Long
 
-/**
- * @author Michael Eichberg
- */
-abstract class HandlerFactory[T <: Handler] {
+/** HandlerCreators are responsible for matching URIs and – if the URI matches – to create a new Handler
+  * that will then handle the request. 
+  *
+  * '''Thread Safety'''
+  * Handler factories have to be thread safe. I.e., handler factories have to support the simultaneous
+  * matching of URIs; the DoRest framework use a single Handler factory for matching URIs.
+  *
+  * @author Michael Eichberg
+  */
+trait HandlerCreator {
+
+    def matchURI(path: String, query: String): Option[Handler]
+
+}
+
+/** @author Michael Eichberg
+  */
+abstract class HandlerFactory[T <: Handler] extends HandlerCreator {
 
     protected implicit def namedSegmentToPathSegment(name: String): Named = new Named(name)
 
-    /**
-     * A function that does nothing.
-     */
+    /** A function that does nothing.
+      */
     // Used to avoid that we have to deal with Option objects or have to deal with null values.
     final def DoNothing(t: T): Unit = {
         /*do nothing*/
     }
 
     // TODO merge path and pathelement; i.e., make pathelement itself a list
-    /**
-     *
-     * The (URI) path of this resource.
-     */
+    /** The (URI) path of this resource.
+      */
     trait PathMatcher {
 
-        /**
-         * Prepends the given path element to this path and returns a new path object.
-         */
+        /** Prepends the given path element to this path and returns a new path object.
+          */
         def ::(p: PathElement): PathMatcher
 
-        /**
-         * Tries to match the path. If the path matches, a list of functions is returned which
-         * will then be called; e.g., to complete the initialization of the resource's parameters.
-         */
+        /** Tries to match the path. If the path matches, a list of functions is returned which
+          * will then be called; e.g., to complete the initialization of the resource's parameters.
+          */
         def matchSegment(path: String): Option[List[(T) ⇒ Unit]]
     }
 
@@ -76,35 +85,32 @@ abstract class HandlerFactory[T <: Handler] {
 
     trait PathElement {
 
-        /**
-         * Constructs a new path that consists of the given path element and this element.
-         */
+        /** Constructs a new path that consists of the given path element and this element.
+          */
         def ::(ps: PathElement): PathMatcher = {
             new ComplexPath(ps, new ComplexPath(this, EmptyPath))
         }
 
-        /**
-         * Tries to match a maximum length segment of the given path. If the match is successful
-         * the rest of the path and a function is returned that – if the whole path can be matched –
-         * is called.
-         *
-         * The primary purpose of the function is to enable the initialization of a resource's variable
-         * path parameters.
-         */
+        /** Tries to match a maximum length segment of the given path. If the match is successful
+          * the rest of the path and a function is returned that – if the whole path can be matched –
+          * is called.
+          *
+          * The primary purpose of the function is to enable the initialization of a resource's variable
+          * path parameters.
+          */
         def matchSegment(path: String): Option[(String, (T) ⇒ Unit)]
 
     }
 
-    /**
-     * Can be used to match a path (segment) that is optional and which extends until the end of a given
-     * concrete path.
-     *
-     * If the given path is not empty and does not match the match is considered to have failed
-     * unless {link #failOnMatchError} is set to false.
-     *
-     * Cannot be used to match an optional sub-part of a path. E.g., matching something like
-     * {{{"/user"::{"/"userid}::"/tag"}}} where {{{"/"userid"}}} is optional is not possible.
-     */
+    /** Can be used to match a path (segment) that is optional and which extends until the end of a given
+      * concrete path.
+      *
+      * If the given path is not empty and does not match the match is considered to have failed
+      * unless {link #failOnMatchError} is set to false.
+      *
+      * Cannot be used to match an optional sub-part of a path. E.g., matching something like
+      * {{{"/user"::{"/"userid}::"/tag"}}} where {{{"/"userid"}}} is optional is not possible.
+      */
     class Optional(val p: PathMatcher, val failOnMatchError: Boolean) extends PathElement {
 
         def matchSegment(path: String): Option[(String, (T) ⇒ Unit)] = {
@@ -128,9 +134,8 @@ abstract class HandlerFactory[T <: Handler] {
         }
     }
 
-    /**
-     * Matches a segment that defines a long value.
-     */
+    /** Matches a segment that defines a long value.
+      */
     class LongValue(val set: Long ⇒ T ⇒ Unit) extends PathElement {
 
         def matchSegment(path: String): Option[(String, (T) ⇒ Unit)] = {
@@ -151,9 +156,8 @@ abstract class HandlerFactory[T <: Handler] {
 
     }
 
-    /**
-     * Matches a string segment that contains a word character or "@".
-     */
+    /** Matches a string segment that contains a word character or "@".
+      */
     class StringValue(set: String ⇒ T ⇒ Unit) extends PathElement {
 
         def matchSegment(path: String): Option[(String, (T) ⇒ Unit)] = {
@@ -190,14 +194,15 @@ abstract class HandlerFactory[T <: Handler] {
             if (path.startsWith(name)) {
                 val pathRest = path.substring(name.length)
                 Some((pathRest, DoNothing))
-            } else {
+            }
+            else {
                 None
             }
         }
     }
 
     def matchURI(path: String, query: String): Option[T] = {
-       pathMatcher matchSegment(path) map { create(_) }
+        pathMatcher matchSegment (path) map { create(_) }
         /*this.pathMatcher.matchSegment(path) match {
             case Some(fs) ⇒ {
                 Some(create(fs))
@@ -228,14 +233,13 @@ abstract class HandlerFactory[T <: Handler] {
         }
     }
 
-    private var queryMatcher: QueryMatcher = NoQuery
+    private[this] var queryMatcher: QueryMatcher = NoQuery
 
     def query(f: ⇒ QueryMatcher) {
         queryMatcher = f
     }
 
-    /**
-     * Creates a new handler object that will be further initialized using the segments extracted by the path matchers.
-     */
+    /** Creates a new handler object that will be further initialized using the segments extracted by the path matchers.
+      */
     def create(): T
 }
