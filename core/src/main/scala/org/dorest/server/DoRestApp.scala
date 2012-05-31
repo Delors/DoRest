@@ -34,9 +34,4 @@ trait DoRestApp {
         _factories += handlerFactory
     }
 
-
 }
-
-
-
-
