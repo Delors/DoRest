@@ -21,7 +21,7 @@ import java.io._
 /**
  * Handlers are responsible for processing requests.
  *
- * This trait's core method is the [[#processRequest(InputStream):Response]] method. It will be called by the server component
+ * The core method is the [[#processRequest(InputStream):Response]] method. It will be called by the server component
  * after the request's path and query was successfully matched.
  *
  * If a handler fails to process the request, it is the responsibility
@@ -124,7 +124,7 @@ trait Handler {
      * The request body is a parameter of this method as it is subject
      * to various transformations and it may not be possible to read it multiple times.
      */
-    // TODO Is it Ok if we ignore the request body (take a look in the specification).
+    // TODO Is it Ok if we ignore the request body (take a look in the specification and define required behavior of the server adapters).
     def processRequest(requestBody: => InputStream): Response
 
 }
