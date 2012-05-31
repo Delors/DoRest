@@ -19,7 +19,7 @@ import java.nio.charset.Charset
 import java.io._
 
 /**
- * Handler to send a standard redirect (HTTP status code 303). The "Location" header sent back to the
+ * Handler to send a "see-other" redirect (HTTP status code 303). The "Location" header sent back to the
  * client is set to the given location. The location information can be relative or absolute.
  *
  * This class is thread safe.
