@@ -55,7 +55,7 @@ class RESTURIsMatcherTest extends FlatSpec with ShouldMatchers {
             case MATCHED()   ⇒ CHandler
             case ROOT() ⇒ DHandler
             case LONG(userId) if userId > 0 ⇒ / {
-                case EOL      ⇒ LongHandler(userId)
+                case EOL()      ⇒ LongHandler(userId)
                 case ROOT()     ⇒ FHandler
                 case "comments" ⇒ GHandler
             }
