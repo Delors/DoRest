@@ -23,13 +23,11 @@ import java.lang.Boolean
  *
  * @author Michael Eichberg (mail at michael-eichberg.de)
  */
-class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
+class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
 
     import java.io._
 
-    var path: String = _
-
-    def processRequest(requestBody: => InputStream): Response = {
+    def processRequest(requestBody: ⇒ InputStream): Response = {
         if (method != GET) {
             return new SupportedMethodsResponse(GET)
         }
@@ -53,7 +51,7 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
         val fileName = file.getName
         val fileType = {
             val fileSuffix = fileName.substring(fileName.lastIndexOf('.') + 1)
-            Some((
+            Some((// TODO move to some extensible table
                 fileSuffix match {
                     case "css"        ⇒ MediaType.TEXT_CSS
                     case "javascript" ⇒ MediaType.APPLICATION_JAVASCRIPT
@@ -87,20 +85,10 @@ class MappedDirectory(val baseDirectory: String, enableIndexHTMLDeliveryOnDirect
                 def length = file.length.asInstanceOf[Int]
 
                 def write(responseBody: OutputStream) {
-                    // TODO Read blocks and not just single bytes.
-                    // TODO Think about caching files.
-                    /*val in = new FileInputStream(file)
-                    try {
-                        while (in.available > 0)
-                            responseBody.write(in.read)
-                    } finally {
-                        if (in != null)
-                            in.close
-                    }*/
                     responseBody.write(readFully(file))
                 }
 
-                def readFully(file: File) : Array[Byte] = {
+                def readFully(file: File): Array[Byte] = {
                     val in = new FileInputStream(file)
                     try {
                         val length = file.length.asInstanceOf[Int];

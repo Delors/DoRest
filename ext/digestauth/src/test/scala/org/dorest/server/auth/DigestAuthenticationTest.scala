@@ -41,37 +41,25 @@ import scala.xml.{ XML, Utility }
  */
 object DigestAuthTestServer extends JDKServer(9999) {
 
-  this register new HandlerFactory[RootResource] {
-    path { "/" }
-    def create = new RootResource
-  }
+    addPathMatcher(
+        / {
+            case ROOT() ⇒ new RESTInterface with XMLSupport {
+                get returns XML { <hello>"Hello!"</hello> }
+            }
+            case "restricted" ⇒ new RESTInterface with DigestAuthentication with DigestAuthenticatorMock with XMLSupport {
+                get returns XML { <hello>{ "Hello " + authenticatedUser + "!" }</hello> }
+            }
+        }
+    )
 
-  this register new HandlerFactory[RestrictedResource] {
-    path { "/restricted" }
-    def create = new RestrictedResource
-  }
-
-  start()
-
-  class RootResource extends RESTInterface with XMLSupport {
-
-    get returns XML { <hello>"Hello!"</hello> }
-
-  }
-
-  class RestrictedResource extends RESTInterface with DigestAuthentication with DigestAuthenticatorMock with XMLSupport {
-
-    get returns XML {<hello>{ "Hello " + authenticatedUser + "!" }</hello>}
-
-  }
-
+    start()
 }
 
 trait DigestAuthenticatorMock {
 
-  def authenticationRealm = "http://www.somewhere.org"
+    def authenticationRealm = "http://www.somewhere.org"
 
-  def password(username: String): Option[String] = Some("password")
+    def password(username: String): Option[String] = Some("password")
 
 }
 
@@ -81,31 +69,31 @@ trait DigestAuthenticatorMock {
 @RunWith(classOf[JUnitRunner])
 class DigestAuthenticationTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
-  override def beforeAll(configMap: Map[String, Any]) {
-    println("Starting tests")
-    DigestAuthTestServer
-  }
+    override def beforeAll(configMap: Map[String, Any]) {
+        println("Starting tests")
+        DigestAuthTestServer
+    }
 
-  import org.apache.http._
-  val get = SimpleClient.get(Map("ACCEPT" -> "application/xml")) _
-  val authGet = SimpleClient.get(Map("ACCEPT" -> "application/xml"), new DigestAuth("somebody", "password")) _
-  val falseAuthGet = SimpleClient.get(Map("ACCEPT" -> "application/xml"), new DigestAuth("somebody", "falsePassword")) _
+    import org.apache.http._
+    val get = SimpleClient.get(Map("ACCEPT" -> "application/xml")) _
+    val authGet = SimpleClient.get(Map("ACCEPT" -> "application/xml"), new DigestAuth("somebody", "password")) _
+    val falseAuthGet = SimpleClient.get(Map("ACCEPT" -> "application/xml"), new DigestAuth("somebody", "falsePassword")) _
 
-  "RestrictedResource" should "return 401 for unauthorized (no credentials)" in {
-    get("http://localhost:9999/restricted").statusCode should equal { 401 }
-  }
+    "RestrictedResource" should "return 401 for unauthorized (no credentials)" in {
+        get("http://localhost:9999/restricted").statusCode should equal { 401 }
+    }
 
-   it should "return 401 for wrong credentials" in {
-    falseAuthGet("http://localhost:9999/restricted").statusCode should equal { 401 }
-  }
+    it should "return 401 for wrong credentials" in {
+        falseAuthGet("http://localhost:9999/restricted").statusCode should equal { 401 }
+    }
 
-  it should "return 200 for authorized" in {
-    authGet("http://localhost:9999/restricted").statusCode should equal { 200 }
-  }
+    it should "return 200 for authorized" in {
+        authGet("http://localhost:9999/restricted").statusCode should equal { 200 }
+    }
 
 }
 
 object MyApp extends scala.App {
-  DigestAuthTestServer
+    DigestAuthTestServer
 }
 

@@ -16,9 +16,11 @@
 package org.dorest.server
 package jdk
 
+import log._
+import rest._
+
 import com.sun.net.httpserver._
 import java.net._
-import log._
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -39,6 +41,7 @@ import java.util.concurrent.Executors
 class JDKServer(val port : Int,val executor : Executor = Executors.newCachedThreadPool())
         extends DoRestServer
         with DoRestApp
+        with URIsMatcher
         {
 
     private[this] val logger = Logger(classOf[JDKServer])

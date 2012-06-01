@@ -18,22 +18,16 @@ package helloworld
 import org.dorest.server.jdk.JDKServer
 import org.dorest.server.rest.RESTInterface
 import org.dorest.server.rest.TEXTSupport
-import org.dorest.server.HandlerFactory
 
-// server object
-object HelloWorldServer extends JDKServer(9000) with App {
+object HelloWorldServer extends JDKServer(9010) with App {
 
-   // registering the handler
-  this register new HandlerFactory[HelloWorldHandler] {
-    path { "/hello" }
-    def create = new HelloWorldHandler
-  }
-  
-  // handler
-  class HelloWorldHandler extends RESTInterface with TEXTSupport {
-    get returns TEXT { "Hello World!" }
-  }
+    this addPathMatcher {
+        / {
+            case "hello" ⇒ new RESTInterface with TEXTSupport {
+                get returns TEXT { "Hello World!" }
+            }
+        }
+    }
 
-  start()
-
+    start()
 }

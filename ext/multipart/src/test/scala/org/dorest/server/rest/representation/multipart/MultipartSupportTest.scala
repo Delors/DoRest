@@ -38,43 +38,41 @@ import org.scalatest.FlatSpec
  */
 object MultipartSupportTestServer extends JDKServer(9998) {
 
-  import org.apache.commons.io.{ IOUtils, FileUtils }
-  this register new HandlerFactory[UploadResource] {
-    path { "/upload" }
-    def create = new UploadResource
-  }
+    import org.apache.commons.io.{ IOUtils, FileUtils }
 
-  start()
+    this addPathMatcher ((path) ⇒ if ("/upload" == path) Some(new UploadResource) else None)
 
-  class UploadResource extends RESTInterface with XMLSupport with MultipartSupport {
+    start()
 
-    def writeByteStream(inputStream: InputStream, file: String) = {
-      val outputStream = new FileOutputStream(file)
-      IOUtils.copy(inputStream, outputStream)
-      outputStream.close()
-    }
+    class UploadResource extends RESTInterface with XMLSupport with MultipartSupport {
 
-    post of Multipart returns XML {
-      for (part <- multipartIterator) {
-        part match {
-          case part @ FormField("someString") => println(part.content)
-          case part @ Data("someFile", MediaType.APPLICATION_PDF) => {
-            val fos = new FileOutputStream(new File("target/test-uploaded.pdf"))
-            var read: Int = 0
-            val stream = part.openStream
-            while ({ read = stream.read; read != -1 }) {
-              fos.write(read)
-            }
-            stream.close()
-            fos.flush()
-            fos.close()
-          }
+        def writeByteStream(inputStream: InputStream, file: String) = {
+            val outputStream = new FileOutputStream(file)
+            IOUtils.copy(inputStream, outputStream)
+            outputStream.close()
         }
-      }
-      <success/>
-    }
 
-  }
+        post of Multipart returns XML {
+            for (part ← multipartIterator) {
+                part match {
+                    case part @ FormField("someString") ⇒ println(part.content)
+                    case part @ Data("someFile", MediaType.APPLICATION_PDF) ⇒ {
+                        val fos = new FileOutputStream(new File("target/test-uploaded.pdf"))
+                        var read: Int = 0
+                        val stream = part.openStream
+                        while ({ read = stream.read; read != -1 }) {
+                            fos.write(read)
+                        }
+                        stream.close()
+                        fos.flush()
+                        fos.close()
+                    }
+                }
+            }
+            <success/>
+        }
+
+    }
 
 }
 
@@ -84,18 +82,18 @@ object MultipartSupportTestServer extends JDKServer(9998) {
 @RunWith(classOf[JUnitRunner])
 class MultipartSupportTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
-  override def beforeAll(configMap: Map[String, Any]) {
-    println("Starting MultipartSupportTest")
-    MultipartSupportTestServer
-  }
+    override def beforeAll(configMap: Map[String, Any]) {
+        println("Starting MultipartSupportTest")
+        MultipartSupportTestServer
+    }
 
-  val post = SimpleClient.post(Map("Accept" -> "application/xml"), new DigestAuth("somebody", "password")) _
+    val post = SimpleClient.post(Map("Accept" -> "application/xml"), new DigestAuth("somebody", "password")) _
 
-  "MultipartSupport" should "allow a client to POST a pdf" in {
-    val response = post("http://localhost:9998/upload",
-      Entity("someString" -> Part("foo"),
-        "someFile" -> Part(new File("src/test/resources/test.pdf"), "application/pdf")))
-  }
+    "MultipartSupport" should "allow a client to POST a pdf" in {
+        val response = post("http://localhost:9998/upload",
+            Entity("someString" -> Part("foo"),
+                "someFile" -> Part(new File("src/test/resources/test.pdf"), "application/pdf")))
+    }
 
 }
 

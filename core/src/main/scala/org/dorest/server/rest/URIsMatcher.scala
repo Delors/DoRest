@@ -21,10 +21,20 @@ package rest
  *
  * @author Michael Eichberg
  */
-trait RESTURIsMatcher {
+trait URIsMatcher {
+
+    type PathMatcher = (String) ⇒ Option[Handler]
 
     // NEEDS TO BE PROVIDED BY THE CLASS WHERE THIS CLASS IS MIXED IN
-    //    def register(handlerFactory: HandlerFactory[Handler])
+    def register(handlerFactory: HandlerFactory): Unit
+
+    def addPathMatcher(pathMatcher: PathMatcher) {
+        register(new HandlerFactory {
+            def matchURI(path: String, query: String): Option[Handler] = {
+                pathMatcher(path)
+            }
+        })
+    }
 
     /**
      * Use ROOT to match a URI that ends with "/" and where all previous segments have been successfully
@@ -71,13 +81,11 @@ trait RESTURIsMatcher {
         }
     }
 
-    type PathMatcher = (String) ⇒ Option[Handler]
-
     case class /(matcher: PartialFunction[String, PathMatcher]) extends PathMatcher {
 
         /**
          * @param completePath A valid URI path (or the yet unmatched part of the URI).
-         *		The completePath is either null or is a string that starts with a "/".
+         * 		The completePath is either null or is a string that starts with a "/".
          * 		The semantics of null is that the complete path was matched; i.e., there
          * 		is no remaining part.
          */
@@ -112,24 +120,6 @@ trait RESTURIsMatcher {
         /(matcher)
     }
 
-    //    def addPath(pathMatcher: PathMatcher) {
-    //
-    //    }
-
-    //    this addPath (
-    //        / {
-    //            case ROOT() ⇒ new Handler {}
-    //            case "lectures" ⇒ / {
-    //                case EOL()  ⇒ new Handler {} /* General information about lectures */
-    //                case ROOT() ⇒ new Handler {} /* The lectures */
-    //                case STRING(lectureId) ⇒ / {
-    //                    //case NIL        ⇒ null /* General Information about the lecture */
-    //                    case "slides" ⇒ new Handler {}
-    //                }
-    //            }
-    //            case "users" ⇒ new Handler {}
-    //        }
-    //    )
 }
 
 

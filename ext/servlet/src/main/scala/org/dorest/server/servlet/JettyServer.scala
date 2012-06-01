@@ -72,7 +72,7 @@ class JettyServer(val port: Int) extends DoRestServer {
     resourceHandler.setResourceBase("./");
 
     // recall that Jetty takes into account
-    // the first handler which matches the requested URI    
+    // the first handler which matches the requested URI
     mainHandler.addHandler(resourceHandler);
     mainHandler.addHandler(servletHandler);
     server.setHandler(mainHandler);
@@ -108,7 +108,7 @@ class JettyServer(val port: Int) extends DoRestServer {
   /**
    * Delegated to the global registry.
    */
-  def register(handlerFactory: HandlerFactory[_ <: Handler]) {
+  def register(handlerFactory: HandlerFactory) {
     DoRestServlet.register(handlerFactory)
   }
 

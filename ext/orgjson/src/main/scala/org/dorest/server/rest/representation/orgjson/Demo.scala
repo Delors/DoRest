@@ -98,20 +98,12 @@ class Demo
 
 object Demo extends JDKServer(9000) with App {
 
-    register(new HandlerFactory[Echo] {
-        path { "/echo" }
-
-        def create = new Echo()
-
-    })
-
-    register(new HandlerFactory[Time] {
-
-        path { "/time" }
-
-        def create = new Time() with PerformanceMonitor with ConsoleLogging
-
-    })
+    addPathMatcher(
+        / {
+            case "echo" ⇒ new Echo()
+            case "time" ⇒ new Time() with PerformanceMonitor with ConsoleLogging
+        }
+    )
 
     start()
 }

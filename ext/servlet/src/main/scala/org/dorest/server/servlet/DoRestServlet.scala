@@ -30,11 +30,11 @@ import org.dorest.server.log.Logger
  */
 object DoRestServlet {
 
-  private var _factories: Buffer[HandlerFactory[_ <: Handler]] = Buffer()
+  private var _factories: Buffer[HandlerFactory] = Buffer()
 
   def factories = _factories
 
-  def register(handlerFactory: HandlerFactory[_ <: Handler]) {
+  def register(handlerFactory: HandlerFactory) {
     _factories += handlerFactory
   }
 
@@ -76,7 +76,7 @@ class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
             }
           }
 
-          // try to process a request and yield a response 
+          // try to process a request and yield a response
           // (unpacking RequestExceptions to responses in case of throw)
           val response: Response = {
             try {
@@ -85,7 +85,7 @@ class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
               case ex: RequestException => ex.response
             }
           }
-          
+
           try {
             res.setStatus(response.code);
             response.body match {

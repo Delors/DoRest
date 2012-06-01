@@ -65,12 +65,7 @@ class Demo
 
 object Demo extends JDKServer(9000) with App {
 
-    register(new HandlerFactory[DemosResource] {
-        path { "/demos" }
-
-        def create = new DemosResource()
-
-    })
+    addPathMatcher((path) ⇒ if ("/demos" == path) Some(new DemosResource) else None)
 
     start()
 }

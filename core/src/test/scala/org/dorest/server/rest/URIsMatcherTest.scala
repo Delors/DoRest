@@ -22,10 +22,12 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
 /**
+ * Tests the matching of URIs.
+ *
  * @author Michael Eichberg
  */
 @RunWith(classOf[JUnitRunner])
-class RESTURIsMatcherTest extends FlatSpec with ShouldMatchers {
+class URIsMatcherTest extends FlatSpec with ShouldMatchers {
 
     // just some dummy handlers
     class DummyHandler extends Handler {
@@ -42,35 +44,43 @@ class RESTURIsMatcherTest extends FlatSpec with ShouldMatchers {
     object GHandler extends DummyHandler
 
     case class LongHandler(l: Long) extends DummyHandler
+    case class PathHandler(p: String) extends DummyHandler
 
     // some URIMatcher instance
-    val URIMatcher = new RESTURIsMatcher {}
+    val URIMatcher = new URIsMatcher {
+
+        def register(handlerFactory: HandlerFactory) { throw new Error() }
+
+    }
 
     import URIMatcher._
 
-    val exhaustiveMatcher =  / {
+    val exhaustiveMatcher = / {
         case ""         ⇒ AHandler
         case "lectures" ⇒ BHandler
         case "users" ⇒ / {
-            case MATCHED()   ⇒ CHandler
-            case ROOT() ⇒ DHandler
+            case MATCHED() ⇒ CHandler
+            case ROOT()    ⇒ DHandler
             case LONG(userId) if userId > 0 ⇒ / {
                 case EOL()      ⇒ LongHandler(userId)
                 case ROOT()     ⇒ FHandler
                 case "comments" ⇒ GHandler
             }
-
         }
+        case "static" ⇒ (path: String) ⇒ Some(PathHandler(path))
     }
 
     "A RESTURIsMatcher" should "correctly match valid URIs" in {
-        exhaustiveMatcher("/") should be (Some(AHandler))
+        exhaustiveMatcher("/") should be(Some(AHandler))
         exhaustiveMatcher("/lectures") should be(Some(BHandler))
         exhaustiveMatcher("/users") should be(Some(CHandler))
         exhaustiveMatcher("/users/") should be(Some(DHandler))
         exhaustiveMatcher("/users/121212") should be(Some(LongHandler(121212)))
         exhaustiveMatcher("/users/23233321212/") should be(Some(FHandler))
         exhaustiveMatcher("/users/23233321212/comments") should be(Some(GHandler))
+        exhaustiveMatcher("/static") should be(Some(PathHandler(null)))
+        exhaustiveMatcher("/static/") should be(Some(PathHandler("/")))
+        exhaustiveMatcher("/static/index.html") should be(Some(PathHandler("/index.html")))
     }
 
     it should "handle URIs that do not match without throwing exceptions" in {

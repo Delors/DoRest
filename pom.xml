@@ -22,7 +22,7 @@
 	<groupId>org.dorest</groupId>
 	<artifactId>org.dorest</artifactId>
 	<inceptionYear>2011</inceptionYear>
-	<version>0.0.0-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>DoRest</name>
 

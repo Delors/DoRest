@@ -36,25 +36,25 @@ class Time
     }
 
     get returns HTML {
-        "<html><body>The current (server) time is: "+new java.util.Date().toString+"</body></html>"
+        "<html><body>The current (server) time is: " + new java.util.Date().toString + "</body></html>"
     }
 
     get returns XML {
         <time>{ new java.util.Date().toString }</time>
     }
 }
+object Time extends Time with PerformanceMonitor
 
-class User extends RESTInterface with TEXTSupport {
-
-    var user: String = _
+class User(var user: String) extends RESTInterface with TEXTSupport {
 
     get returns TEXT {
-        "Welcome "+user
+        "Welcome " + user
     }
 }
 
-/** Implementation of a very primitive, thread-safe key-value store.
-  */
+/**
+ * Implementation of a very primitive, thread-safe key-value store.
+ */
 object KVStore {
 
     private val ds = new scala.collection.mutable.HashMap[Long, String]()
@@ -112,7 +112,7 @@ class Keys extends RESTInterface with XMLSupport {
         // convenience method: Location(URI)
         // Alternatively, it is possible to directly set the response headers
         // using the corresponding response headers data structure.
-        Location(new URL("http://"+InetAddress.getLocalHost.getHostName+":9000/keys/"+id.toString)) // TODO enable to specify the relative path
+        Location(new URL("http://" + InetAddress.getLocalHost.getHostName + ":9009/keys/" + id.toString)) // TODO enable to specify the relative path
 
         // the "response body"
         <value id={ id.toString }>{ value }</value>
@@ -120,17 +120,14 @@ class Keys extends RESTInterface with XMLSupport {
 
 }
 
-class Key extends RESTInterface with XMLSupport {
-
-    var id: Long = _
+class Key(val id: Long) extends RESTInterface with XMLSupport {
 
     get returns XML {
         KVStore.synchronized {
             if (!KVStore.contains(id)) {
                 responseCode = 404 // 404 = NOT FOUND
                 None // EMPTY BODY
-            }
-            else {
+            } else {
                 val value = KVStore(id)
                 <value id={ id.toString }>{ value }</value>
             }
@@ -142,8 +139,7 @@ class Key extends RESTInterface with XMLSupport {
             if (!KVStore.contains(id)) {
                 responseCode = 404 // NOT FOUND
                 None
-            }
-            else {
+            } else {
                 KVStore.updated(id, XMLRequestBody.text)
                 <value id={ id.toString }>{ XMLRequestBody.text }</value>
             }
@@ -156,95 +152,55 @@ class Key extends RESTInterface with XMLSupport {
 
 }
 
-object Key {
-
-    def setId(key: Key, id: Long) {
-        key.id = id
-    }
-}
-
-class MonitoredMappedDirectory(baseDirectory: String)
-    extends MappedDirectory(baseDirectory)
+class MonitoredMappedDirectory(baseDirectory: String, path: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false)
+    extends MappedDirectory(baseDirectory, path, enableIndexHTMLDeliveryOnDirectoryAccess)
     with ConsoleLogging // TODO needs to exchanged
     with PerformanceMonitor
 
 class Demo
 
-/** To test the restful web serice you can use, e.g., curl. For example, to
-  * add a value to the simple key-value store you can use:
-  *
-  * curl -v -X POST -d "<value>Test</value>" -H content-type:application/xml http://localhost:9009/keys
-  * curl http://localhost:9009/keys
-  */
+/**
+ * To test the restful web serice you can use, e.g., curl. For example, to
+ * add a value to the simple key-value store you can use:
+ *
+ * curl -v -X POST -d "<value>Test</value>" -H content-type:application/xml http://localhost:9009/keys
+ * curl http://localhost:9009/keys
+ */
 object Demo
         extends JDKServer(9009)
         with scala.App
         with ConsoleLogging // TODO needs to exchanged
         {
 
-    this register new HandlerFactory[Keys] {
-        path {
-            "/keys"
-        }
-
-        def create = new Keys
-    }
-
-    this register new HandlerFactory[Key] {
-        path {
-            // "/keys/" :: LongValue(v => _.id = v)
-
-            //"/keys/" :: LongValue(Key.setId _)
-            //"/keys/" :: LongValue((k,l) => k.id = l)
-            "/keys/" :: LongValue(_.id = _)
-        }
-
-        def create = new Key
-    }
-
-    this register new HandlerFactory[User] {
-        path {
-            "/user/" :: StringValue(_.user = _)
-        }
-
-        def create = new User with PerformanceMonitor with ConsoleLogging // TODO needs to exchanged
-    }
-
-    register(
-        new HandlerFactory[Time] {
-            path {
-                "/time" :: EmptyPath
+    addPathMatcher {
+        / {
+            case "keys" ⇒ / {
+                case MATCHED() ⇒ new Keys
+                case LONG(id)  ⇒ new Key(id)
             }
-            query {
-                NoQuery
+            case "user" ⇒ / {
+                case STRING(userId) ⇒ new User(userId) with PerformanceMonitor with ConsoleLogging
             }
-
-            /** Reusing one instance of a resource to handle all requests requires that the resource is thread safe.
-              * If you are unsure, just create a new instance for each request!
-              *
-              * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
-              * and instead just create a new instance. (i.e., you don't write "lazy val" but write "def" in following.)
-              *
-              * In general, whenever you have to extract path parameters or have to process a request body or your
-              * object representing the resource has some kind of mutable state, it is relatively certain that you
-              * have to create a new instance to handle a request.
-              */
-            lazy val create = new Time() with PerformanceMonitor
-        })
-
-    // ("timezone",StringValue(v => _.timeZone = v))
-
-    register(
-        new HandlerFactory[MappedDirectory] {
-            path {
-                "/static" :: AnyPath(
-                    v ⇒ _.path = {
-                        if (v startsWith "/") v else "/"+v
-                    })
-            }
-
-            def create = new MonitoredMappedDirectory(System.getProperty("user.home"))
-        })
+            case "time" ⇒
+                /**
+                 * Reusing one instance of a resource to handle all requests requires that the resource is thread safe.
+                 * If you are unsure, just create a new instance for each request!
+                 *
+                 * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
+                 * and instead just create a new instance.
+                 *
+                 * In general, whenever you have to extract path parameters or have to process a request body or your
+                 * object representing the resource has some kind of mutable state, it is relatively certain that you
+                 * have to create a new instance to handle a request.
+                 */
+                Time
+            case "static" ⇒ (path) ⇒
+                if (path eq null)
+                    None
+                else
+                    Some(new MonitoredMappedDirectory(System.getProperty("user.home"), path))
+        }
+    }
 
     // start the server
     start()

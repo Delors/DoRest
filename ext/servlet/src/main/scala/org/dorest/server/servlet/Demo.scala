@@ -26,46 +26,43 @@ import utils._
 /**
  * After the start go to: "http://localhost:8080/time"
  */
-object TimeServer extends JettyServer(8080) {
+object TimeServer extends JettyServer(8080) with URIsMatcher {
 
-  register(new HandlerFactory[Time] {
-    path {
-      "/time"
-    }
-
-    def create = new Time() with PerformanceMonitor
-  })
+    addPathMatcher({ // we match the entire path in one step
+        case "/time" ⇒ Some(new Time() with PerformanceMonitor)
+        case _       ⇒ None
+    })
 
 }
 
 class Time
-  extends RESTInterface
-  with PerformanceMonitor
-  with ConsoleLogging
-  with TEXTSupport
-  with HTMLSupport
-  with XMLSupport {
+        extends RESTInterface
+        with PerformanceMonitor
+        with ConsoleLogging
+        with TEXTSupport
+        with HTMLSupport
+        with XMLSupport {
 
-  val dateString = new java.util.Date().toString
+    val dateString = new java.util.Date().toString
 
-  get returns TEXT {
-    dateString
-  }
+    get returns TEXT {
+        dateString
+    }
 
-  get returns HTML {
-    "<html><body>The current (server) time is: " + dateString + "</body></html>"
-  }
+    get returns HTML {
+        "<html><body>The current (server) time is: " + dateString + "</body></html>"
+    }
 
-  get returns XML {
-    <time>
+    get returns XML {
+        <time>
       { dateString }
     </time>
-  }
+    }
 }
 
 object MyApp extends scala.App {
 
-  TimeServer
+    TimeServer
 
 }
 

@@ -28,21 +28,20 @@ import rest._
  * of the {{{SimpleAuthenticator}}} trait.
  */
 trait Authorization
-  extends BasicAuthentication
-   {
+        extends BasicAuthentication {
 
-  def authenticationRealm = "Demo App"
-    
-  /**
-   * If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait
-   * which implements the {{{Authentication}}} trait including this method.
-   */
-  def password(username: String): Option[String] = {
-    username match {
-      case "max" => Option("safe")
-      case _ => None
+    def authenticationRealm = "Demo App"
+
+    /**
+     * If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait
+     * which implements the {{{Authentication}}} trait including this method.
+     */
+    def password(username: String): Option[String] = {
+        username match {
+            case "max" ⇒ Option("safe")
+            case _     ⇒ None
+        }
     }
-  }
 
 }
 
@@ -64,73 +63,56 @@ trait Authorization
  * basically just complement the possibilities offered by the Time resource.
  */
 class Time
-  extends RESTInterface
-  with ConsoleLogging
-  with Authorization
-  with PerformanceMonitor
-  with TEXTSupport
-  with HTMLSupport
-  with XMLSupport {
+        extends RESTInterface
+        with ConsoleLogging
+        with Authorization
+        with PerformanceMonitor
+        with TEXTSupport
+        with HTMLSupport
+        with XMLSupport {
 
-  val dateString = new java.util.Date().toString
+    val dateString = new java.util.Date().toString
 
-  get returns TEXT {
-    dateString
-  }
+    get returns TEXT {
+        dateString
+    }
 
-  get returns HTML {
-    "<html><body>The current (server) time is: " + dateString + "</body></html>"
-  }
+    get returns HTML {
+        "<html><body>The current (server) time is: " + dateString + "</body></html>"
+    }
 
-  get returns XML {
-    <time>{ dateString }</time>
-  }
+    get returns XML {
+        <time>{ dateString }</time>
+    }
 }
 
-class Info extends RESTInterface with Authorization with TEXTSupport {
+class Info(var info: String) extends RESTInterface with Authorization with TEXTSupport {
 
-  var info: String = _
-
-  get returns TEXT {
-    "Info: " + info + " [user=" + authenticatedUser.get + "]"
-  }
+    get returns TEXT {
+        "Info: " + info + " [user=" + authenticatedUser.get + "]"
+    }
 }
 
 class Demo
 
 object Demo
-  extends JDKServer(9000)
-  with ConsoleLogging
-  with App {
-
-  register(new HandlerFactory[Time] {
-    path {
-      "/time"
-    }
-
-    def create = new Time()
-  })
-
-  register(new HandlerFactory[MappedDirectory] {
+        extends JDKServer(9011)
+        with ConsoleLogging
+        with App {
 
     val userHomeDir = System.getProperty("user.home")
 
-    path {
-      "/static" :: AnyPath(v => _.path = if (v startsWith "/") v else "/" + v)
-    }
+    addPathMatcher(
+        / {
+            case "time" ⇒ new Time
+            case "info" ⇒ / {
+                case STRING(info) ⇒ new Info(info) with PerformanceMonitor with ConsoleLogging
+            }
+            case "static" ⇒ (path) ⇒ Some(new MappedDirectory(userHomeDir, path) with Authorization)
+        }
+    )
 
-    def create = new MappedDirectory(userHomeDir) with Authorization
-  })
-
-  this register new HandlerFactory[Info] {
-    path {
-      "/info/" :: StringValue(_.info = _)
-    }
-
-    def create = new Info with PerformanceMonitor with ConsoleLogging // TODO needs to exchanged
-  }
-
-  start()
+    start()
 }
 
 
