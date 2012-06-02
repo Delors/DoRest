@@ -1,5 +1,5 @@
 /*
-   Copyright 2011 Michael Eichberg et al
+   Copyright 2011,2012 Michael Eichberg et al
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,22 @@ import org.dorest.server.rest.TEXTSupport
 
 object HelloWorldServer extends JDKServer(9010) with App {
 
-    this addPathMatcher {
+    addPathMatcher(
         / {
             case "hello" ⇒ new RESTInterface with TEXTSupport {
                 get returns TEXT { "Hello World!" }
             }
+
+            case "echo" ⇒ / {
+                case MATCHED() ⇒ new RESTInterface with TEXTSupport {
+                    get returns TEXT { "This is the echo service." }
+                }
+                case STRING(text) ⇒ new RESTInterface with TEXTSupport {
+                    get returns TEXT { text }
+                }
+            }
         }
-    }
+    )
 
     start()
 }
