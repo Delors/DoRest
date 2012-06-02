@@ -25,6 +25,8 @@ import io.Codec
  */
 trait TEXTSupport {
 
+    // TODO add support for posting TEXT
+    
     protected implicit def textToSomeText(textPlain: String) : Option[String] = Some(textPlain)
 
     def TEXT(getText: => Option[String]) =
