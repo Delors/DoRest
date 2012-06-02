@@ -23,6 +23,12 @@ import utils._
 import java.lang.Long
 import java.net.{ InetAddress, URI, URL }
 
+// ------------------------------------------------------------------------------------------------------
+//
+// CONFIGURATION OF VARIOUS RESOURCES
+//
+// ------------------------------------------------------------------------------------------------------ 
+
 class Time
         extends RESTInterface
         with ConsoleLogging // TODO needs to exchanged
@@ -36,7 +42,7 @@ class Time
     }
 
     get returns HTML {
-        "<html><body>The current (server) time is: " + new java.util.Date().toString + "</body></html>"
+        "<html><body>The current (server) time is: "+new java.util.Date().toString+"</body></html>"
     }
 
     get returns XML {
@@ -48,13 +54,12 @@ object Time extends Time with PerformanceMonitor
 class User(var user: String) extends RESTInterface with TEXTSupport {
 
     get returns TEXT {
-        "Welcome " + user
+        "Welcome "+user
     }
 }
 
-/**
- * Implementation of a very primitive, thread-safe key-value store.
- */
+/** Implementation of a very primitive, thread-safe key-value store.
+  */
 object KVStore {
 
     private val ds = new scala.collection.mutable.HashMap[Long, String]()
@@ -96,6 +101,10 @@ object KVStore {
     }
 }
 
+/** '''Usage'''
+  * To store a new value, send a post request where the content-type header is set to application/xml and
+  * where the value is stored in an "value" XML element (e.g., &lt;value&gt;My Value&lt;/value&gt;).
+  */
 class Keys extends RESTInterface with XMLSupport {
 
     get returns XML {
@@ -112,7 +121,7 @@ class Keys extends RESTInterface with XMLSupport {
         // convenience method: Location(URI)
         // Alternatively, it is possible to directly set the response headers
         // using the corresponding response headers data structure.
-        Location(new URL("http://" + InetAddress.getLocalHost.getHostName + ":9009/keys/" + id.toString)) // TODO enable to specify the relative path
+        Location(new URL("http://"+InetAddress.getLocalHost.getHostName+":9009/keys/"+id.toString)) // TODO enable to specify the relative path
 
         // the "response body"
         <value id={ id.toString }>{ value }</value>
@@ -127,7 +136,8 @@ class Key(val id: Long) extends RESTInterface with XMLSupport {
             if (!KVStore.contains(id)) {
                 responseCode = 404 // 404 = NOT FOUND
                 None // EMPTY BODY
-            } else {
+            }
+            else {
                 val value = KVStore(id)
                 <value id={ id.toString }>{ value }</value>
             }
@@ -139,7 +149,8 @@ class Key(val id: Long) extends RESTInterface with XMLSupport {
             if (!KVStore.contains(id)) {
                 responseCode = 404 // NOT FOUND
                 None
-            } else {
+            }
+            else {
                 KVStore.updated(id, XMLRequestBody.text)
                 <value id={ id.toString }>{ XMLRequestBody.text }</value>
             }
@@ -152,26 +163,20 @@ class Key(val id: Long) extends RESTInterface with XMLSupport {
 
 }
 
-class MonitoredMappedDirectory(baseDirectory: String, path: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false)
-    extends MappedDirectory(baseDirectory, path, enableIndexHTMLDeliveryOnDirectoryAccess)
-    with ConsoleLogging // TODO needs to exchanged
-    with PerformanceMonitor
-
-class Demo
-
-/**
- * To test the restful web serice you can use, e.g., curl. For example, to
- * add a value to the simple key-value store you can use:
- *
- * curl -v -X POST -d "<value>Test</value>" -H content-type:application/xml http://localhost:9009/keys
- * curl http://localhost:9009/keys
- */
-object Demo
-        extends JDKServer(9009)
-        with scala.App
+class MonitoredMappedDirectory(
+    baseDirectory: String,
+    path: String)
+        extends MappedDirectory(baseDirectory, path)
         with ConsoleLogging // TODO needs to exchanged
-        {
+        with PerformanceMonitor
 
+// ------------------------------------------------------------------------------------------------------
+//
+// SETUP OF THE RESTFUL INTERFACE
+//
+// ------------------------------------------------------------------------------------------------------
+
+trait DemoRESTInterface extends DoRestApp with URIsMatcher {
     addPathMatcher {
         / {
             case "keys" ⇒ / {
@@ -182,17 +187,16 @@ object Demo
                 case STRING(userId) ⇒ new User(userId) with PerformanceMonitor with ConsoleLogging
             }
             case "time" ⇒
-                /**
-                 * Reusing one instance of a resource to handle all requests requires that the resource is thread safe.
-                 * If you are unsure, just create a new instance for each request!
-                 *
-                 * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
-                 * and instead just create a new instance.
-                 *
-                 * In general, whenever you have to extract path parameters or have to process a request body or your
-                 * object representing the resource has some kind of mutable state, it is relatively certain that you
-                 * have to create a new instance to handle a request.
-                 */
+                /** Reusing one instance of a resource to handle all requests requires that the resource is thread safe.
+                  * If you are unsure, just create a new instance for each request!
+                  *
+                  * If your resource is not trivially thread-safe, we recommend that you do not try to make it thread safe
+                  * and instead just create a new instance.
+                  *
+                  * In general, whenever you have to extract path parameters or have to process a request body or your
+                  * object representing the resource has some kind of mutable state, it is relatively certain that you
+                  * have to create a new instance to handle a request.
+                  */
                 Time
             case "static" ⇒ (path) ⇒
                 if (path eq null)
@@ -201,8 +205,39 @@ object Demo
                     Some(new MonitoredMappedDirectory(System.getProperty("user.home"), path))
         }
     }
+}
 
-    // start the server
+// ------------------------------------------------------------------------------------------------------
+//
+// SETUP OF THE SERVER AND STARTING THE SERVER
+//
+// ------------------------------------------------------------------------------------------------------
+
+/** To test the restful web service you can use, e.g., curl. For example, to
+  * add a value to the simple key-value store you can use:
+  *
+  * curl -v -X POST -d "<value>Test</value>" -H content-type:application/xml http://localhost:9009/keys
+  * curl http://localhost:9009/keys
+  */
+object HTTPDemo
+        extends JDKServer(9009)
+        with DemoRESTInterface
+        with scala.App {
+
+    start()
+}
+
+/** To test the restful web service you can use, e.g., curl. For example, to
+  * add a value to the simple key-value store you can use:
+  *
+  * curl -v -X POST -d "<value>Test</value>" -H content-type:application/xml http://localhost:9009/keys
+  * curl https://localhost:9099/keys
+  */
+class HTTPSDemo(port: Int) extends HttpsJDKServer(port) with DemoRESTInterface
+object HTTPSDemo extends HTTPSDemo(9099) with scala.App {
+
+    configSSL(HttpsJDKServer.setupKeystore(classOf[HTTPSDemo].getResource("DemoKeystore.jks"), "DemoKeystore".toCharArray()))
+
     start()
 }
 
