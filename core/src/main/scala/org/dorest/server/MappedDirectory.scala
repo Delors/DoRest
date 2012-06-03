@@ -18,11 +18,10 @@ package org.dorest.server
 import io.Source
 import java.lang.Boolean
 
-/**
- * Makes the content of a directory accessible.
- *
- * @author Michael Eichberg (mail at michael-eichberg.de)
- */
+/** Makes the content of a directory accessible.
+  *
+  * @author Michael Eichberg (mail at michael-eichberg.de)
+  */
 class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
 
     import java.io._
@@ -32,7 +31,7 @@ class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHT
             return new SupportedMethodsResponse(GET)
         }
 
-        var file = new File(baseDirectory + "/" + path)
+        var file = new File(baseDirectory+"/"+path)
         if (!file.exists) {
             return NotFoundResponse
         }
@@ -40,8 +39,9 @@ class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHT
         if (file.isDirectory) {
             if (!enableIndexHTMLDeliveryOnDirectoryAccess) {
                 return new Forbidden("Browsing directories is forbidden.")
-            } else {
-                file = new File(baseDirectory + "/" + path + "/index.html")
+            }
+            else {
+                file = new File(baseDirectory+"/"+path+"/index.html")
                 if (!file.exists) {
                     return NotFoundResponse
                 }
@@ -51,7 +51,7 @@ class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHT
         val fileName = file.getName
         val fileType = {
             val fileSuffix = fileName.substring(fileName.lastIndexOf('.') + 1)
-            Some((// TODO move to some extensible table
+            Some(( // TODO move to some extensible table
                 fileSuffix match {
                     case "css"        ⇒ MediaType.TEXT_CSS
                     case "javascript" ⇒ MediaType.APPLICATION_JAVASCRIPT
@@ -65,7 +65,7 @@ class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHT
                     case "png"        ⇒ MediaType.IMAGE_PNG
                     case "ico"        ⇒ MediaType.IMAGE_X_ICON
                     case "svg"        ⇒ MediaType.IMAGE_SVG_XML
-                    case _            ⇒ throw new Error("Media type detection based on file suffix (" + fileSuffix + ") failed: " + fileName)
+                    case _            ⇒ throw new Error("Media type detection based on file suffix ("+fileSuffix+") failed: "+fileName)
                 },
                 // We are not able to reliably determine the used charset..
                 None
@@ -98,7 +98,8 @@ class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHT
                             read += in.read(data, read, length - read);
                         }
                         return data;
-                    } finally {
+                    }
+                    finally {
                         if (in != null)
                             in.close();
                     }
@@ -108,3 +109,8 @@ class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHT
     }
 }
 
+object MappedDirectory {
+    def apply(baseDirectory: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false)(path: String) = {
+        new MappedDirectory(baseDirectory, path, enableIndexHTMLDeliveryOnDirectoryAccess)
+    }
+}
