@@ -21,11 +21,10 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
-/**
- * Tests the matching of URIs.
- *
- * @author Michael Eichberg
- */
+/** Tests the matching of URIs.
+  *
+  * @author Michael Eichberg
+  */
 @RunWith(classOf[JUnitRunner])
 class URIsMatcherTest extends FlatSpec with ShouldMatchers {
 
@@ -62,25 +61,27 @@ class URIsMatcherTest extends FlatSpec with ShouldMatchers {
             case MATCHED() ⇒ CHandler
             case ROOT()    ⇒ DHandler
             case LONG(userId) if userId > 0 ⇒ / {
-                case EOL()      ⇒ LongHandler(userId)
+                case MATCHED()  ⇒ LongHandler(userId)
                 case ROOT()     ⇒ FHandler
                 case "comments" ⇒ GHandler
             }
         }
-        case "static" ⇒ (path: String) ⇒ Some(PathHandler(path))
+        case "static" ⇒ (path) ⇒ Some((query) ⇒ Some(PathHandler(path)))
+        case "sub"    ⇒ bind path (PathHandler)
     }
 
     "A RESTURIsMatcher" should "correctly match valid URIs" in {
-        exhaustiveMatcher("/") should be(Some(AHandler))
-        exhaustiveMatcher("/lectures") should be(Some(BHandler))
-        exhaustiveMatcher("/users") should be(Some(CHandler))
-        exhaustiveMatcher("/users/") should be(Some(DHandler))
-        exhaustiveMatcher("/users/121212") should be(Some(LongHandler(121212)))
-        exhaustiveMatcher("/users/23233321212/") should be(Some(FHandler))
-        exhaustiveMatcher("/users/23233321212/comments") should be(Some(GHandler))
-        exhaustiveMatcher("/static") should be(Some(PathHandler(null)))
-        exhaustiveMatcher("/static/") should be(Some(PathHandler("/")))
-        exhaustiveMatcher("/static/index.html") should be(Some(PathHandler("/index.html")))
+        exhaustiveMatcher("/").get(null) should be(Some(AHandler))
+        exhaustiveMatcher("/lectures").get(null) should be(Some(BHandler))
+        exhaustiveMatcher("/users").get(null) should be(Some(CHandler))
+        exhaustiveMatcher("/users/").get(null) should be(Some(DHandler))
+        exhaustiveMatcher("/users/121212").get(null) should be(Some(LongHandler(121212)))
+        exhaustiveMatcher("/users/23233321212/").get(null) should be(Some(FHandler))
+        exhaustiveMatcher("/users/23233321212/comments").get(null) should be(Some(GHandler))
+        exhaustiveMatcher("/static/").get(null) should be(Some(PathHandler("/")))
+        exhaustiveMatcher("/static/index.html").get(null) should be(Some(PathHandler("/index.html")))
+        exhaustiveMatcher("/static").get(null) should be(Some(PathHandler(null)))
+        exhaustiveMatcher("/sub/index.html").get(null) should be(Some(PathHandler("/index.html")))
     }
 
     it should "handle URIs that do not match without throwing exceptions" in {
@@ -89,7 +90,8 @@ class URIsMatcherTest extends FlatSpec with ShouldMatchers {
         exhaustiveMatcher("/users/-121212") should be(None)
     }
 
-    it should "not match URIs that are too long" in {
+    it should "not match URIs that are too long or too short" in {
+        exhaustiveMatcher("/sub") should be(None)
         exhaustiveMatcher("/lectures/") should be(None)
         exhaustiveMatcher("/lectures/slides") should be(None)
         exhaustiveMatcher("/users/23233321212/comments/2323") should be(None)
