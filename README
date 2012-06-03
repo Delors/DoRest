@@ -4,7 +4,7 @@ DoRest's primary goal is to make the server-side development of RESTful
 WebServices fun.
 
 To this end, we try to provide an API that is easy and intuitive to use and that
-makes applications developed using the framework easy do comprehend and debug.
+makes applications developed using the framework easy to comprehend and debug.
 To achieve this property we try to avoid using constructs that do things in 
 behind or implicitly. 
 
