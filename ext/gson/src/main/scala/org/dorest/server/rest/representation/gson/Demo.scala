@@ -35,9 +35,8 @@ object DemoStore {
 
 }
 
-/**
- * A resource that returns the current (server-side) time.
- */
+/** A resource that returns the current (server-side) time.
+  */
 class DemosResource
         extends RESTInterface
         with GSONSupport {
@@ -58,14 +57,20 @@ class DemosResource
     }
 }
 
-/**
- * @author Michael Eichberg
- */
+/** @author Michael Eichberg
+  */
 class Demo
 
 object Demo extends JDKServer(9000) with App {
 
-    addPathMatcher((path) ⇒ if ("/demos" == path) Some(new DemosResource) else None)
+    addPathMatcher(
+        (path) ⇒
+            if ("/demos" == path) {
+                Some((query: String) ⇒ Some(new DemosResource))
+            }
+            else
+                None
+    )
 
     start()
 }

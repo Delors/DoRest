@@ -23,15 +23,13 @@ import org.dorest.server._
 import log._
 import utils._
 
-/**
- * After the start go to: "http://localhost:8080/time"
- */
+/** After the start go to: "http://localhost:8080/time"
+  */
 object TimeServer extends JettyServer(8080) with URIsMatcher {
 
-    addPathMatcher({ // we match the entire path in one step
-        case "/time" ⇒ Some(new Time() with PerformanceMonitor)
-        case _       ⇒ None
-    })
+    addMatcher { // we match the entire path in one step
+        case ("/time", _) ⇒ new Time() with PerformanceMonitor
+    }
 
 }
 
@@ -50,13 +48,13 @@ class Time
     }
 
     get returns HTML {
-        "<html><body>The current (server) time is: " + dateString + "</body></html>"
+        "<html><body>The current (server) time is: "+dateString+"</body></html>"
     }
 
     get returns XML {
         <time>
-      { dateString }
-    </time>
+    		{ dateString }
+    	</time>
     }
 }
 

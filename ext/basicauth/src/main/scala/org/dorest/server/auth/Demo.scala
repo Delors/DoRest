@@ -21,21 +21,19 @@ import jdk._
 import log._
 import rest._
 
-/**
- * Demonstrates how to set up a resource that requires http basic authentication.
- *
- * If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait instead
- * of the {{{SimpleAuthenticator}}} trait.
- */
+/** Demonstrates how to set up a resource that requires http basic authentication.
+  *
+  * If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait instead
+  * of the {{{SimpleAuthenticator}}} trait.
+  */
 trait Authorization
         extends BasicAuthentication {
 
     def authenticationRealm = "Demo App"
 
-    /**
-     * If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait
-     * which implements the {{{Authentication}}} trait including this method.
-     */
+    /** If you require the authentication of the user against, e.g. a database, just mix in an appropriate trait
+      * which implements the {{{Authentication}}} trait including this method.
+      */
     def password(username: String): Option[String] = {
         username match {
             case "max" ⇒ Option("safe")
@@ -45,23 +43,22 @@ trait Authorization
 
 }
 
-/**
- * Before a request will be handled by this Time resource, the performance monitor and the authorization traits
- * are both triggered. I.e., the performance is measured even if the authorization fails. If you change the order
- * in which you mix in the traits, e.g., as in the following example:
- * {{{
- *   class Time
- *      extends RESTInterface
- *      with PerformanceMonitor
- *      with Authorization
- *      with TEXTSupport
- *      with HTMLSupport
- *      with XMLSupport {
- * }}}
- * The performance is only measured if the user is successfully authorized. The order and position of the
- * {{{Support}}} traits is not further relevant because they do not override/extend the process handling. They
- * basically just complement the possibilities offered by the Time resource.
- */
+/** Before a request will be handled by this Time resource, the performance monitor and the authorization traits
+  * are both triggered. I.e., the performance is measured even if the authorization fails. If you change the order
+  * in which you mix in the traits, e.g., as in the following example:
+  * {{{
+  *  class Time
+  *     extends RESTInterface
+  *     with PerformanceMonitor
+  *     with Authorization
+  *     with TEXTSupport
+  *     with HTMLSupport
+  *     with XMLSupport {
+  * }}}
+  * The performance is only measured if the user is successfully authorized. The order and position of the
+  * {{{Support}}} traits is not further relevant because they do not override/extend the process handling. They
+  * basically just complement the possibilities offered by the Time resource.
+  */
 class Time
         extends RESTInterface
         with ConsoleLogging
@@ -78,7 +75,7 @@ class Time
     }
 
     get returns HTML {
-        "<html><body>The current (server) time is: " + dateString + "</body></html>"
+        "<html><body>The current (server) time is: "+dateString+"</body></html>"
     }
 
     get returns XML {
@@ -89,7 +86,7 @@ class Time
 class Info(var info: String) extends RESTInterface with Authorization with TEXTSupport {
 
     get returns TEXT {
-        "Info: " + info + " [user=" + authenticatedUser.get + "]"
+        "Info: "+info+" [user="+authenticatedUser.get+"]"
     }
 }
 
@@ -108,7 +105,7 @@ object Demo
             case "info" ⇒ / {
                 case STRING(info) ⇒ new Info(info) with PerformanceMonitor with ConsoleLogging
             }
-            case "static" ⇒ (path) ⇒ Some(new MappedDirectory(userHomeDir, path) with Authorization)
+            case "static" ⇒ bind path ((path) ⇒ new MappedDirectory(userHomeDir, path) with Authorization)
         }
     )
 

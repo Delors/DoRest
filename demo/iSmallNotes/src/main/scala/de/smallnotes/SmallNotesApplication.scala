@@ -28,7 +28,7 @@ object SmallNotesApplication extends JDKServer(8182) with App {
             case "tags" ⇒ / {
                 case LONG(id) ⇒ new Tag(id)
             }
-            case "webapp" ⇒ (path) ⇒ Some(new MappedDirectory(rootWebappFolder, path, true))
+            case "webapp" ⇒ bind path (MappedDirectory(rootWebappFolder, true))
         }
     )
 
