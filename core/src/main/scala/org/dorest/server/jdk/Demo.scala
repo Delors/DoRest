@@ -170,6 +170,12 @@ class MonitoredMappedDirectory(
         with ConsoleLogging // TODO needs to exchanged
         with PerformanceMonitor
 
+object MonitoredMappedDirectory {
+    def apply(baseDirectory: String) = (path: String) ⇒
+        new MonitoredMappedDirectory(baseDirectory, path)
+
+}
+
 // ------------------------------------------------------------------------------------------------------
 //
 // SETUP OF THE RESTFUL INTERFACE
@@ -179,7 +185,7 @@ class MonitoredMappedDirectory(
 trait DemoRESTInterface extends DoRestApp with URIsMatcher {
     addPathMatcher {
         / {
-            case "keys" ⇒ / {
+            case "keys" ⇒ / {   
                 case MATCHED() ⇒ new Keys
                 case LONG(id)  ⇒ new Key(id)
             }
@@ -198,12 +204,8 @@ trait DemoRESTInterface extends DoRestApp with URIsMatcher {
                   * have to create a new instance to handle a request.
                   */
                 Time
-            case "static" ⇒ (path) ⇒
-                if (path eq null)
-                    None
-                else
-                    Some(new MonitoredMappedDirectory(System.getProperty("user.home"), path))
-        }
+            case "static" ⇒ bind path (MonitoredMappedDirectory(System.getProperty("user.home")))
+        } 
     }
 }
 
