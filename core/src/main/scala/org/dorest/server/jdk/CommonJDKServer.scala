@@ -57,7 +57,7 @@ trait CommonJDKServer[S <: HttpServer] extends DoRestServer with DoRestApp with 
                     factories.head.matchURI(path, query) match {
                         case Some(handler) ⇒ {
                             handler.protocol = t.getProtocol()
-                            handler.method = HTTPMethod(t.getRequestMethod())
+                            handler.method = HTTPMethod(t.getRequestMethod()).get // TODO What do we want to do if the method is completely unknown 
                             handler.requestURI = t.getRequestURI()
                             handler.remoteAddress = t.getRemoteAddress().toString // TODO check that the result is as expected...
                             handler.localAddress = t.getLocalAddress().toString // TODO check that the result is as expected...

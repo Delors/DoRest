@@ -66,7 +66,7 @@ class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
         case Some(_handler) => {
           val handler = _handler.asInstanceOf[Handler]
           handler.protocol = req.getProtocol()
-          handler.method = HTTPMethod(req.getMethod())
+          handler.method = HTTPMethod(req.getMethod()).get // TODO This is not safe... a client attacker might send illegal method names!
           handler.requestURI = new java.net.URI(req.getRequestURI())
           handler.remoteAddress = req.getRemoteAddr()
           handler.localAddress = req.getLocalAddr()
