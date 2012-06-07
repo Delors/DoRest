@@ -22,7 +22,11 @@ import java.lang.Boolean
   *
   * @author Michael Eichberg (mail at michael-eichberg.de)
   */
-class MappedDirectory(val baseDirectory: String, val path: String, enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false) extends Handler {
+class MappedDirectory(
+    val baseDirectory: String,
+    val path: String,
+    val enableIndexHTMLDeliveryOnDirectoryAccess: Boolean = false)
+        extends Handler {
 
     import java.io._
 
