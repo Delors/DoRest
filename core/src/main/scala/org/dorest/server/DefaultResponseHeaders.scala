@@ -20,8 +20,8 @@ package org.dorest.server
  *
  * @author Michael Eichberg
  */
-class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
-        extends ResponseHeaders {
+class DefaultResponseHeaders(private var headers: Map[String, String] = Map()) extends ResponseHeaders {
+
 
     def this(header: Tuple2[String, String]) {
         this(Map() + header)
@@ -31,22 +31,27 @@ class DefaultResponseHeaders(private var headers: Map[String, String] = Map())
         this(Map() ++ headers)
     }
 
-    def set(key: String, value: String): Unit = {
-        headers = headers.updated(key, value)
+    def set(field: String, value: String): this.type = {
+        headers = headers.updated(field, value)
+        this
     }
 
     def foreach[U](f: ((String, String)) ⇒ U) {
         headers.foreach(f)
     }
 
+    def apply(field: String): String = {
+        headers(field)
+    }
+
+    def get(field: String): Option[String] = {
+        headers.get(field)
+    }
 }
 
 object DefaultResponseHeaders {
 
-    def apply(headers: (String, String)*): DefaultResponseHeaders = {
-        val responseHeaders = new DefaultResponseHeaders(headers.toMap)
-        responseHeaders
-    }
+    def apply(headers: (String, String)*): DefaultResponseHeaders = new DefaultResponseHeaders(headers.toMap)
 
 }
 

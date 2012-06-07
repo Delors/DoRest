@@ -19,10 +19,11 @@ package auth
 import java.io.InputStream
 import StringUtils._
 
-/** Implementation of Digest Access Authentication (RFC 2617).
-  *
-  * @author Mateusz Parzonka
-  */
+/**
+ * Implementation of Digest Access Authentication (RFC 2617).
+ *
+ * @author Mateusz Parzonka
+ */
 trait DigestAuthentication extends Authentication with Handler {
 
     private[this] var _authenticatedUser: String = _
@@ -60,7 +61,7 @@ trait DigestAuthentication extends Authentication with Handler {
         if (nameValuePairs.length == nameValueMappings.size)
             nameValueMappings
         else
-            throw new RequestException(response = BadRequest("Malformed authorization header: "+authorizationHeader))
+            throw new RequestException(response = BadRequest("Malformed authorization header: " + authorizationHeader))
     }
 
     def unauthorizedDigestResponse(stale: Boolean): Response = {
@@ -72,9 +73,9 @@ trait DigestAuthentication extends Authentication with Handler {
     def validate(r: AuthorizationRequest): ProcessedAuthorizationRequest = {
         password(r.username) match {
             case Some(pwd: String) ⇒ {
-                val ha1 = hexEncode(md5(r.username+":"+r.realm+":"+pwd))
-                val ha2 = hexEncode(md5(r.method+":"+r.uri))
-                val response = hexEncode(md5(ha1+":"+r.nonce+":"+r.nc+":"+r.cnonce+":"+r.qop+":"+ha2))
+                val ha1 = hexEncode(md5(r.username + ":" + r.realm + ":" + pwd))
+                val ha2 = hexEncode(md5(r.method + ":" + r.uri))
+                val response = hexEncode(md5(ha1 + ":" + r.nonce + ":" + r.nc + ":" + r.cnonce + ":" + r.qop + ":" + ha2))
                 (response == r.response) match {
                     case true if (NonceStorage.contains(r.nonce, r.nc)) ⇒ ValidatedRequest
                     case true ⇒ StaleRequest
@@ -86,10 +87,11 @@ trait DigestAuthentication extends Authentication with Handler {
     }
 }
 
-/** Thread-safe nonce-storage with background-deletion of expired nonces.
-  *
-  * @author Mateusz Parzonka
-  */
+/**
+ * Thread-safe nonce-storage with background-deletion of expired nonces.
+ *
+ * @author Mateusz Parzonka
+ */
 object NonceStorage {
 
     import scala.collection.JavaConversions._
@@ -103,19 +105,30 @@ object NonceStorage {
         nonceMap += (nonce -> (0, System.currentTimeMillis))
     }
 
-    /** Checks if the storage contains the given nonce assuring the given nc was not used before.
-      */
+    /**
+     * Checks if the storage contains the given nonce assuring the given nc was not used before.
+     */
     def contains(nonce: String, nc: String): Boolean = {
-        val curNc = Integer.parseInt(nc, 16)
-        nonceMap.get(nonce) match {
-            case Some((oldNc: Int, time: Long)) if curNc > oldNc ⇒ { nonceMap.replace(nonce, (curNc, time)); true }
-            case _ ⇒ false
+        try {
+            val curNc = Integer.parseInt(nc, 16)
+            nonceMap.get(nonce) match {
+                case Some(old @ (oldNc: Int, time: Long)) if curNc > oldNc ⇒ { nonceMap.replace(nonce, old, (curNc, time)); true }
+                case _ ⇒ false
+            }
+        } catch {
+            case e: NumberFormatException ⇒ {
+                // FIXME Log this exception! I currently assume that either the client is not working correctly or someone is trying to bring this service down.
+                e.printStackTrace()
+            	return false;
+            }
         }
     }
 
     def clean() {
         val currentTime = System.currentTimeMillis
-        for ((nonce, (nc, time)) ← nonceMap if (currentTime - time) > nonceValidityPeriod) nonceMap.-=(nonce)
+        for ((nonce, (nc, time)) ← nonceMap if (currentTime - time) > nonceValidityPeriod) {
+            nonceMap.-=(nonce)
+        }
     }
 
     val nonceCleaner = new Thread() {

@@ -99,7 +99,7 @@ object Demo
 
     val userHomeDir = System.getProperty("user.home")
 
-    addPathMatcher(
+    addURIMatcher(
         / {
             case "time" ⇒ new Time
             case "info" ⇒ / {

@@ -18,7 +18,6 @@ package org.dorest.server
 import java.nio.charset.Charset
 import java.io.OutputStream
 
-
 /**
  * Encapsulates a response's body.
  *
@@ -37,8 +36,11 @@ trait ResponseBody {
     def length: Int
 
     /**
-     * Called by the framework – after sending the HTTP header – to write
+     * Called by the DoRest framework – after sending the HTTP header – to write
      * out the specific representation as the response's body.
+     *
+     * '''Contract'''
+     * Exactly as many bytes have to be written as specified by length.
      */
     def write(responseBody: OutputStream): Unit
 }

@@ -63,7 +63,7 @@ class Demo
 
 object Demo extends JDKServer(9000) with App {
 
-    addPathMatcher(
+    addURIMatcher(
         (path) ⇒
             if ("/demos" == path) {
                 Some((query: String) ⇒ Some(new DemosResource))

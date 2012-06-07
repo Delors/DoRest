@@ -98,7 +98,7 @@ class Demo
 
 object Demo extends JDKServer(9000) with App {
 
-    addPathMatcher(
+    addURIMatcher(
         / {
             case "echo" ⇒ new Echo()
             case "time" ⇒ new Time() with PerformanceMonitor with ConsoleLogging

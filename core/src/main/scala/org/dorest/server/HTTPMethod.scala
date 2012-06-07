@@ -15,8 +15,8 @@
  */
 package org.dorest.server
 
-/** The list of all HTTP Methods as defined by "Hypertext Transfer Protocol -- HTTP/1.1 (RFC 2616)" and also
-  * "PATCH Method for HTTP (RFC 5789)".
+/** The list of all HTTP Methods as defined by RFC 2616: "Hypertext Transfer Protocol -- HTTP/1.1" and also
+  * by RFC 5789: "PATCH Method for HTTP".
   *
   * @author Michael Eichberg
   * @author Mateusz Parzonka

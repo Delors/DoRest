@@ -34,7 +34,7 @@ import java.io._
 trait Handler {
 
     /**
-     * The used protocol. E.g., HTTP/1.1
+     * The used protocol. E.g., HTTP/0.9, HTTP/1.0 or HTTP/1.1
      *
      * '''Control Flow''':
      * This field will be set by the server before [[#processRequest(InputStream):Response]] is called.

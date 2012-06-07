@@ -18,20 +18,26 @@ package org.dorest.server
 import collection.mutable.Buffer
 
 /**
- * Enables the registration of [[org.dorest.server.HandlerFactory]] objects.
+ * Enables the registration of [[org.dorest.server.HandlerFactory]] objects.  When processing a request the server
+ * will will use/has to use the first HandlerFactory that returns a Handler object to process the request.
+ * The factories are/have to be tried in the order in which they are registered using the register method.
  *
- * This trait is to be implemented by DoRest servers.
+ * This trait is generally implemented by DoRest servers.
  *
  * @author Michael Eichberg
  */
 trait DoRestApp {
 
-    private var _factories: Buffer[HandlerFactory] = Buffer()
+    /**
+     * The list of all registered ˚HandlerFactory˚ objects.
+     */
+    protected[this] var factories = Buffer[HandlerFactory]()
 
-    def factories = _factories
-
+    /**
+     * Appends the given handler factory to the list of previously registered `HandlerFactory` objects.
+     */
     def register(handlerFactory: HandlerFactory) {
-        _factories += handlerFactory
+        factories += handlerFactory
     }
 
 }

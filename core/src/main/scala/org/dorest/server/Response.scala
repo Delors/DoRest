@@ -15,43 +15,63 @@
  */
 package org.dorest.server
 
-/** A response object encapsulates a request's response.
-  *
-  * The precise structure of a response depends on the request and is defined by
-  * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC 2616</a>.
-  *
-  * @author Michael Eichberg
-  */
+/**
+ * A response object encapsulates a request's response.
+ *
+ * The precise/expected structure of a response depends on the request and is defined by
+ * [[http://www.w3.org/Protocols/rfc2616/rfc2616.html RFC 2616]].
+ *
+ * @author Michael Eichberg
+ */
 trait Response {
 
-    /** The status code of the response.
-      *
-      * Go to: <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10">HTTP Status Codes</a> for further
-      * details.
-      */
+    /**
+     * The status code of the response.
+     *
+     * @see [[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10 HTTP Status Codes]]
+     */
     def code: Int
 
-    /** A response's headers.
-      *
-      * The response headers for the Content-type and Content-length are automatically set based on the 
-      * response body. 
-      *
-      * '''Remark''': ResponseHeaders must not be null and mutable.
-      */
+    /**
+     * A response's headers.
+     *
+     * @note The HTTP headers Content-Type and Content-Length are automatically set based on the
+     * response body.
+     * @return This response's header fields (non-null).
+     */
     def headers: ResponseHeaders
 
-    /** The body that is send back to the client.
-      */
+    /**
+     * The body that is send back to the client.
+     */
     def body: Option[ResponseBody]
 }
-
+/**
+ * Factory object for creating a [[org.dorest.server.Response]] object.
+ */
 object Response {
 
-    def apply(responseCode: Int, responseHeaders: ResponseHeaders, responseBody: Option[ResponseBody]) =
+    /**
+     * Creates a new, generic [[org.dorest.server.Response]] object.
+     *
+     * @param responseCode A valid HTTP response code. See also [[org.dorest.server.Response]].code
+     * @param responseHeaders The HTTP response headers. See also [[org.dorest.server.Response]].headers
+     * @param responseBody The body of the HTTP response. See also [[org.dorest.server.Response]].body
+     * @return A new response object.
+     */
+    def apply(responseCode: Int, responseHeaders: ResponseHeaders, responseBody: Option[ResponseBody]) = {
+        require(responseHeaders ne null)
+        require(responseBody match {
+            case Some(_) ⇒ true // the body may be lazily initialized; hence we do not check that `body.length > 0`
+            case None    ⇒ true
+            case null    ⇒ false
+        });
+
         new Response {
             val code: Int = responseCode
             val headers: ResponseHeaders = responseHeaders
             val body: Option[ResponseBody] = responseBody
         }
+    }
 
 }

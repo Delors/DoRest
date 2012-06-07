@@ -17,19 +17,20 @@ package org.dorest.server
 
 
 /**
- * '''<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.6">HTTP 1.1 Specification Method Not Allowed (405)</a>''': The
+ * '''[[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.6 HTTP 1.1 Specification Method Not Allowed (405)]] The
  * method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response
  * MUST include an Allow header containing a list of valid methods for the requested resource.
  *
  * @author Michael Eichberg
  */
-class SupportedMethodsResponse(val allowedMethods: List[HTTPMethod], val code: Int = 200) extends Response {
+class SupportedMethodsResponse(val allowedMethods: Seq[HTTPMethod], val code: Int = 200/*  TODO is this return value correct?*/) extends Response {
 
     def this(allowedMethod: HTTPMethod) {
         this (allowedMethod :: Nil)
     }
-    
-    val headers = new DefaultResponseHeaders(("Allow", allowedMethods.mkString(", ")))
+
+    val headers = new DefaultResponseHeaders()
+    headers.setAllow(allowedMethods)
 
     def body = None
 

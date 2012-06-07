@@ -16,8 +16,15 @@
 package org.dorest.server
 
 /**
- * http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
- * '''The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.'''
+ * Represents an `Unsupported Media Type Response`.
+ *
+ * From the specification:
+ * <blockquote>
+ * The server is refusing to service the request because the entity of the request is in a format not
+ * supported by the requested resource for the requested method.
+ * </blockquote>
+ *
+ * @see [[http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html RFC 2616 - Unsupported Media Type Response]]
  *
  * @author Michael Eichberg
  */

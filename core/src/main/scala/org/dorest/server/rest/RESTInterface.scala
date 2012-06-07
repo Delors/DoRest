@@ -207,7 +207,7 @@ trait RESTInterface extends Handler {
     final object post {
 
         /**
-         * @see [[#of(RequestBodyProcessor)]]
+         * @see [[org.dorest.server.rest.RESTInterface.post#of(RequestBodyProcessor)]]
          */
         def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
 
@@ -226,7 +226,7 @@ trait RESTInterface extends Handler {
     final object put {
 
         /**
-         * @see [[#of(RequestBodyProcessor)]]
+         * @see [[org.dorest.server.rest.RESTInterface.put#of(RequestBodyProcessor)]]
          */
         def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
 
@@ -245,7 +245,7 @@ trait RESTInterface extends Handler {
     final object patch {
 
         /**
-         * @see [[#of(RequestBodyProcessor)]]
+         * @see [[org.dorest.server.rest.RESTInterface.patch#of(RequestBodyProcessor)]]
          */
         def sends(requestBodyHandler: RequestBodyProcessor) = of(requestBodyHandler)
 

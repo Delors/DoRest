@@ -15,6 +15,7 @@
  */
 package org.dorest.server.http
 
-class Server(val port : Int) {
-   // TODO implement
+// TODO implement
+class Server(val port: Int) {
+
 }

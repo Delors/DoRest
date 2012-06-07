@@ -40,7 +40,7 @@ object MultipartSupportTestServer extends JDKServer(9998) {
 
     import org.apache.commons.io.{ IOUtils, FileUtils }
 
-    this addPathMatcher ((path) ⇒ if ("/upload" == path) Some((query) => Some(new UploadResource)) else None)
+    this addURIMatcher ((path) ⇒ if ("/upload" == path) Some((query) => Some(new UploadResource)) else None)
 
     start()
 

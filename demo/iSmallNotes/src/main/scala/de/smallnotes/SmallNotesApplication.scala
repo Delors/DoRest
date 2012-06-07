@@ -15,7 +15,7 @@ object SmallNotesApplication extends JDKServer(8182) with App {
             "src/main/resources/webapp"
     }
 
-    this addPathMatcher (
+    this addURIMatcher (
         / {
             case "api" ⇒ / {
                 case "tags" ⇒ / {

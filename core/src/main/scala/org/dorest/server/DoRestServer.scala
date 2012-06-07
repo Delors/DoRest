@@ -17,9 +17,9 @@ package org.dorest.server
 
 /**
  * Implements common functionality required when embedding DoRest.
- * 
+ *
  * '''Remark''' This class is generally only relevant for developers who want to extend/embed DoRest.
- * 
+ *
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */

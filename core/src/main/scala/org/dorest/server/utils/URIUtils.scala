@@ -22,7 +22,7 @@ import java.nio.charset.Charset
  */
 object URIUtils {
 
-    def decodeRawURLQueryString(query: String): Option[Map[String, List[Option[String]]]] = {
+    def decodeRawURLQueryString(query: String): Map[String, List[String]] = {
         decodeRawURLQueryString(query, scala.io.Codec.UTF8)
     }
 
@@ -34,26 +34,25 @@ object URIUtils {
      * @param charset the charset that has to be used to decode the string.
      * @todo check that all special cases (and in particular URLs that are tampered with) do not cause any unexpected behavior
      */
-    def decodeRawURLQueryString(query: String, charset: Charset): Option[Map[String, List[Option[String]]]] = {
-        if ((query eq null) || (query.length == 0))
-            return None
+    def decodeRawURLQueryString(query: String, charset: Charset): Map[String, List[String]] = {
+        var param_values = Map[String, List[String]]().withDefaultValue(List[String]())
 
-        try {
-            var param_values = Map[String, List[Option[String]]]().withDefaultValue(List[Option[String]]())
+        if ((query eq null) || (query.length == 0))
+            param_values
+        else {
             for (param_value ← query.split('&')) {
                 val index = param_value.indexOf('=')
                 if (index == -1) {
+                    // there is only a key...
                     val param = decodePercentEncodedString(param_value, charset)
-                    param_values = param_values.updated(param, param_values(param) :+ None)
+                    param_values = param_values.updated(param, param_values(param))
                 } else {
                     val param = decodePercentEncodedString(param_value.substring(0, index), charset)
                     val value = decodePercentEncodedString(param_value.substring(index + 1), charset)
-                    param_values = param_values.updated(param, param_values(param) :+ Some(value))
+                    param_values = param_values.updated(param, param_values(param) :+ value)
                 }
             }
-            Some(param_values)
-        } catch {
-            case _ ⇒ None
+            param_values
         }
     }
 

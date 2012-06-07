@@ -24,7 +24,7 @@ import org.apache.commons.io.{ IOUtils, FileUtils }
  */
 object StreamSupportTestServer extends JDKServer(9999) {
 
-    addPathMatcher(
+    addURIMatcher(
         / {
             case "bytestream" ⇒ / {
                 case MATCHED() ⇒ new ByteStreamResource

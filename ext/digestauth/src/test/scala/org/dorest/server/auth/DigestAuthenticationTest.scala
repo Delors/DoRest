@@ -41,7 +41,7 @@ import scala.xml.{ XML, Utility }
  */
 object DigestAuthTestServer extends JDKServer(9999) {
 
-    addPathMatcher(
+    addURIMatcher(
         / {
             case ROOT() ⇒ new RESTInterface with XMLSupport {
                 get returns XML { <hello>"Hello!"</hello> }

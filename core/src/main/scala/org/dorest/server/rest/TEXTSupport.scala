@@ -26,11 +26,15 @@ import io.Codec
 trait TEXTSupport {
 
     // TODO add support for posting TEXT
-    
-    protected implicit def textToSomeText(textPlain: String) : Option[String] = Some(textPlain)
 
-    def TEXT(getText: => Option[String]) =
+    protected implicit def textToSomeText(textPlain: String): Option[String] = Some(textPlain)
+
+    def TEXT(getText: ⇒ Option[String]) =
         RepresentationFactory(MediaType.TEXT_PLAIN) {
-            getText map ((text) => new UTF8BasedRepresentation(MediaType.TEXT_PLAIN, Codec.toUTF8(text)))
+            getText map ((text) ⇒ new UTF8BasedRepresentation(MediaType.TEXT_PLAIN, Codec.toUTF8(text)))
         }
+}
+
+class TEXTResource extends RESTInterface with TEXTSupport {
+
 }

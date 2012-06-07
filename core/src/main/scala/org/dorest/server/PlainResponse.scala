@@ -15,15 +15,15 @@
  */
 package org.dorest.server
 
-
 /**
  * @author Michael Eichberg
  */
-abstract class PlainResponse(val code: Int) extends Response {
+abstract class PlainResponse(
+    val code: Int,
+    val headers: ResponseHeaders = new DefaultResponseHeaders())
+        extends Response {
 
-    def headers = new DefaultResponseHeaders()
-
-    def body = None
+    final def body = None
 }
 
 

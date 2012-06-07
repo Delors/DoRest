@@ -16,24 +16,19 @@
 package helloworld
 
 import org.dorest.server.jdk.JDKServer
-import org.dorest.server.rest.RESTInterface
-import org.dorest.server.rest.TEXTSupport
+import org.dorest.server.rest.TEXTResource
 
 object HelloWorldServer extends JDKServer(9010) with App {
 
-    addPathMatcher(
+    addURIMatcher(
         / {
-            case "hello" ⇒ new RESTInterface with TEXTSupport {
+            case "hello" ⇒ new TEXTResource {
                 get returns TEXT { "Hello World!" }
             }
 
             case "echo" ⇒ / {
-                case MATCHED() ⇒ new RESTInterface with TEXTSupport {
-                    get returns TEXT { "This is the echo service." }
-                }
-                case STRING(text) ⇒ new RESTInterface with TEXTSupport {
-                    get returns TEXT { text }
-                }
+                case MATCHED()    ⇒ new TEXTResource { get returns TEXT { "This is the echo service." } }
+                case STRING(text) ⇒ new TEXTResource { get returns TEXT { text } }
             }
         }
     )
