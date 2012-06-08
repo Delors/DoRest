@@ -21,8 +21,8 @@ package org.dorest.server.auth
   * @see [[http://doi.acm.org/10.1145/2246036.2254400 Poul-Henning Kamp. 2012. LinkedIn Password Leak: Salt
   * Their Hide. Queue 10, 6, Pages 20 (June 2012), 3 pages. DOI=10.1145/2246036.2254400 ]] for information
   * regarding hashing/storing passwords.
-  *
   * @author Mateusz Parzonka
+  * @author Michael Eichberg
   */
 trait Authentication {
 
@@ -35,9 +35,11 @@ trait Authentication {
       * Returns the password for a given user name (if available).
       *
       * '''Control Flow''': This method is called by the Basic/DigestAuthentication traits when a user tries
-      * to log in. The handler then has to look up the password of the provided user.
+      * to log in. The handler that implements this trait then has to look up the password of the provided user.
       */
-    def password(username: String): Option[String]
+    def password(username: String): Option[String] // FIXME use array of char and implement some means to enable users to store hashed passwords
+    // TODO rename to hashedPassword
+    // TODO implement a method hashPassword
 
     /**
       * The name of the (successfully) authenticated user.

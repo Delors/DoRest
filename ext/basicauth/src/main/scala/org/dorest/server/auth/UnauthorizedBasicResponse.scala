@@ -13,20 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.dorest.server.auth
-
-import org.dorest.server.ErrorResponse
+package org.dorest.server
+package auth
 
 /**
- * @author Mateusz Parzonka
- */
+  * @author Mateusz Parzonka
+  */
 class UnauthorizedBasicResponse(realm: String) extends ErrorResponse(401, "Authorization required.") {
 
-  headers.set("WWW-Authenticate", "Basic realm=\"" + realm + "\", ")
+    headers.set("WWW-Authenticate", "Basic realm=\"" + realm + "\", ")
+    // TODO define/use headers.setWWWAuthenticate
 
 }
 
 object UnauthorizedBasicResponse {
-  def apply(realm: String) =
-    new UnauthorizedBasicResponse(realm)
+    def apply(realm: String) =
+        new UnauthorizedBasicResponse(realm)
 }
