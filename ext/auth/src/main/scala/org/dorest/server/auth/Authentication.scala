@@ -16,25 +16,32 @@
 package org.dorest.server.auth
 
 /**
- * Enables validation of user credentials.
- *
- * @author Mateusz Parzonka
- */
+  * Enables validation of user credentials.
+  *
+  * @see [[http://doi.acm.org/10.1145/2246036.2254400 Poul-Henning Kamp. 2012. LinkedIn Password Leak: Salt
+  * Their Hide. Queue 10, 6, Pages 20 (June 2012), 3 pages. DOI=10.1145/2246036.2254400 ]] for information
+  * regarding hashing/storing passwords.
+  *
+  * @author Mateusz Parzonka
+  */
 trait Authentication {
 
-  /**
-   * Provides the authentication realm to be included in an "unauthorized"-response.
-   */
-  def authenticationRealm: String
+    /**
+      * Provides the authentication realm to be included in an "unauthorized"-response.
+      */
+    def authenticationRealm: String
 
-  /**
-   * Provides the password for a given username (if available).
-   */
-  def password(username: String): Option[String]
+    /**
+      * Returns the password for a given user name (if available).
+      *
+      * '''Control Flow''': This method is called by the Basic/DigestAuthentication traits when a user tries
+      * to log in. The handler then has to look up the password of the provided user.
+      */
+    def password(username: String): Option[String]
 
-  /**
-   * Provides the username of the authenticated user (if authentication successful).
-   */
-  def authenticatedUser: String
+    /**
+      * The name of the (successfully) authenticated user.
+      */
+    def authenticatedUser: String
 
 }
