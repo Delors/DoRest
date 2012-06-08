@@ -21,7 +21,7 @@ import java.io.InputStream
 /**
  * Implements <a href="http://www.ietf.org/rfc/rfc1945.txt.pdf">HTTP basic access authentication</a>.
  *
- * @see [[org.dorest.server.auth.SimpleAuthenticator]]
+ * @see [[org.dorest.server.auth.Authenticator]]
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
