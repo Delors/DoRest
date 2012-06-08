@@ -201,8 +201,8 @@ trait DemoRESTInterface extends DoRestApp with URIsMatcher {
                  * and instead just create a new instance.
                  *
                  * In general, whenever you have to extract path parameters or have to process a request body or your
-                 * object representing the resource has some kind of mutable state, it is relatively certain that you
-                 * have to create a new instance to handle a request.
+                 * object representing the resource has some kind of mutable state, it is relatively certain that the
+                 * best approach is to create a new instance to handle a request.
                  */
                 Time
             case "static" ⇒ bind path (MonitoredMappedDirectory(System.getProperty("user.home")))
