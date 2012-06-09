@@ -19,24 +19,22 @@ package rest
 import io.Codec
 
 /**
- * Use this trait to return a text (string) based HTML representation of your resources.
- *
- * E.g., the code of a "Time" resource which offers a HTML based representation:
- * {{{
- * class Time
- *      extends RESTInterface
- *      with HTMLSupport {
- *
- *   get returns HTML {
- *      "<html><body>The current (server) time is: "+
- *          (new java.util.Date().toString)+
- *      "</body></html>"
- * }
- * }
- * }}}
- *
- * @author Michael Eichberg
- */
+  * Use this trait to return a text (string) based HTML representation of your resources.
+  *
+  * @example The code of a "Time" resource which offers an HTML based representation:
+  * {{{
+  * class Time  extends RESTInterface  with HTMLSupport {
+  *
+  *   get returns HTML {
+  *      "<html><body>The current (server) time is: "+
+  *          (new java.util.Date().toString)+
+  *      "</body></html>"
+  *   }
+  * }
+  * }}}
+  *
+  * @author Michael Eichberg
+  */
 trait HTMLSupport {
 
     protected implicit def charSequenceToSomeHtml(html: CharSequence): Option[CharSequence] = Some(html)
@@ -48,3 +46,4 @@ trait HTMLSupport {
             })
         }
 }
+abstract class HTMLResource extends RESTInterface with HTMLSupport
