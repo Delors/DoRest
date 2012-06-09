@@ -17,31 +17,27 @@ package org.dorest.server
 package rest
 
 /**
- * Utility function to facilitate the matching of URIs.
- *
- * @author Michael Eichberg
- */
-trait URIsMatcher {
-
-    // NEEDS TO BE PROVIDED BY THE CLASS WHERE THIS CLASS IS MIXED IN
-    def register(handlerFactory: HandlerFactory): Unit
+  * Provides support for matching URIs.
+  *
+  * @author Michael Eichberg
+  */
+trait URIsMatcher { this: DoRestApp ⇒
 
     /**
-     * Register a partial function that tries to match a request's path and query string.
-     *
-     * @example
-     * {{{
-     * val PathExtractor = """/static/(.*)""".r
-     * val SuffixExtractor = """.*suffix=(.+)""".r
-     * addMatcher({
-     * 	case (PathExtractor(path),SuffixExtractor(suffix)) => new Handler{...}
-     * })
-     * }}}
-     *
-     * @param matcher A partial function that takes a tuple of strings, where the first string will be the
-     * current path and the second string will be the query part. The return value has to (if both are matched) a
-     * valid (non-null) handler object.
-     */
+      * Register a partial function that tries to match a request's path and query string.
+      *
+      * @example
+      * {{{
+      * val PathExtractor = """/static/(.*)""".r
+      * val SuffixExtractor = """.*suffix=(.+)""".r
+      * addMatcher({
+      * 	case (PathExtractor(path),SuffixExtractor(suffix)) => new Handler{...}
+      * })
+      * }}}      *
+      * @param matcher A partial function that takes a tuple of strings, where the first string will be the
+      * current path and the second string will be the query part. The return value has to be – if both are
+      * matched – a valid (non-null) handler object.
+      */
     def addMatcher(matcher: PartialFunction[( /*path*/ String, /*query*/ String), Handler]) {
         register(new HandlerFactory {
             def matchURI(path: String, query: String): Option[Handler] = matcher.lift((path, query))
@@ -68,9 +64,9 @@ trait URIsMatcher {
     //
 
     /**
-     * Use ROOT to match (the remaining) path of an URI that ends with "/" and where all previous segments have been
-     * successfully matched.
-     */
+      * Use ROOT to match (the remaining) path of an URI that ends with "/" and where all previous segments have been
+      * successfully matched.
+      */
     object ROOT {
         def unapply(pathSegment: String): Boolean = {
             !(pathSegment eq null) && pathSegment.length == 0
@@ -78,8 +74,8 @@ trait URIsMatcher {
     }
 
     /**
-     * Use MATCHED() to match a URI that does not end with "/".
-     */
+      * Use MATCHED() to match a URI that does not end with "/".
+      */
     object MATCHED {
         def unapply(pathSegment: String): Boolean = {
             pathSegment eq null
@@ -89,11 +85,11 @@ trait URIsMatcher {
     case class /(matcher: PartialFunction[String, URIMatcher]) extends URIMatcher {
 
         /**
-         * @param trailingPath A valid URI path (or the yet unmatched part of the path of an URI).
-         * 		The trailingPath is either null or is a string that starts with a "/".
-         * 		The semantics of null is that the complete path was matched; i.e., there
-         * 		is no remaining part.
-         */
+          * @param trailingPath A valid URI path (or the yet unmatched part of the path of an URI).
+          * 		The trailingPath is either null or is a string that starts with a "/".
+          * 		The semantics of null is that the complete path was matched; i.e., there
+          * 		is no remaining part.
+          */
         def apply(trailingPath: String): Option[(String) ⇒ Option[Handler]] = {
             if (trailingPath == null)
                 return {
@@ -106,7 +102,7 @@ trait URIsMatcher {
                 }
 
             if (trailingPath.charAt(0) != '/')
-                throw new IllegalArgumentException("The provided path: \"" + trailingPath + "\" is invalid; it must start with a /.")
+                throw new IllegalArgumentException("The provided path: \""+trailingPath+"\" is invalid; it must start with a /.")
 
             val path = trailingPath.substring(1) // we truncate the trailing "/"
             val separatorIndex = path.indexOf('/')
@@ -144,7 +140,8 @@ trait URIsMatcher {
                     val splitUpQuery = org.dorest.server.utils.URIUtils.decodeRawURLQueryString(query)
                     if (matcher.isDefinedAt(splitUpQuery)) {
                         Some(matcher(splitUpQuery))
-                    } else {
+                    }
+                    else {
                         None
                     }
                 })
@@ -198,8 +195,8 @@ trait URIsMatcher {
     //
 
     /**
-     * Use STRING(s) to match a path segment that is non-empty.
-     */
+      * Use STRING(s) to match a path segment that is non-empty.
+      */
     object STRING {
         def apply(key: String): KeyValueMatcher[String] = (
             key,
@@ -232,7 +229,8 @@ trait URIsMatcher {
             else
                 try {
                     Some(java.lang.Long.parseLong(string, 10))
-                } catch {
+                }
+                catch {
                     case e: NumberFormatException ⇒ None
                     case e                        ⇒ throw e;
                 }
@@ -259,7 +257,8 @@ trait URIsMatcher {
             else
                 try {
                     Some(java.lang.Integer.parseInt(pathSegment, 10))
-                } catch {
+                }
+                catch {
                     case e: NumberFormatException ⇒ None
                     case e                        ⇒ throw e;
                 }
