@@ -19,29 +19,30 @@ import java.nio.charset.Charset
 import java.io.OutputStream
 
 /**
- * Encapsulates a response's body.
- *
- * @author Michael Eichberg
- */
+  * Encapsulates a response's body.
+  *
+  * @author Michael Eichberg
+  */
 trait ResponseBody {
 
     /**
-     * The body's content type (and charset).
-     */
+      * The body's content type (and charset).
+      */
     def contentType: Option[(MediaType.Value, Option[Charset])]
 
     /**
-     * The number of bytes that will be send back.
-     */
+      * The number of bytes that will be send back.
+      */
     def length: Int
 
     /**
-     * Called by the DoRest framework – after sending the HTTP header – to write
-     * out the specific representation as the response's body.
-     *
-     * '''Contract'''
-     * Exactly as many bytes have to be written as specified by length.
-     */
+      * Writes out the body of the response.
+      *
+      * '''Control Flow''': Called by the DoRest framework – after sending the HTTP header – to write
+      * out the response's body.
+      *
+      * '''Contract''': Exactly as many bytes have to be written as returned by length.
+      */
     def write(responseBody: OutputStream): Unit
 }
 
