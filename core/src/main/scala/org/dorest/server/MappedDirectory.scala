@@ -32,7 +32,7 @@ class MappedDirectory(
 
     def processRequest(requestBody: ⇒ InputStream): Response = {
         if (method != GET) {
-            return new SupportedMethodsResponse(GET)
+            return SupportedMethodsResponse(GET)
         }
 
         var file = new File(baseDirectory+"/"+path)
