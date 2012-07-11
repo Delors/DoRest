@@ -47,11 +47,11 @@ class URIsMatcherTest extends FlatSpec with ShouldMatchers {
     case class MultiHandler(l: Option[Long], s: String) extends DummyHandler
 
     // some URIMatcher instance
-    val URIsMatcher = new URIsMatcher {
+    val URIsMatcher = new URIsMatcher with DoRestApp {
 
-        var factories = List[HandlerFactory]()
-
-        def register(handlerFactory: HandlerFactory) { factories = factories :+ handlerFactory }
+//        var factories = List[HandlerFactory]()
+//
+//        def register(handlerFactory: HandlerFactory) { factories = factories :+ handlerFactory }
 
     }
 
