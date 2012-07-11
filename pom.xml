@@ -55,7 +55,6 @@
 		<module>demo</module>
 	</modules>
 
-	<!-- TODO enable building the overall scaladoc -->
 	<build>
 		<pluginManagement>
 			<plugins>
