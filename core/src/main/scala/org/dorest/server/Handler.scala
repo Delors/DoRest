@@ -99,6 +99,7 @@ trait Handler {
      */
     type HTTPHeaders = {
         def getFirst(key: String): String
+        def get(key: Object):java.util.List[String]
     }
 
     /**

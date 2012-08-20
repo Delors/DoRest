@@ -1,18 +1,34 @@
 package org.dorest.server.cookies
 
 import org.dorest.server.Handler
+import scala.collection.immutable.HashMap
+import scala.collection.JavaConverters._
+import scala.collection.breakOut
+import java.io.InputStream
+import org.dorest.server.Response
 
-class Cookie {
-    protected var _value, _maxAge, _expires: String = _;
+class Cookie(val name:String, protected var _value:String) {
     def value = _value
 }
 
-class ResponseCookie extends Cookie {
+object CookieFactory{
+    def createFrom(cookiesString:String):Map[String,Cookie]={
+        cookiesString.split(";").map ( { case cookiePair =>
+            val pair=cookiePair.split("=")
+            val name=pair(0).trim
+            val value=pair(1).trim
+            name -> new Cookie(name,value)
+        })(breakOut)
+    }
+}
 
-    def value(newValue: String) = {
+class ResponseCookie(name:String) extends Cookie(name,"") {
+	protected var _name, _maxAge, _expires: String = _;
+    
+    def value(newValue: String) : ResponseCookie= {
         this._value = newValue
         ResponseCookie.this
-    }
+    }    
 
     def maxAge(maxAge: String) = {
         _maxAge = maxAge
@@ -25,16 +41,49 @@ class ResponseCookie extends Cookie {
     }
 }
 
-trait Cookies {
-    self: Handler =>
+trait Dummy
 
-    def setCookie( cookieName: String ) = { new ResponseCookie() }
+trait Cookies extends Dummy with Handler{
+    var responseCookies:Map[String,ResponseCookie]=new HashMap
+    
+    lazy val requestCookies:Map[String,Cookie]={
+        val cookiesString=requestHeaders.getFirst("Cookie")
+        if(cookiesString==null){
+            new HashMap
+        }else{
+            CookieFactory createFrom cookiesString
+        }
+    }
+    
 
     def cookie(cookieName: String): Option[Cookie] = {
-        val cookie = requestHeaders.getFirst(cookieName)
-        if (cookie == null || cookie.isEmpty)
-            None
-        else
-            Some(new Cookie)
+        requestCookies.get(cookieName)
+    }
+    
+    def cookies = requestCookies.values
+    
+    object set{
+        def cookie(name:String) : ResponseCookie = {
+	        if(responseCookies.contains(name))
+	        	responseCookies.get(name).get
+	        else{
+	            var cookie = new ResponseCookie(name)
+	        	responseCookies=responseCookies.+( (name , cookie))
+	        	cookie
+	        }
+        }
+    }
+    
+    override abstract def processRequest(requestBody: => InputStream): Response = {
+        def serializeCookie(cookie:Cookie)={
+            cookie.name+"="+cookie.value
+        }
+        
+        val response:Response=super.processRequest(requestBody)
+        
+        responseCookies.foreach{case (name,cookie) => 
+            response.headers.set("Set-Cookie", serializeCookie(cookie))
+        }
+        response
     }
 }

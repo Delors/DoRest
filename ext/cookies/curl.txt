@@ -1,0 +1,1 @@
+curl --cookie "vorname=a;nachname=b" http://localhost:9000/cookieecho -i
