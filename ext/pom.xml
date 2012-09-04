@@ -28,6 +28,7 @@
 		<module>client</module>
 		<module>stream</module>
 		<module>multipart</module>
+		<module>cookies</module>
 	</modules>
 
 	<dependencyManagement>
