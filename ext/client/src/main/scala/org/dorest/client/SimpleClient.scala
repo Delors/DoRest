@@ -120,6 +120,15 @@ class Response(private val response: HttpResponse) {
 
   def body: String = new String(bytes, "UTF-8")
 
+  def headers(name:String):Array[String] = {
+      val headers=response.getHeaders(name)
+      if(headers==null){
+          new Array[String](0)
+      }else{
+    	  headers.map(header => header.getValue)
+      }      
+  }
+  
 }
 
 abstract class Auth {

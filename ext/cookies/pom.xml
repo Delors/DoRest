@@ -16,6 +16,11 @@
 			<groupId>org.dorest</groupId>
 			<artifactId>org.dorest.core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.dorest</groupId>
+			<artifactId>org.dorest.ext.client</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
