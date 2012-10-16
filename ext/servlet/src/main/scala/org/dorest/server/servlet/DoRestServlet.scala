@@ -20,6 +20,8 @@ import javax.servlet.http._
 import org.dorest.server._
 import scala.collection.mutable.Buffer
 import org.dorest.server.log.Logger
+import java.util.List
+import java.util.ArrayList
 
 /**
  * We have a static registry for servlets.
@@ -73,6 +75,14 @@ class DoRestServlet extends javax.servlet.http.HttpServlet with DoRestServer {
           handler.requestHeaders = new Object {
             def getFirst(key: String): String = {
               req.getHeader(key)
+            }
+            def get(key: Object):java.util.List[String]={
+                val headers=req.getHeaders(key.toString)
+                var result:List[String]=new ArrayList
+                while(headers.hasMoreElements){
+                    result.add(headers.nextElement)
+                }
+                result
             }
           }
 

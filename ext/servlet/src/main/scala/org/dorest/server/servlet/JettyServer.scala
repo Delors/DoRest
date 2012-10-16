@@ -17,7 +17,6 @@ package org.dorest.server
 package servlet
 
 import java.util.ArrayList
-
 import org.dorest.server.HandlerFactory
 import org.dorest.server.DoRestServer
 import org.dorest.server.log.Logger
@@ -29,8 +28,8 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.servlet.ServletMapping
-
 import log.Logging
+import org.dorest.server.rest.URIsMatcher
 
 /**
  * Serves the DoRestServlet.
@@ -38,7 +37,7 @@ import log.Logging
  * @author Michael Eichberg
  * @author Mateusz Parzonka
  */
-class JettyServer(val port: Int) extends DoRestServer {
+class JettyServer(val port: Int) extends DoRestServer with DoRestApp with URIsMatcher{
 
   private val logger = Logger(classOf[JettyServer])
 
@@ -108,7 +107,7 @@ class JettyServer(val port: Int) extends DoRestServer {
   /**
    * Delegated to the global registry.
    */
-  def register(handlerFactory: HandlerFactory) {
+  override def register(handlerFactory: HandlerFactory) {
     DoRestServlet.register(handlerFactory)
   }
 

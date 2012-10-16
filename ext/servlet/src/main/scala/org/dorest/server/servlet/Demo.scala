@@ -25,7 +25,7 @@ import utils._
 
 /** After the start go to: "http://localhost:8080/time"
   */
-object TimeServer extends JettyServer(8080) with URIsMatcher {
+object TimeServer extends JettyServer(8080){
 
     addMatcher { // we match the entire path in one step
         case ("/time", _) ⇒ new Time() with PerformanceMonitor
