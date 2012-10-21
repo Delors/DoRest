@@ -24,6 +24,11 @@ import scala.collection.mutable.MultiMap
 import org.dorest.server.Handler
 import org.dorest.server.Response
 
+/**
+ * Represents a cookie send to a web server according to <a href="http://tools.ietf.org/html/rfc6265">rfc6265</a>.
+ * 
+ * @author Andreas Frankenberger
+ */
 class Cookie(val name: String, protected var _value:String="") {
     Ensure(name!=null,"The cookie name must not be null")
     Ensure(name.length>0,"The cookie name must not be empty")
@@ -48,13 +53,17 @@ object Ensure{
     def apply(test:Boolean, msg:String)=if(!test) throw new IllegalArgumentException(msg)
 }
 
+/**
+ * Represents a cookie servers send to clients according to <a href="http://tools.ietf.org/html/rfc6265">rfc6265</a>.
+ * @author Andreas Frankenberger
+ */
 class ResponseCookie(name:String) extends Cookie(name) {
     Ensure(containsOnlyCharsWithoutCTLs(name),"The cookie name must not contain controls")
     Ensure(!containsSeperators(name),"The cookie name must not contain seperators")
     
     
     
-    def containsSeperators(testString:String)={
+    protected def containsSeperators(testString:String)={
         val seperators="()<>@,;:\\\"/[]?={} "
         testString.forall(char=>            
             seperators.contains(char))
@@ -70,6 +79,10 @@ class ResponseCookie(name:String) extends Cookie(name) {
 
     val attributes = List(_expires, _maxAge, _domain, _path, _secure, _httpOnly, _extension)
 
+    /**
+     * Sets the value of a cookie. The value must not contain any control characters,  "',;\" or blanks.
+     * The value may start and end with double quotes, but must not contain double quotes in between.
+     */
     def value(newValue: String): ResponseCookie = {
         val testValue=if(startsAndEndsWithDoubleQuote(newValue))
             newValue.substring(1).substring(0, newValue.length-2)
@@ -87,41 +100,60 @@ class ResponseCookie(name:String) extends Cookie(name) {
         ResponseCookie.this
     }
     
-    def startsAndEndsWithDoubleQuote(testString:String)={
+    protected def startsAndEndsWithDoubleQuote(testString:String)={
         testString.length()>1 && (testString startsWith("\"")) && (testString endsWith("\""))
     }
 
+    /**
+     * Sets the maximum age of the cookie. It must be a value >0.
+     */
     def maxAge(maxAge: Int) = {
         Ensure(maxAge>0,"The Max-Age attribute must be >0")
         _maxAge set maxAge
         ResponseCookie.this
     }
 
+    /**
+     * Sets the expire date of the cookie.
+     */
     def expires(expires: Date) = {
         _expires set expires
         ResponseCookie.this
     }
 
+    /**
+     * Sets the domain attribute of the cookie. The domain must only contain the characters a-z, A-Z, 0-9, "-" and "/".
+     */
     def domain(domain: String) = {
         Ensure(DomainMatcher.isDomain(domain),domain + " is not a valid domain")
         _domain set domain
         this
     }
     
-    def isControlCharacter(testChar:Char)=testChar<=0x1F || testChar==0x7F
+    protected def isControlCharacter(testChar:Char)=testChar<=0x1F || testChar==0x7F
     
-    def containsOnlyCharsWithoutCTLs(testString:String)={
+    protected def containsOnlyCharsWithoutCTLs(testString:String)={
         testString.forall(char =>
                 !isControlCharacter(char))
     }
     
+    /**
+     * Sets the path attribute of the cookie. 
+     */
     def path(path:String)={
-        Ensure(containsOnlyCharsWithoutCTLs(path) && !path.contains(";"),"a path must not contain controls or ';'")
+        Ensure(containsOnlyCharsWithoutCTLs(path) && !path.contains(";"),"A path must not contain controls or ';'")
         _path set path
         this
     }
     
+    /**
+     * Limits the cookie to secure channels.
+     */
     def secure:ResponseCookie = secure(true);
+    
+    /**
+     * Limits the cookie to secure channels.
+     */
     def secure(active:Boolean)={
         _secure set active
         this
