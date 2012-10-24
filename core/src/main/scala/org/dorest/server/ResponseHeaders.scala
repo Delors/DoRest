@@ -43,6 +43,12 @@ trait ResponseHeaders extends Traversable[(String, String)] {
       * @param value The value of the response header; e.g., "10021" in case of the "age" response header field.
       */
     def set(field: String, value: String): this.type
+    
+    /**
+     * Removes a field from the header.
+     * @param field The name of the field that will be removed from the header
+     */
+    protected def remove(field:String):this.type
 
     /**
       * Sets the Accept-Ranges header field.
@@ -53,6 +59,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
         require(acceptableRanges ne null)
         require(acceptableRanges.length > 0)
 
+        remove("accept-ranges")
         set("accept-ranges", acceptableRanges)
         this
     }
@@ -65,6 +72,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
     def setAge(timeInSecs: Long): this.type = {
         require(timeInSecs >= 0)
 
+        remove("age")
         set("age", String.valueOf(timeInSecs))
         this
     }
@@ -86,6 +94,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
     def setAllow(methods: Traversable[HTTPMethod]): this.type = {
         require(methods.toSet.size == methods.size)
 
+        remove("allow")
         set("allow", methods.mkString(", "))
         this
     }
@@ -113,6 +122,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
     def setContentLanguage(languageTags: Traversable[java.util.Locale]): this.type = {
         require(languageTags.size > 0)
 
+        remove("content-language")
         set(
             "content-language",
             (localeToLanguageTag(languageTags.head) /: languageTags.tail)(_ + (", ") + localeToLanguageTag(_))

@@ -14,55 +14,53 @@
    limitations under the License.
  */
 package org.dorest.server
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.MultiMap
+import scala.collection.mutable.Set
 
 /**
  * Map based implementation of the ResponseHeaders trait.
  *
  * @author Michael Eichberg
  */
-class DefaultResponseHeaders(private var headers: Map[String, String] = Map()) extends ResponseHeaders {
-
+class DefaultResponseHeaders(private var headers: MultiMap[String, String] = new HashMap[String, Set[String]] with MultiMap[String, String]) extends ResponseHeaders {
 
     def this(header: Tuple2[String, String]) {
-        this(Map() + header)
+        this()
+        headers.addBinding(header._1, header._2)
     }
 
     def this(headers: List[Tuple2[String, String]]) {
-        this(Map() ++ headers)
+        this()
+        headers.foreach { case (first, second) => this.headers.addBinding(first, second) }
     }
 
     def set(field: String, value: String): this.type = {
-        headers = headers.updated(field, value)
+        headers.addBinding(field, value)
         this
     }
 
     def foreach[U](f: ((String, String)) ⇒ U) {
-        headers.foreach(f)
+        headers.foreach { case (key, values) => values.foreach(value => f(key, value)) }
     }
 
-    def apply(field: String): String = {
+    def apply(field: String): Set[String] = {
         headers(field)
     }
 
-    def get(field: String): Option[String] = {
+    def get(field: String): Option[Set[String]] = {
         headers.get(field)
+    }
+    
+    def remove(field:String)={
+        headers.remove(field)
+        this
     }
 }
 
 object DefaultResponseHeaders {
 
-    def apply(headers: (String, String)*): DefaultResponseHeaders = new DefaultResponseHeaders(headers.toMap)
+    def apply(headers: (String, String)*): DefaultResponseHeaders = new DefaultResponseHeaders(headers.toList)
 
 }
-
-
-
-
-
-
-
-
-
-
-
 

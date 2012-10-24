@@ -81,7 +81,7 @@ trait CommonJDKServer[S <: HttpServer] extends DoRestServer with DoRestApp with 
                                         val length = body.length
                                         response.headers.foreach((header) ⇒ {
                                             val (key, value) = header;
-                                            t.getResponseHeaders().set(key, value)
+                                            t.getResponseHeaders().add(key, value)
                                         })
                                         sendResponseHeaders(t, response.code, length);
                                         if (length > 0) {
@@ -91,7 +91,7 @@ trait CommonJDKServer[S <: HttpServer] extends DoRestServer with DoRestApp with 
                                     case None ⇒ {
                                         response.headers.foreach((header) ⇒ {
                                             val (key, value) = header;
-                                            t.getResponseHeaders().set(key, value)
+                                            t.getResponseHeaders().add(key, value)
                                         })
                                         sendResponseHeaders(t, response.code, -1);
                                     }

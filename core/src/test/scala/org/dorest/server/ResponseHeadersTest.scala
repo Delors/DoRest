@@ -37,19 +37,27 @@ class ResponseHeadersTest extends FlatSpec with ShouldMatchers with BeforeAndAft
     }
 
     "setAcceptRanges" should "set the Accept-Ranges response header" in {
-        responseHeaders.setAcceptRanges("bytes")("accept-ranges") should be ("bytes")
+        responseHeaders.setAcceptRanges("bytes")("accept-ranges") should be (Set("bytes"))
+    }
+    
+    it should "not defined fields twice" in {
+        responseHeaders.setAcceptRanges("bytes1")
+        responseHeaders.setAcceptRanges("bytes2")("accept-ranges") should be (Set("bytes2"))
     }
 
     "setAge" should "set the Age response header" in {
-        responseHeaders.setAge(1000l)("age") should be ("1000")
+        responseHeaders.setAge(1000l)("age") should be (Set("1000"))
+        responseHeaders.setAge(2000l)("age") should be (Set("2000"))
     }
 
     "setAllow" should "set the Allow response header" in {
-        responseHeaders.setAllow(GET,OPTIONS)("allow") should be ("GET, OPTIONS")
+        responseHeaders.setAllow(GET,OPTIONS)("allow") should be (Set("GET, OPTIONS"))
+        responseHeaders.setAllow(POST,OPTIONS)("allow") should be (Set("POST, OPTIONS"))
     }
 
     "setContentLanguage" should "set the Content-Language response header" in {
         import java.util.Locale._
-        responseHeaders.setContentLanguage(GERMAN,UK)("content-language") should be ("de, en-GB")
+        responseHeaders.setContentLanguage(GERMAN,UK)("content-language") should be (Set("de, en-GB"))
+        responseHeaders.setContentLanguage(UK)("content-language") should be (Set("en-GB"))
     }
 }
