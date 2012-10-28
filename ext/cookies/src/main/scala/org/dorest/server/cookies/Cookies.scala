@@ -153,13 +153,22 @@ class ResponseCookie(name:String) extends Cookie(name) {
     
     /**
      * Limits the cookie to secure channels.
+     * @param active true activates this attribute, false deactivates it.
      */
     def secure(active:Boolean)={
         _secure set active
         this
     }
 
+    /**
+     * Limits the scope of the cookie to http requests only.
+     */
     def httpOnly:ResponseCookie = httpOnly(true);
+    
+    /**
+     * Limits the scope of the cookie to http requests only.
+     * @param active true activates this attribute, false deactivates it.
+     */
     def httpOnly(active:Boolean)={
         _httpOnly set active
         this
@@ -180,6 +189,11 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
 }
 
+/**
+ * This trait is used to create response cookies.
+ * 
+ * @author Andreas Frankenberger
+ */
 trait ResponseCookies {
     var responseCookies: collection.Map[String, ResponseCookie] = new HashMap
 
@@ -196,9 +210,15 @@ trait ResponseCookies {
     }
 }
 
+/**
+ * Adds cookie support to REST Handlers.
+ * This trait supports setting response cookies and accessing request cookies.
+ * 
+ * @author Andreas Frankenberger
+ */
 trait Cookies extends ResponseCookies with Handler {
 
-    lazy val requestCookies: MultiMap[String, Cookie] = {
+    private lazy val requestCookies: MultiMap[String, Cookie] = {
         val cookiesString = requestHeaders.getFirst("Cookie")
         if (cookiesString == null) {
             new HashMap[String, collection.mutable.Set[Cookie]] with MultiMap[String, Cookie]
@@ -207,6 +227,11 @@ trait Cookies extends ResponseCookies with Handler {
         }
     }
 
+    /**
+     * Returns a collection of cookies with the given name.
+     * @param cookieName the name of the cookies
+     * @return a collection of cookies with the given name or an emtpy list if no one can be found.
+     */
     def cookie(cookieName: String): collection.Set[Cookie] = {
         requestCookies.get(cookieName).getOrElse(new collection.mutable.HashSet[Cookie]())
     }
