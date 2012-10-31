@@ -240,7 +240,7 @@ trait Cookies extends ResponseCookies with Handler {
 
     override abstract def processRequest(requestBody: => InputStream): Response = {
         def serializeCookie(cookie: Cookie) = {
-            cookie.name + "=" + cookie.value
+            cookie.toString()
         }
 
         val response: Response = super.processRequest(requestBody)
