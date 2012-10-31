@@ -28,7 +28,7 @@ import java.io._
  */
 class Redirect(val location: String) extends Handler {
 
-    val response = new PlainResponse(303) { headers.set("Location", location) }
+    val response = new PlainResponse(303) { headers.add("Location", location) }
 
     def processRequest(requestBody: ⇒ InputStream) = {
         // we actually don't process the request at all
@@ -42,7 +42,7 @@ abstract class DynamicRedirect extends Handler {
 
     private def response(): Response = {
         location match {
-            case Some(l) ⇒ new PlainResponse(303) { headers.set("Location", l) }
+            case Some(l) ⇒ new PlainResponse(303) { headers.add("Location", l) }
             case None    ⇒ NotFoundResponse
         }
     }

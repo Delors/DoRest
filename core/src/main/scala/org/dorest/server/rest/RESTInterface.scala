@@ -281,6 +281,6 @@ trait RESTInterface extends Handler {
      *
      */
     final def Location(location: URL) {
-        responseHeaders.set("Location", location.toString) // TODO figure out which is the correct encoding
+        responseHeaders.add("Location", location.toString) // TODO figure out which is the correct encoding
     }
 }

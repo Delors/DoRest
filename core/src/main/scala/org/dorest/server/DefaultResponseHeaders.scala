@@ -35,7 +35,7 @@ class DefaultResponseHeaders(private var headers: MultiMap[String, String] = new
         headers.foreach { case (first, second) => this.headers.addBinding(first, second) }
     }
 
-    def set(field: String, value: String): this.type = {
+    def add(field: String, value: String): this.type = {
         headers.addBinding(field, value)
         this
     }

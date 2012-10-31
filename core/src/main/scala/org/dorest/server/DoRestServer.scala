@@ -29,15 +29,15 @@ trait DoRestServer {
         responseBody.contentType match {
             case Some((mediaType, None)) => {
                 val contentType = mediaType.toString
-                responseHeaders.set("Content-Type", contentType)
+                responseHeaders.add("Content-Type", contentType)
             }
             case Some((mediaType, Some(charset))) => {
                 val contentType = mediaType.toString + "; charset=" + charset.displayName
-                responseHeaders.set("Content-Type", contentType)
+                responseHeaders.add("Content-Type", contentType)
             }
             case _ => /*OK*/
         }
-        responseHeaders.set("Content-Length", responseBody.length.toString)
+        responseHeaders.add("Content-Length", responseBody.length.toString)
     }
 
 }

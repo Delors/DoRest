@@ -22,7 +22,7 @@ import org.dorest.server.ErrorResponse
  */
 class UnauthorizedDigestResponse(realm: String, qop: String, nonce: String, opaque: String, stale: Boolean) extends ErrorResponse(401, "Authorization required.") {
 
-  headers.set("WWW-Authenticate", "Digest realm=\"" + realm + "\", " +
+  headers.add("WWW-Authenticate", "Digest realm=\"" + realm + "\", " +
     "qop=\"" + qop + "\", " +
     "nonce=\"" + nonce + "\", " +
     "stale=\"" + stale + "\"," +

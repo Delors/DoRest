@@ -21,7 +21,7 @@ package auth
   */
 class UnauthorizedBasicResponse(realm: String) extends ErrorResponse(401, "Authorization required.") {
 
-    headers.set("WWW-Authenticate", "Basic realm=\"" + realm + "\", ")
+    headers.add("WWW-Authenticate", "Basic realm=\"" + realm + "\", ")
     // TODO define/use headers.setWWWAuthenticate
 
 }

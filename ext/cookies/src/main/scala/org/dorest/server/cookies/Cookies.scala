@@ -247,7 +247,7 @@ trait Cookies extends ResponseCookies with Handler {
 
         responseCookies.foreach {
             case (name, cookie) =>
-                response.headers.set("Set-Cookie", serializeCookie(cookie))
+                response.headers.add("Set-Cookie", serializeCookie(cookie))
         }
         response
     }

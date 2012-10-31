@@ -27,7 +27,7 @@ import scala.collection.Traversable
 trait ResponseHeaders extends Traversable[(String, String)] {
 
     /**
-      * Sets the value (value) of the specified response/entity header (field).
+      * Adds the value (value) of the specified response/entity header (field).
       *
       * If this method is directly used, it is
       * the responsibility of the caller to make sure that the value is valid.
@@ -42,7 +42,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
       * @param field The name of the response header; e.g., "age".
       * @param value The value of the response header; e.g., "10021" in case of the "age" response header field.
       */
-    def set(field: String, value: String): this.type
+    def add(field: String, value: String): this.type
     
     /**
      * Removes a field from the header.
@@ -60,7 +60,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
         require(acceptableRanges.length > 0)
 
         remove("accept-ranges")
-        set("accept-ranges", acceptableRanges)
+        add("accept-ranges", acceptableRanges)
         this
     }
 
@@ -73,7 +73,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
         require(timeInSecs >= 0)
 
         remove("age")
-        set("age", String.valueOf(timeInSecs))
+        add("age", String.valueOf(timeInSecs))
         this
     }
 
@@ -95,7 +95,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
         require(methods.toSet.size == methods.size)
 
         remove("allow")
-        set("allow", methods.mkString(", "))
+        add("allow", methods.mkString(", "))
         this
     }
 
@@ -123,7 +123,7 @@ trait ResponseHeaders extends Traversable[(String, String)] {
         require(languageTags.size > 0)
 
         remove("content-language")
-        set(
+        add(
             "content-language",
             (localeToLanguageTag(languageTags.head) /: languageTags.tail)(_ + (", ") + localeToLanguageTag(_))
         )
