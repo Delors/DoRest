@@ -26,10 +26,13 @@ class NameResource extends RESTInterface with HTMLSupport with Cookies{
 	}
 }
 
-class SetNameResource(var userName:String) extends RESTInterface with HTMLSupport with Cookies{
+class SetNameResource extends RESTInterface with HTMLSupport with Cookies{
   get returns HTML{
-    set cookie "name" value userName path "/index"
-    ""
+    val query=this.requestURI.getQuery()
+    
+    val name=query.substring(query.indexOf("=")+1)
+    set cookie "name" value name path "/index" maxAge 60
+    <html><body><a href="/index">Return to main page</a></body></html>.toString
   }
 }
 
@@ -41,8 +44,7 @@ object GreetingDemo extends JDKServer(9011)
     addURIMatcher(
         / { case MATCHED() => new NameResource
         case "index" => new NameResource
-        case "setname" => / { case STRING(name) => new SetNameResource(name)
-        	}
+        case "setname" => new SetNameResource
         }
     )
 

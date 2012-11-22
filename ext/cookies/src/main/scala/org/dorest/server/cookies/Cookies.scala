@@ -105,7 +105,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
 
     /**
-     * Sets the maximum age of the cookie. It must be a value >0.
+     * Sets the maximum age in seconds of the cookie. It must be a value >0.
      */
     def maxAge(maxAge: Int) = {
         Ensure(maxAge>0,"The Max-Age attribute must be >0")
