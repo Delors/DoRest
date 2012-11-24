@@ -230,7 +230,7 @@ trait Cookies extends ResponseCookies with Handler {
     /**
      * Returns a collection of cookies with the given name.
      * @param cookieName the name of the cookies
-     * @return a collection of cookies with the given name or an emtpy list if no one can be found.
+     * @return a collection of cookies with the given name or an empty list if no one can be found.
      */
     def cookie(cookieName: String): collection.Set[Cookie] = {
         requestCookies.get(cookieName).getOrElse(new collection.mutable.HashSet[Cookie]())
