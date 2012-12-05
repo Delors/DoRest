@@ -17,12 +17,14 @@ package org.dorest.server.cookies
 
 import java.io.InputStream
 import java.util.Date
-
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.MultiMap
-
 import org.dorest.server.Handler
 import org.dorest.server.Response
+import java.net.URLEncoder
+import java.net.URLDecoder
+import org.dorest.server.log.ConsoleLogging
+import org.dorest.server.log.WARN
 
 /**
  * Represents a cookie send to a web server according to <a href="http://tools.ietf.org/html/rfc6265">rfc6265</a>.
@@ -33,19 +35,35 @@ class Cookie(val name: String, protected var _value:String="") {
     Ensure(name!=null,"The cookie name must not be null")
     Ensure(name.length>0,"The cookie name must not be empty")
     def value = _value
+    
+    
+    override def toString ={
+        "Cookie [ name="+name+ " _value="+_value+"]"
+    }
 }
 
-object CookieFactory {
+object CookieFactory extends ConsoleLogging {
     def createFrom(cookiesString: String): MultiMap[String, Cookie] = {
         var result = new HashMap[String, collection.mutable.Set[Cookie]] with MultiMap[String, Cookie]
-        cookiesString.split(";").foreach(cookiePair => {
-            val pair = cookiePair.split("=")
-            val name = pair(0).trim
-            val value = pair(1).trim
-
-            result.addBinding(name, new Cookie(name, value))
-        })
+        cookiesString.split(";").foreach(cookiePair => 
+          addToMap(result, cookiePair)
+        )
         result
+    }
+  
+    private def addToMap(result: scala.collection.mutable.HashMap[String,scala.collection.mutable.Set[org.dorest.server.cookies.Cookie]] with scala.collection.mutable.MultiMap[String,org.dorest.server.cookies.Cookie], cookiePair: java.lang.String):Unit= {
+      
+      val pair = cookiePair.split("=")
+      if(pair.length!=2){
+          log(WARN)("Invalid cookie string: "+cookiePair)
+          return
+      }
+          
+      val name = pair(0).trim
+      val rawValue=pair(1).trim
+      val value = if(rawValue.size>0) URLDecoder.decode(rawValue,"UTF-8") else ""
+
+      result.addBinding(name, new Cookie(name, value))
     }
 }
 
@@ -80,22 +98,9 @@ class ResponseCookie(name:String) extends Cookie(name) {
     val attributes = List(_expires, _maxAge, _domain, _path, _secure, _httpOnly, _extension)
 
     /**
-     * Sets the value of a cookie. The value must not contain any control characters,  "',;\" or blanks.
-     * The value may start and end with double quotes, but must not contain double quotes in between.
+     * Sets the value of a cookie. The value will be encoded for transmission.
      */
-    def value(newValue: String): ResponseCookie = {
-        val testValue=if(startsAndEndsWithDoubleQuote(newValue))
-            newValue.substring(1).substring(0, newValue.length-2)
-        else
-            newValue
-            
-        Ensure(!testValue.contains("\""),"The cookie value must not contain double quotes except if it starts and end with")
-        Ensure(!testValue.contains(","),"The cookie value must not contain \",\"")
-        Ensure(!testValue.contains(";"),"The cookie value must not contain \";\"")
-        Ensure(!testValue.contains(" "),"The cookie value must not contain \" \"")
-        Ensure(!testValue.contains("\\"),"The cookie value must not contain \"\\\"")
-        Ensure(containsOnlyCharsWithoutCTLs(testValue),"The cookie value must not contain controls")
-            
+    def value(newValue: String): ResponseCookie = {            
         this._value = newValue
         ResponseCookie.this
     }
@@ -181,7 +186,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
     
     override def toString = {
-        var result = name + "=" + _value
+        var result = name + "=" + URLEncoder.encode(_value,"UTF-8")
         var stringAttributes = for (attribute <- attributes if !attribute.value.isEmpty) yield attribute.toString
         if (!stringAttributes.isEmpty)
             result += "; " + stringAttributes.reduceLeft(_ + "; " + _)
@@ -197,7 +202,14 @@ class ResponseCookie(name:String) extends Cookie(name) {
 trait ResponseCookies {
     var responseCookies: collection.Map[String, ResponseCookie] = new HashMap
 
+    /**
+     * Registers new cookies
+     */
     object set {
+        /**
+         * @param name the name of the cookie will be encoded.
+         * @return
+         */
         def cookie(name: String): ResponseCookie = {
             if (responseCookies.contains(name))
                 responseCookies.get(name).get

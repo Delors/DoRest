@@ -38,41 +38,26 @@ class ResponseCookieTest extends FlatSpec with ShouldMatchers with BeforeAndAfte
     "The cookie" should "be a name-value pair" in {
         cookie.value("value");
         cookie.toString should include("name=value")
+    }
+    
+    it should "encode its value" in {
+        cookie.value("a b")
+        cookie.toString should include("name=a+b")
+        
         cookie.value("\"value\"");
-        cookie.toString should include("name=\"value\"")
-    }
-    
-    it should "reject values that include double quotes except if the actual value is quoted" in {        
-        intercept[IllegalArgumentException]{
-            cookie.value("\"")
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value("ab\"c")
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value("\"ab\"c\"")
-        }
-    }
-    
-    it should "reject values that include controls, comma, semicolon, whitespace and backslash" in {
-        intercept[IllegalArgumentException]{
-            cookie.value(0x7F.toChar.toString);
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value(0x1F.toChar.toString);
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value(",")
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value(";")
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value("\\")
-        }
-        intercept[IllegalArgumentException]{
-            cookie.value("a b")
-        }
+        cookie.toString should include("name=%22value%22")
+        cookie.value("\"ab\"c\"");
+        cookie.toString should include("name=%22ab%22c%22")
+        
+        cookie.value(";")
+        cookie.toString should include("name=%3B")
+        cookie.value("\\")
+        cookie.toString should include("name=%5C")
+        cookie.value(",")
+        cookie.toString should include("name=%2C")
+        
+        cookie.value(0x7F.toChar.toString)
+        cookie.toString should include("name=%7F")
     }
 
     it should "expire at Sun, 06 Nov 1994 08:49:37 GMT" in {

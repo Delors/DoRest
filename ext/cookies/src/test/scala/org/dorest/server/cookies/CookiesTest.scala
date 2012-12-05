@@ -49,6 +49,13 @@ object DigestAuthTestServer extends JDKServer(9999) {
                     ""
                 }
             }
+            
+            case "encoded" => new RESTInterface with Cookies with TEXTSupport{
+                get returns TEXT {
+                    set cookie "name" value "a b"
+                    ""
+                }
+            }
         }
     )
 
@@ -85,6 +92,11 @@ class CookiesTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll{
         responseBody should include ("c1;")
         responseBody should include ("c2;")
     }
+    
+    it should "decode values" in {
+        SimpleClient.get(Map("Cookie" -> "name=a%20b"))(echoUrl+"/name").body should equal { "a b;" }
+        SimpleClient.get(Map("Cookie" -> "name=a+b"))(echoUrl+"/name").body should equal { "a b;" }
+    }
         
     "doublenamed" should "return Set-Cookie: name=value2" in {
         val headers= SimpleClient.get(Map())("http://localhost:9999/doublenamed").headers("Set-Cookie")
@@ -95,5 +107,11 @@ class CookiesTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll{
     "threecookies" should "return three Set-Cookie headers" in { 
         val headers= SimpleClient.get(Map())("http://localhost:9999/threecookies").headers("Set-Cookie")
         headers should have length(3)
+    }
+    
+    "encoded" should "encode \"a b\" to a+b" in{
+        val headers= SimpleClient.get(Map())("http://localhost:9999/encoded").headers("Set-Cookie")
+        headers should have length(1)
+        headers(0) should be ("name=a+b")
     }
 }

@@ -4,6 +4,8 @@ import org.dorest.server.jdk.JDKServer
 import org.dorest.server.log.ConsoleLogging
 import org.dorest.server.rest.RESTInterface
 import org.dorest.server.rest.HTMLSupport
+import org.dorest.server.log.INFO
+import java.net.URLDecoder
 
 
 /**
@@ -34,6 +36,7 @@ object GreetingDemo extends JDKServer(9011)
         })
 
     start()
+    logger.info("Service available at http://localhost:9011/index")
 
 }
 
@@ -91,7 +94,7 @@ class SetNameResource extends RESTInterface with HTMLSupport with Cookies {
     }
     
     def extractNameFromUrl={
-        val query = this.requestURI.getQuery()
+        val query = URLDecoder.decode(this.requestURI.getQuery(),"UTF-8")
         query.substring(query.indexOf("=") + 1)
     }
 }
