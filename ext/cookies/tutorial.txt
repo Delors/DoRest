@@ -1,0 +1,41 @@
+- Overview
+This text describes how to use cookies in your DoRest application.
+
+- Required package
+Maven:
+
+<dependency>
+	<groupId>org.dorest</groupId>
+	<artifactId>org.dorest.ext.cookies</artifactId>
+</dependency>
+
+- How to use
+The cookies package helps you to read cookies from the html request and supports setting new cookies.
+
+Therefore, add the Cookies trait to your RESTInterface.
+
+	class NameResource extends RESTInterface with Cookies
+	
+Now two different types of cookies are accessible within your RESTInterface:
+	Request Cookies - Sent from the client to your application
+	Response Cookies - Sent from your application to the client
+
+Set Cookies
+You can set new cookies within the request handlers. Therefore, call "set cookie <name> value <value> <additional parameters".
+
+class SetNameResource extends RESTInterface with HTMLSupport with Cookies {
+    get returns HTML {
+        //the user name is given as get parameter. Extract it from the request url.
+        val name = extractNameFromUrl
+        
+        //now set a cookie with the extracted name
+        set cookie "name" value name path "/index" maxAge 60
+        
+Receive cookies
+
+The cookies send by the client are available via cookie <name> or cookies for all available cookies.
+
+class NameResource extends RESTInterface with HTMLSupport with Cookies {
+    get returns HTML {
+        //try to find the cookie that contains the user name
+        val nameCookie = cookie("name")
