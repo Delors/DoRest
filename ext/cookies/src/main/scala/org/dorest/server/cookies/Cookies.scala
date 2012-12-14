@@ -32,7 +32,7 @@ import org.dorest.server.log.WARN
  * 
  * @author Andreas Frankenberger
  */
-class Cookie(val name: String, protected var _value:String="") {
+class Cookie(protected val name: String, protected var _value:String="") {
     Ensure(name!=null,"The cookie name must not be null")
     Ensure(name.length>0,"The cookie name must not be empty")
     def value = _value
@@ -88,15 +88,15 @@ class ResponseCookie(name:String) extends Cookie(name) {
             seperators.contains(char))
     }
     
-    var _expires = new DateAttribute("Expires")
-    var _maxAge = new Attribute[Int]("Max-Age")
-    var _domain= new Attribute[String]("Domain")
-    var _path=new Attribute[String]("Path");
-    var _secure=new FlagAttribute("Secure");
-    var _httpOnly=new FlagAttribute("HttpOnly");
-    var _extension=new ExtensionAttribute
+    private val _expires = new DateAttribute("Expires")
+    private val _maxAge = new Attribute[Int]("Max-Age")
+    private val _domain= new Attribute[String]("Domain")
+    private val _path=new Attribute[String]("Path");
+    private val _secure=new FlagAttribute("Secure");
+    private val _httpOnly=new FlagAttribute("HttpOnly");
+    private val _extension=new ExtensionAttribute
 
-    val attributes = List(_expires, _maxAge, _domain, _path, _secure, _httpOnly, _extension)
+    private val attributes = List(_expires, _maxAge, _domain, _path, _secure, _httpOnly, _extension)
 
     /**
      * Sets the value of a cookie. The value will be encoded for transmission.
