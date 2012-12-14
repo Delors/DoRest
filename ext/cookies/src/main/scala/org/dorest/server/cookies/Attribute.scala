@@ -28,14 +28,14 @@ class Attribute[T](val name: String) {
         	this.value= None
     }
 
-    override def toString = name + "=" + value.get
+    def serialize = name + "=" + value.get
 }
 
 class ExtensionAttribute() extends Attribute[String](""){
-    override def toString = value.get
+    override def serialize = value.get
 }
 class DateAttribute(override val name: String) extends Attribute[Date](name) {
-    override def toString = name + "=" + formatDate(value.get)
+    override def serialize = name + "=" + formatDate(value.get)
 
     def formatDate(date: Date) = {
         val formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
@@ -51,5 +51,5 @@ class FlagAttribute(override val name: String) extends Attribute[Boolean](name){
         else
             this.value=None
     }
-    override def toString = name
+    override def serialize = name
 }

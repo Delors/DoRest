@@ -185,9 +185,9 @@ class ResponseCookie(name:String) extends Cookie(name) {
         this
     }
     
-    override def toString = {
+    def serialize = {
         var result = name + "=" + URLEncoder.encode(_value,"UTF-8")
-        var stringAttributes = for (attribute <- attributes if !attribute.value.isEmpty) yield attribute.toString
+        var stringAttributes = for (attribute <- attributes if !attribute.value.isEmpty) yield attribute.serialize
         if (!stringAttributes.isEmpty)
             result += "; " + stringAttributes.reduceLeft(_ + "; " + _)
         result
@@ -251,15 +251,11 @@ trait Cookies extends ResponseCookies with Handler {
     def cookies = requestCookies.values
 
     override abstract def processRequest(requestBody: => InputStream): Response = {
-        def serializeCookie(cookie: Cookie) = {
-            cookie.toString()
-        }
-
         val response: Response = super.processRequest(requestBody)
 
         responseCookies.foreach {
             case (name, cookie) =>
-                response.headers.add("Set-Cookie", serializeCookie(cookie))
+                response.headers.add("Set-Cookie", cookie.serialize)
         }
         response
     }

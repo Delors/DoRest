@@ -37,49 +37,49 @@ class ResponseCookieTest extends FlatSpec with ShouldMatchers with BeforeAndAfte
 
     "The cookie" should "be a name-value pair" in {
         cookie.value("value");
-        cookie.toString should include("name=value")
+        cookie.serialize should include("name=value")
     }
     
     it should "encode its value" in {
         cookie.value("a b")
-        cookie.toString should include("name=a+b")
+        cookie.serialize should include("name=a+b")
         
         cookie.value("\"value\"");
-        cookie.toString should include("name=%22value%22")
+        cookie.serialize should include("name=%22value%22")
         cookie.value("\"ab\"c\"");
-        cookie.toString should include("name=%22ab%22c%22")
+        cookie.serialize should include("name=%22ab%22c%22")
         
         cookie.value(";")
-        cookie.toString should include("name=%3B")
+        cookie.serialize should include("name=%3B")
         cookie.value("\\")
-        cookie.toString should include("name=%5C")
+        cookie.serialize should include("name=%5C")
         cookie.value(",")
-        cookie.toString should include("name=%2C")
+        cookie.serialize should include("name=%2C")
         
         cookie.value(0x7F.toChar.toString)
-        cookie.toString should include("name=%7F")
+        cookie.serialize should include("name=%7F")
     }
 
     it should "expire at Sun, 06 Nov 1994 08:49:37 GMT" in {
         cookie.expires(createDefaultDate)
-        cookie.toString should include("; Expires=Sun, 06 Nov 1994 08:49:37 GMT")
+        cookie.serialize should include("; Expires=Sun, 06 Nov 1994 08:49:37 GMT")
         cookie.expires(null)
-        cookie.toString should not include("; Expires=Sun, 06 Nov 1994 08:49:37 GMT")
+        cookie.serialize should not include("; Expires=Sun, 06 Nov 1994 08:49:37 GMT")
     }
     
     it should "have a max age of 1000 seconds" in {
         cookie.maxAge(1000)
-        cookie.toString should include ("; Max-Age=1000"); 
+        cookie.serialize should include ("; Max-Age=1000"); 
     }
     
     it should "have the domain XX.LCS.MIT.EDU" in {
         cookie.domain("XX.LCS.MIT.EDU")
-        cookie.toString should include("; Domain=XX.LCS.MIT.EDU")
+        cookie.serialize should include("; Domain=XX.LCS.MIT.EDU")
     }
     
     it should "have a path scope set to /the/path" in {
         cookie.path("/the/path")
-        cookie.toString should include("; Path=/the/path");
+        cookie.serialize should include("; Path=/the/path");
     }
     
      it should "throw excetions if the path contains controls or ';'" in {
@@ -96,21 +96,21 @@ class ResponseCookieTest extends FlatSpec with ShouldMatchers with BeforeAndAfte
     
     it should "be secure" in {
         cookie.secure
-        cookie.toString should include("; Secure");
+        cookie.serialize should include("; Secure");
         cookie.secure(false) 
-        cookie.toString should not include("; Secure")
+        cookie.serialize should not include("; Secure")
         cookie.secure(true)
-        cookie.toString should include("; Secure");
+        cookie.serialize should include("; Secure");
     }
     
     it should "be HttpOnly" in {
         cookie.httpOnly
-        cookie.toString should include("; HttpOnly");
+        cookie.serialize should include("; HttpOnly");
     }
     
     it should "have an extension string" in {
         cookie.extension("my extension")
-        cookie.toString should include("; my extension");
+        cookie.serialize should include("; my extension");
     }
     
     it should "throw excetions if the extension contains controls or ';'" in {
