@@ -16,7 +16,7 @@
 package org.dorest.server.cookies
 
 object DomainMatcher {
-    def isDomain(toBetested: String) = {
+    def isDomain(toBetested: String): Boolean = {
         if (toBetested equals " ")
             true
         else
@@ -36,5 +36,5 @@ object DomainMatcher {
         subDomains.forall(isLabel(_))
     }
 
-    def isLabel(toBeTested: String) = toBeTested.matches("""[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z\d])*""")
+    def isLabel(toBeTested: String):Boolean = toBeTested.matches("""[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z\d])*""")
 }

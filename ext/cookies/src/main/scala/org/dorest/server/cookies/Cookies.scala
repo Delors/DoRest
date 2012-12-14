@@ -19,6 +19,7 @@ import java.io.InputStream
 import java.util.Date
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.MultiMap
+import scala.collection.mutable.Set
 import org.dorest.server.Handler
 import org.dorest.server.Response
 import java.net.URLEncoder
@@ -81,7 +82,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     
     
     
-    protected def containsSeperators(testString:String)={
+    protected def containsSeperators(testString:String):Boolean={
         val seperators="()<>@,;:\\\"/[]?={} "
         testString.forall(char=>            
             seperators.contains(char))
@@ -105,14 +106,14 @@ class ResponseCookie(name:String) extends Cookie(name) {
         ResponseCookie.this
     }
     
-    protected def startsAndEndsWithDoubleQuote(testString:String)={
+    protected def startsAndEndsWithDoubleQuote(testString:String):Boolean={
         testString.length()>1 && (testString startsWith("\"")) && (testString endsWith("\""))
     }
 
     /**
      * Sets the maximum age in seconds of the cookie. It must be a value >0.
      */
-    def maxAge(maxAge: Int) = {
+    def maxAge(maxAge: Int): ResponseCookie = {
         Ensure(maxAge>0,"The Max-Age attribute must be >0")
         _maxAge set maxAge
         ResponseCookie.this
@@ -121,7 +122,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     /**
      * Sets the expire date of the cookie.
      */
-    def expires(expires: Date) = {
+    def expires(expires: Date): ResponseCookie = {
         _expires set expires
         ResponseCookie.this
     }
@@ -129,15 +130,15 @@ class ResponseCookie(name:String) extends Cookie(name) {
     /**
      * Sets the domain attribute of the cookie. The domain must only contain the characters a-z, A-Z, 0-9, "-" and "/".
      */
-    def domain(domain: String) = {
+    def domain(domain: String): ResponseCookie = {
         Ensure(DomainMatcher.isDomain(domain),domain + " is not a valid domain")
         _domain set domain
         this
     }
     
-    protected def isControlCharacter(testChar:Char)=testChar<=0x1F || testChar==0x7F
+    protected def isControlCharacter(testChar:Char):Boolean=testChar<=0x1F || testChar==0x7F
     
-    protected def containsOnlyCharsWithoutCTLs(testString:String)={
+    protected def containsOnlyCharsWithoutCTLs(testString:String):Boolean={
         testString.forall(char =>
                 !isControlCharacter(char))
     }
@@ -145,7 +146,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     /**
      * Sets the path attribute of the cookie. 
      */
-    def path(path:String)={
+    def path(path:String): ResponseCookie={
         Ensure(containsOnlyCharsWithoutCTLs(path) && !path.contains(";"),"A path must not contain controls or ';'")
         _path set path
         this
@@ -160,7 +161,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
      * Limits the cookie to secure channels.
      * @param active true activates this attribute, false deactivates it.
      */
-    def secure(active:Boolean)={
+    def secure(active:Boolean): ResponseCookie={
         _secure set active
         this
     }
@@ -174,18 +175,18 @@ class ResponseCookie(name:String) extends Cookie(name) {
      * Limits the scope of the cookie to http requests only.
      * @param active true activates this attribute, false deactivates it.
      */
-    def httpOnly(active:Boolean)={
+    def httpOnly(active:Boolean): ResponseCookie={
         _httpOnly set active
         this
     }
     
-    def extension(extension:String)={
+    def extension(extension:String): ResponseCookie={
         Ensure(containsOnlyCharsWithoutCTLs(extension) && !extension.contains(";"),"the extension must not contain controls or ';'")
         _extension set extension
         this
     }
     
-    def serialize = {
+    def serialize:String = {
         var result = name + "=" + URLEncoder.encode(_value,"UTF-8")
         var stringAttributes = for (attribute <- attributes if !attribute.value.isEmpty) yield attribute.serialize
         if (!stringAttributes.isEmpty)
@@ -248,7 +249,7 @@ trait Cookies extends ResponseCookies with Handler {
         requestCookies.get(cookieName).getOrElse(new collection.mutable.HashSet[Cookie]())
     }
 
-    def cookies = requestCookies.values
+    def cookies:Iterable[Set[Cookie]] = requestCookies.values
 
     override abstract def processRequest(requestBody: => InputStream): Response = {
         val response: Response = super.processRequest(requestBody)

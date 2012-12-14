@@ -37,7 +37,7 @@ class ExtensionAttribute() extends Attribute[String](""){
 class DateAttribute(override val name: String) extends Attribute[Date](name) {
     override def serialize = name + "=" + formatDate(value.get)
 
-    def formatDate(date: Date) = {
+    def formatDate(date: Date):String = {
         val formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
         formatter.setTimeZone(TimeZone.getTimeZone("GMT"))
         formatter.format(date)
