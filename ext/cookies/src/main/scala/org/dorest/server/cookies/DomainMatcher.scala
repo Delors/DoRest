@@ -15,15 +15,24 @@
  */
 package org.dorest.server.cookies
 
+/**
+ * Provides methods which can be used to test domain strings.
+ * @author Andreas Frankenberger
+ */
 object DomainMatcher {
-    def isDomain(toBetested: String): Boolean = {
-        if (toBetested equals " ")
+    /**
+     * Tests if the given string is a <a href="http://tools.ietf.org/html/rfc6265#section-5.2.3">domain</a>.
+     * @param toBeTested
+     * @return
+     */
+    def isDomain(toBeTested: String): Boolean = {
+        if (toBeTested equals " ")
             true
         else
-            isSubDomain(toBetested)
+            isSubDomain(toBeTested)
     }
 
-    def isSubDomain(toBetested: String): Boolean = {
+    private def isSubDomain(toBetested: String): Boolean = {
         if (isLabel(toBetested))
             return true
         if (!toBetested.contains("."))
@@ -36,5 +45,5 @@ object DomainMatcher {
         subDomains.forall(isLabel(_))
     }
 
-    def isLabel(toBeTested: String):Boolean = toBeTested.matches("""[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z\d])*""")
+    private def isLabel(toBeTested: String):Boolean = toBeTested.matches("""[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z\d])*""")
 }

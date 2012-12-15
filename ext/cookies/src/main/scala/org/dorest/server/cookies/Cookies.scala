@@ -43,7 +43,17 @@ class Cookie(protected val name: String, protected var _value:String="") {
     }
 }
 
+/**
+ * Creates cookie objects.
+ * @author Andreas Frankenberger
+ *
+ */
 object CookieFactory extends ConsoleLogging {
+    /**
+     * Creates cookie objects from string
+     * @param cookiesString the cookie string as described in <a href="http://tools.ietf.org/html/rfc6265#section-4.2">rfc6265</a>.
+     * @return a multimap that contains the cookies related to the cookie name.
+     */
     def createFrom(cookiesString: String): MultiMap[String, Cookie] = {
         var result = new HashMap[String, collection.mutable.Set[Cookie]] with MultiMap[String, Cookie]
         cookiesString.split(";").foreach(cookiePair => 
@@ -73,7 +83,7 @@ object Ensure{
 }
 
 /**
- * Represents a cookie servers send to clients according to <a href="http://tools.ietf.org/html/rfc6265">rfc6265</a>.
+ * Represents a cookie servers send to clients according to <a href="http://tools.ietf.org/html/rfc6265#section-4.1">rfc6265</a>.
  * @author Andreas Frankenberger
  */
 class ResponseCookie(name:String) extends Cookie(name) {
@@ -111,7 +121,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
 
     /**
-     * Sets the maximum age in seconds of the cookie. It must be a value >0.
+     * Sets the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.2">maximum age</a> in seconds of the cookie. It must be a value >0.
      */
     def maxAge(maxAge: Int): ResponseCookie = {
         Ensure(maxAge>0,"The Max-Age attribute must be >0")
@@ -120,7 +130,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
 
     /**
-     * Sets the expire date of the cookie.
+     * Sets the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.1">expire date</a> of the cookie.
      */
     def expires(expires: Date): ResponseCookie = {
         _expires set expires
@@ -128,7 +138,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
 
     /**
-     * Sets the domain attribute of the cookie. The domain must only contain the characters a-z, A-Z, 0-9, "-" and "/".
+     * Sets the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.3">domain attribute</a> of the cookie. The domain must only contain the characters a-z, A-Z, 0-9, "-" and "/".
      */
     def domain(domain: String): ResponseCookie = {
         Ensure(DomainMatcher.isDomain(domain),domain + " is not a valid domain")
@@ -144,7 +154,7 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
     
     /**
-     * Sets the path attribute of the cookie. 
+     * Sets the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.4">path attribute</a> of the cookie. 
      */
     def path(path:String): ResponseCookie={
         Ensure(containsOnlyCharsWithoutCTLs(path) && !path.contains(";"),"A path must not contain controls or ';'")
@@ -153,12 +163,12 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
     
     /**
-     * Limits the cookie to secure channels.
+     * Limits the cookie to <a href="http://tools.ietf.org/html/rfc6265#section-5.2.5">secure channels</a>.
      */
     def secure:ResponseCookie = secure(true);
     
     /**
-     * Limits the cookie to secure channels.
+     * Limits the cookie to <a href="http://tools.ietf.org/html/rfc6265#section-5.2.5">secure channels</a>.
      * @param active true activates this attribute, false deactivates it.
      */
     def secure(active:Boolean): ResponseCookie={
@@ -167,12 +177,12 @@ class ResponseCookie(name:String) extends Cookie(name) {
     }
 
     /**
-     * Limits the scope of the cookie to http requests only.
+     * Limits the scope of the cookie to <a href="http://tools.ietf.org/html/rfc6265#section-5.2.6">http requests only</a>.
      */
     def httpOnly:ResponseCookie = httpOnly(true);
     
     /**
-     * Limits the scope of the cookie to http requests only.
+     * Limits the scope of the cookie to <a href="http://tools.ietf.org/html/rfc6265#section-5.2.6">http requests only</a>.
      * @param active true activates this attribute, false deactivates it.
      */
     def httpOnly(active:Boolean): ResponseCookie={
@@ -186,6 +196,9 @@ class ResponseCookie(name:String) extends Cookie(name) {
         this
     }
     
+    /**
+     * @return the Set-Cookie string for this cookie as defined in <a href="http://tools.ietf.org/html/rfc6265#section-4.1">rfc6265</a>.
+     */
     def serialize:String = {
         var result = name + "=" + URLEncoder.encode(_value,"UTF-8")
         var stringAttributes = for (attribute <- attributes if !attribute.value.isEmpty) yield attribute.serialize
