@@ -19,8 +19,20 @@ import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
+
+
+/**
+ * Represents an attribute of a cookie as described in <a href="http://tools.ietf.org/html/rfc6265#section-5.2">the cookie rfc</a>
+ * @author Andreas Frankenberger
+ *
+ * @param <T> The type of the attribute value
+ */
 class Attribute[T](val name: String) {
     var value: Option[T] = None
+    /**
+     * Sets the cookie value
+     * @param value the actual attribute value
+     */
     def set(value: T) = {
         if(value !=null)
         	this.value = Option(value)
@@ -28,12 +40,27 @@ class Attribute[T](val name: String) {
         	this.value= None
     }
 
+    /**
+     * @return A string representation of this attribute
+     */
     def serialize = name + "=" + value.get
 }
 
+/**
+ * Implementation for the <a href="http://tools.ietf.org/html/rfc6265#section-4.1.1">extension-attribute</a> which can be part of a cookie.
+ * @author Andreas Frankenberger
+ *
+ */
 class ExtensionAttribute() extends Attribute[String](""){
     override def serialize = value.get
 }
+
+
+/**
+ * Implementation for the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.1">expires attribute</a>, which has a date value that requires a special <a href="http://tools.ietf.org/html/rfc2616#section-3.3.1">date format</a>. 
+ * @author Andreas Frankenberger
+ *
+ */
 class DateAttribute(override val name: String) extends Attribute[Date](name) {
     override def serialize = name + "=" + formatDate(value.get)
 
@@ -44,6 +71,12 @@ class DateAttribute(override val name: String) extends Attribute[Date](name) {
     }
 }
 
+/**
+ * Implementation for attributes which are used as flag, without any value.
+ * These are the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.5">secure-attribute</a> and the <a href="http://tools.ietf.org/html/rfc6265#section-5.2.6">httponly-attribute</a>.
+ * @author Andreas Frankenberger
+ *
+ */
 class FlagAttribute(override val name: String) extends Attribute[Boolean](name){
     override def set(value:Boolean) ={
         if(value)
