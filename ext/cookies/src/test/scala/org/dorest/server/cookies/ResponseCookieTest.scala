@@ -82,7 +82,7 @@ class ResponseCookieTest extends FlatSpec with ShouldMatchers with BeforeAndAfte
         cookie.serialize should include("; Path=/the/path");
     }
     
-     it should "throw excetions if the path contains controls or ';'" in {
+     it should "throw exceptions if the path contains controls or ';'" in {
         intercept[IllegalArgumentException]{
             cookie.path(";")
         }
@@ -113,7 +113,7 @@ class ResponseCookieTest extends FlatSpec with ShouldMatchers with BeforeAndAfte
         cookie.serialize should include("; my extension");
     }
     
-    it should "throw excetions if the extension contains controls or ';'" in {
+    it should "throw exceptions if the extension contains controls or ';'" in {
         intercept[IllegalArgumentException]{
             cookie.extension(";")
         }
